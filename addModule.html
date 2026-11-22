@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mecha Studio – Dữ liệu game</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#efe7d6;--card:#f7f1e3;--tx:#2b2118;--mut:#7a6a58;--bd:#bda985;--red:#8b1e1e;--ok:#4b7a52;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17130f;--card:#211b15;--tx:#eadfcb;--mut:#a2937d;--bd:#4a3e30;--red:#d9605a;--ok:#7fbf86;color-scheme:dark}}
+*{box-sizing:border-box}html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.35 Georgia,"Noto Serif","Times New Roman",serif}
+#app{max-width:760px;margin:0 auto;padding:8px;display:flex;flex-direction:column;gap:8px}
+header{display:flex;gap:6px;align-items:center;flex-wrap:wrap}header h1{font-size:18px;margin:0;flex:1}
+button,.btn{font:inherit;color:var(--tx);background:var(--card);border:1px solid var(--bd);border-radius:6px;padding:8px 10px;cursor:pointer;display:inline-block}
+.pri{background:var(--red);color:#fff;border-color:var(--red)}
+#tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}#tabs button{white-space:nowrap}#tabs .on{border-color:var(--red);color:var(--red);font-weight:700}
+.mut{color:var(--mut);font-size:12px}#msg{color:var(--red);font-size:12px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:6px;padding:8px;margin-top:8px}
+.row{display:flex;gap:10px}.fl{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:6px;min-width:0}
+@media(max-width:480px){.row{flex-direction:column}}
+.fl>div{min-width:0}.fl>div:first-child,.fl>div.w{grid-column:1/-1}
+.im{width:110px;height:110px;flex:none;border:1px dashed var(--bd);border-radius:6px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--mut);font-size:12px;cursor:pointer;overflow:hidden}
+.im img{width:100%;height:100%;object-fit:contain}
+input:not([type=checkbox]),select{width:100%;font:inherit;color:var(--tx);background:var(--bg);border:1px solid var(--bd);border-radius:5px;padding:6px}
+.ck{display:inline-flex;gap:4px;align-items:center;margin:2px 8px 2px 0}
+#mp{position:relative;margin-top:8px}#mp img{width:100%;display:block;border:1px solid var(--bd)}
+.pn{position:absolute;transform:translate(-50%,-50%);font-size:11px;font-style:normal;background:var(--card);border:1px solid var(--red);border-radius:10px;padding:0 6px;white-space:nowrap;pointer-events:none}
+.pn.realm{border-color:#8a56b0}
+.sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}.sg .card{margin:0}
+.sp{aspect-ratio:1;background-repeat:no-repeat;background-size:400% 400%;border:1px dashed var(--bd);border-radius:6px;margin-bottom:6px}
+</style>
+</head>
+<body>
+<div id="app">
+<header><h1>Mecha Studio</h1><span class="mut" id="sz"></span>
+<label class="btn">Nhập datapack<input type="file" accept=".json" hidden onchange="imp(this.files[0])"></label>
+<button class="pri" onclick="exp()">Xuất datapack</button></header>
+<nav id="tabs"></nav><div id="msg"></div>
+<section id="main"></section>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+const T={
+humans:{l:"Nhân vật (human)",f:[["name","Tên","t"],["rank","Thánh Giai bậc","n",12],["soul","Hồn lực tối đa","n",100],["bio","Mô tả","t"]]},
+mechas:{l:"Mecha",f:[["name","Tên","t"],["pilot","Phi công","r:humans"],["hp","HP","n",400],["atk","Tấn công","n",40],["en","Năng lượng","n",100],["reg","Hồi NL mỗi lượt","n",8],["spd","Tốc độ","n",600],["head","Giáp đầu","e:head"],["body","Giáp bụng","e:body"],["shoulder","Giáp vai","e:shoulder"],["arm","Giáp tay","e:arm"],["glove","Găng tay","e:glove"],["leg","Giáp chân","e:leg"],["boot","Giày","e:boot"],["weapon","Vũ khí","e:weapon"],["backpack","Backpack","e:backpack"],["wing","Cánh (cần Backpack)","e:wing"],["drone","Drone (cần Backpack)","e:drone"],["pet","Pet (cần Backpack)","e:pet"]]},
+equips:{l:"Trang bị",f:[["name","Tên","t"],["slot","Vị trí","s:Giáp đầu=head|Giáp bụng=body|Giáp vai=shoulder|Giáp tay=arm|Găng tay=glove|Giáp chân=leg|Giày=boot|Backpack=backpack|Cánh=wing|Drone=drone|Pet=pet|Vũ khí=weapon"],["shield","+ Lá chắn","n",0],["hp","+ HP","n",0],["atk","+ Tấn công","n",0],["spd","+ Tốc độ","n",0],["wtype","Loại vũ khí (vũ khí/găng)","s:Không=|Súng=gun|Kiếm=blade|Lõi=core|Tên lửa=missile|Pháo=cannon"],["mastery","Thuần thục vũ khí % (găng)","n",0],["move","Di chuyển địa hình (giày)","n",0],["dtype","Loại drone/pet","s:Sentry=sentry|Repair=repair|Shield=shield"]]},
+items:{l:"Vật phẩm",f:[["name","Tên","t"],["type","Hiệu ứng","s:Năng lượng=cell|Hồn lực=tonic|HP (theo %)=nano|Lá chắn=shcell"],["val","Giá trị","n",50],["qty","Số lượng","n",1],["desc","Mô tả","t"]]},
+monsters:{l:"Quái vật",f:[["name","Tên","t"],["lv","Bậc","n",12],["hp","HP","n",300],["atk","Tấn công","n",30],["spd","Tốc độ","n",450],["sh","Lá chắn","n",0]]},
+places:{l:"Thành phố / Bí cảnh",f:[["name","Tên","t"],["kind","Loại","s:Thành phố=city|Bí cảnh=realm"],["lvl","Bậc quái","n",12],["desc","Mô tả","t"]]}};
+const TABS=["humans","mechas","equips","items","monsters","places","map","samples"];
+const NM={humans:"Nhân vật",mechas:"Mecha",equips:"Trang bị",items:"Vật phẩm",monsters:"Quái",places:"Thành/Bí cảnh",map:"Bản đồ",samples:"Ảnh mẫu"};
+const blank=()=>({v:1,humans:[],mechas:[],equips:[],items:[],monsters:[],places:[],map:""});
+let D=blank(),tab="humans",armed=-1,selP="";
+try{const s=localStorage.getItem("mstudio");if(s)D=Object.assign(blank(),JSON.parse(s))}catch(e){}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const uid=()=>Math.random().toString(36).slice(2,9);
+const opt=x=>{const p=x.split("=");return[p[0],p[p.length-1]]};
+function save(){const j=JSON.stringify(D);$("#sz").textContent=Math.round(j.length/1024)+" KB";
+ try{localStorage.setItem("mstudio",j);$("#msg").textContent=""}catch(e){$("#msg").textContent="Bộ nhớ trình duyệt đầy hoặc bị chặn: hãy bấm Xuất datapack để giữ dữ liệu."}}
+function go(t){tab=t;armed=-1;render()}
+function render(){
+ $("#tabs").innerHTML=TABS.map(t=>`<button class="${t===tab?"on":""}" onclick="go('${t}')">${NM[t]}${Array.isArray(D[t])?" ("+D[t].length+")":""}</button>`).join("");
+ if(tab==="map")return mapView();if(tab==="samples")return samples();
+ if(tab==="mechas")return mechaView();
+ $("#main").innerHTML=`<button class="pri" onclick="add()">+ Thêm ${T[tab].l.toLowerCase()}</button>`+D[tab].map((o,i)=>card(o,i)).join("");}
+function card(o,i){return `<div class="card"><div class="row"><label class="im">${o.img?`<img src="${o.img}">`:"Chạm để chọn ảnh"}<input type="file" accept="image/*" hidden onchange="pic(${i},this.files[0])"></label><div class="fl">${T[tab].f.map(f=>fld(o,i,f)).join("")}</div></div>
+<div style="margin-top:6px"><button onclick="del(${i})">${armed===i?"Bấm lần nữa để xóa":"Xóa"}</button></div></div>`}
+function fld(o,i,[k,l,ty]){const v=o[k]??"";let c;
+ if(ty==="t")c=`<input value="${esc(v)}" oninput="ed(${i},'${k}',this.value)">`;
+ else if(ty==="n")c=`<input type="number" value="${v}" oninput="ed(${i},'${k}',+this.value)">`;
+ else if(ty[0]==="s")c=`<select onchange="ed(${i},'${k}',this.value)">${ty.slice(2).split("|").map(x=>{const[a,b]=opt(x);return `<option value="${b}" ${v==b?"selected":""}>${a}</option>`}).join("")}</select>`;
+ else if(ty[0]==="e")c=`<select ${["wing","drone","pet"].includes(k)&&!o.backpack?"disabled":""} onchange="ed(${i},'${k}',this.value)"><option value="">Chưa gắn</option>${D.equips.filter(x=>x.slot===ty.slice(2)).map(x=>`<option value="${x.id}" ${v===x.id?"selected":""}>${esc(x.name)}</option>`).join("")}</select>`;
+ else if(ty[0]==="r")c=`<select onchange="ed(${i},'${k}',this.value)"><option value="">Chưa chọn</option>${D[ty.slice(2)].map(x=>`<option value="${x.id}" ${v===x.id?"selected":""}>${esc(x.name)}</option>`).join("")}</select>`;
+ else c=D[ty.slice(2)].map(x=>`<label class="ck"><input type="checkbox" ${(o[k]||[]).includes(x.id)?"checked":""} onchange="tg(${i},'${k}','${x.id}',this.checked)">${esc(x.name)}</label>`).join("")||'<span class="mut">Chưa có trang bị nào</span>';
+ return `<div class="${ty[0]==="m"?"w":""}"><span class="mut">${l}</span>${c}</div>`}
+function add(){const o={id:uid()};
+ T[tab].f.forEach(([k,,ty,d])=>{o[k]=d!==undefined?d:ty==="t"?"":ty==="n"?0:ty[0]==="s"?opt(ty.slice(2).split("|")[0])[1]:ty[0]==="m"?[]:""});
+ o.name="Mới";D[tab].push(o);save();render()}
+function ed(i,k,v){const o=D[tab][i];o[k]=v;if(tab==="mechas"&&k==="backpack"){if(!v)o.wing=o.drone=o.pet="";save();return render()}save()}
+function tg(i,k,id,on){const a=D[tab][i][k]=D[tab][i][k]||[];const p=a.indexOf(id);if(on&&p<0)a.push(id);if(!on&&p>=0)a.splice(p,1);save()}
+function del(i){if(armed!==i){armed=i;return render()}const id=D[tab][i].id;D[tab].splice(i,1);armed=-1;
+ D.mechas.forEach(m=>{["head","body","shoulder","arm","glove","leg","boot","weapon","backpack","wing","drone","pet","pilot"].forEach(k=>{if(m[k]===id)m[k]=""});if(!m.backpack)m.wing=m.drone=m.pet=""});save();render()}
+function shrink(file,max,cb){const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);cb(c.toDataURL("image/webp",.82))};im.src=r.result};r.readAsDataURL(file)}
+function pic(i,f){if(f)shrink(f,512,u=>{D[tab][i].img=u;save();render()})}
+function mapPic(f){if(f)shrink(f,1600,u=>{D.map=u;save();render()})}
+function mapView(){
+ if(!selP&&D.places[0])selP=D.places[0].id;
+ $("#main").innerHTML=`<label class="btn pri" style="margin-top:8px">${D.map?"Đổi ảnh world map":"Chọn ảnh world map"}<input type="file" accept="image/*" hidden onchange="mapPic(this.files[0])"></label>`+
+ (D.map?`<p class="mut">Chọn địa điểm bên dưới, rồi chạm lên bản đồ để đặt ghim.</p>${D.places.length?`<select onchange="selP=this.value">${D.places.map(p=>`<option value="${p.id}" ${p.id===selP?"selected":""}>${esc(p.name)}${p.x!=null?" ✓":""}</option>`).join("")}</select>`:'<p class="mut">Hãy thêm địa điểm ở tab Thành/Bí cảnh trước.</p>'}
+ <div id="mp"><img src="${D.map}" onclick="pin(event)">${D.places.filter(p=>p.x!=null).map(p=>`<i class="pn ${p.kind}" style="left:${p.x}%;top:${p.y}%">${esc(p.name)}</i>`).join("")}</div>`:`<p class="mut">Chưa có ảnh bản đồ.</p>`)}
+function pin(e){const p=D.places.find(x=>x.id===selP);if(!p)return;const r=e.target.getBoundingClientRect();
+ p.x=+((e.clientX-r.left)/r.width*100).toFixed(1);p.y=+((e.clientY-r.top)/r.height*100).toFixed(1);save();render()}
+async function exp(){
+ const d=window.claude&&await claude.use("downloads");
+ if(!d){$("#msg").textContent="Khung này không hỗ trợ tải file.";return}
+ try{await d.save({filename:"datapack.json",data:JSON.stringify(D)});$("#msg").textContent=""}catch(e){if(e.code!=="declined")$("#msg").textContent="Không lưu được file ("+(e.code||"lỗi")+")."}}
+function imp(f){if(!f)return;const r=new FileReader();r.onload=()=>{try{D=Object.assign(blank(),JSON.parse(r.result));save();render()}catch(e){$("#msg").textContent="File datapack không hợp lệ."}};r.readAsText(f)}
+const SH="/_blob/51a3ea6e1ee91be669cd8a25e4d95716";
+const SMP=[["head","Giáp đầu"],["body","Giáp bụng"],["backpack","Backpack"],["wing","Cánh"],["shoulder","Giáp vai trái"],["shoulder","Giáp vai phải"],["arm","Giáp tay trái"],["arm","Giáp tay phải"],["glove","Găng tay trái"],["glove","Găng tay phải"],["leg","Giáp chân trái"],["leg","Giáp chân phải"],["boot","Giày trái"],["boot","Giày phải"],["drone","Drone"],["pet","Pet"]];
+function samples(){
+ $("#main").innerHTML=`<p class="mut">Ảnh mẫu tách từ khung mecha bạn gửi. Chạm Thêm để tạo trang bị có sẵn ảnh và vị trí, rồi chỉnh thông số ở tab Trang bị. Backpack, Cánh, Drone và Pet là hình tạm do mình vẽ vì khung gốc không có.</p><div class="sg">${SMP.map((s,n)=>`<div class="card"><div class="sp" style="background-image:url(${SH});background-position:${(n%4)*100/3}% ${Math.floor(n/4)*100/3}%"></div><b>${s[1]}</b><div><button onclick="addS(${n})">Thêm</button></div></div>`).join("")}</div>`}
+function addS(n){const im=new Image();
+ im.onload=()=>{const c=document.createElement("canvas");c.width=c.height=256;c.getContext("2d").drawImage(im,(n%4)*256,Math.floor(n/4)*256,256,256,0,0,256,256);
+  const o={id:uid(),name:SMP[n][1]+" mẫu",slot:SMP[n][0],img:c.toDataURL("image/webp",.85)};
+  T.equips.f.forEach(([k,,ty,d])=>{if(o[k]===undefined)o[k]=d!==undefined?d:ty==="t"?"":ty==="n"?0:ty[0]==="s"?opt(ty.slice(2).split("|")[0])[1]:""});
+  D.equips.push(o);save();render();$("#msg").textContent=`Đã thêm "${o.name}" vào tab Trang bị.`};
+ im.onerror=()=>{$("#msg").textContent="Không tải được ảnh mẫu."};im.src=SH}
+
+let mechaMode="prototype", partImage="";
+const MECHA_SLOTS=[
+ ["head","Giáp đầu"],["body","Giáp bụng"],["shoulder","Giáp vai"],
+ ["arm","Giáp tay"],["glove","Găng tay"],["leg","Giáp chân"],["boot","Giày"],
+ ["backpack","Backpack"],["wing","Cánh"],["drone","Drone"],["pet","Pet"],["weapon","Vũ khí"]
+];
+const REQUIRED_MECHA_SLOTS=MECHA_SLOTS.map(x=>x[0]);
+function mechaView(){
+ const modes=[["prototype","Thêm nguyên mẫu Mecha"],["part","Thêm từng bộ phận"],["split","Phân tách Mecha"]];
+ let html=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0">${modes.map(([k,l])=>`<button class="${mechaMode===k?"pri":""}" onclick="mechaMode='${k}';render()">${l}</button>`).join("")}</div>`;
+ if(mechaMode==="prototype") html+=prototypeForm()+D.mechas.map((m,i)=>`<div class="card"><b>${esc(m.name||"Mecha")}</b><div class="mut">${mechaCompleteness(m).text}</div><button onclick="tab='mechas';editPrototype('${m.id}')">Chỉnh sửa trong biểu mẫu</button></div>`).join("");
+ if(mechaMode==="part") html+=partForm()+`<div class="card"><b>Bộ phận đã thêm (${D.equips.filter(x=>x.slot!=="weapon").length})</b>${D.equips.filter(x=>x.slot!=="weapon").map(x=>`<div style="display:flex;gap:8px;align-items:center;margin-top:6px">${x.img?`<img src="${x.img}" style="width:44px;height:44px;object-fit:contain">`:""}<span>${esc(x.name)} <span class="mut">(${esc(x.slot)})</span></span></div>`).join("")}</div>`;
+ if(mechaMode==="split") html+=splitForm();
+ $("#main").innerHTML=html;
+}
+function prototypeForm(){
+ const options=slot=>`<option value="">— Chọn ${MECHA_SLOTS.find(x=>x[0]===slot)[1]} —</option>`+D.equips.filter(x=>x.slot===slot).map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join("");
+ return `<div class="card"><b>Thêm nguyên mẫu Mecha</b><p class="mut">Bắt buộc chọn đủ 12 bộ phận, mỗi bộ phận phải có ảnh mẫu. Vũ khí được chọn riêng, không dùng làm bộ phận giáp.</p>
+ <div class="fl"><div class="w"><span class="mut">Tên Mecha *</span><input id="protoName" value="Mecha mới"></div>
+ <div><span class="mut">Phi công</span><select id="protoPilot"><option value="">Chưa chọn</option>${D.humans.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join("")}</select></div>
+ <div><span class="mut">HP</span><input id="protoHp" type="number" value="400"></div><div><span class="mut">Tấn công</span><input id="protoAtk" type="number" value="40"></div>
+ <div><span class="mut">Năng lượng</span><input id="protoEn" type="number" value="100"></div><div><span class="mut">Hồi NL mỗi lượt</span><input id="protoReg" type="number" value="8"></div><div><span class="mut">Tốc độ</span><input id="protoSpd" type="number" value="600"></div>
+ ${MECHA_SLOTS.map(([k,l])=>`<div><span class="mut">${l} *</span><select id="proto_${k}">${options(k)}</select></div>`).join("")}
+ </div><button class="pri" style="margin-top:8px" onclick="createPrototype()">Thêm nguyên mẫu Mecha</button></div>`;
+}
+function createPrototype(){
+ const m={id:uid(),name:$("#protoName").value.trim(),pilot:$("#protoPilot").value,hp:+$("#protoHp").value,atk:+$("#protoAtk").value,en:+$("#protoEn").value,reg:+$("#protoReg").value,spd:+$("#protoSpd").value};
+ const missing=[];
+ MECHA_SLOTS.forEach(([k,l])=>{const id=$(`#proto_${k}`).value;const part=D.equips.find(x=>x.id===id);if(!part||!part.img)missing.push(l);else m[k]=id;});
+ if(!m.name){$("#msg").textContent="Hãy nhập tên Mecha.";return}
+ if(missing.length){$("#msg").textContent="Chưa đủ bộ phận có ảnh: "+missing.join(", ");return}
+ D.mechas.push(m);save();$("#msg").textContent="Đã thêm nguyên mẫu Mecha hoàn chỉnh.";render();
+}
+function partForm(){
+ const slots=MECHA_SLOTS.filter(x=>x[0]!=="weapon");
+ return `<div class="card"><b>Thêm bộ phận Mecha</b><p class="mut">Tạo riêng từng bộ phận. Vũ khí không nằm trong biểu mẫu này.</p>
+ <div class="fl"><div class="w"><span class="mut">Ảnh bộ phận *</span><input id="partFile" type="file" accept="image/*" onchange="loadPartImage(this.files[0])"></div>
+ <div class="w"><span class="mut">Tên bộ phận *</span><input id="partName" placeholder="Ví dụ: Giáp đầu MK-II"></div>
+ <div class="w"><span class="mut">Loại bộ phận *</span><select id="partSlot">${slots.map(([k,l])=>`<option value="${k}">${l}</option>`).join("")}</select></div>
+ <div><span class="mut">+ HP</span><input id="partHp" type="number" value="0"></div><div><span class="mut">+ Tấn công</span><input id="partAtk" type="number" value="0"></div>
+ <div><span class="mut">+ Tốc độ</span><input id="partSpd" type="number" value="0"></div><div><span class="mut">+ Lá chắn</span><input id="partShield" type="number" value="0"></div></div>
+ <div id="partPreview" class="mut" style="margin:6px 0">Chưa chọn ảnh.</div><button class="pri" onclick="createPart()">Thêm bộ phận</button></div>`;
+}
+function loadPartImage(file){if(!file)return;shrink(file,512,u=>{partImage=u;$("#partPreview").innerHTML=`<img src="${u}" style="width:100px;height:100px;object-fit:contain">`})}
+function createPart(){
+ const name=$("#partName").value.trim(),slot=$("#partSlot").value;
+ if(!name||!partImage){$("#msg").textContent="Bộ phận bắt buộc có tên và ảnh mẫu.";return}
+ const o={id:uid(),name,slot,img:partImage,hp:+$("#partHp").value,atk:+$("#partAtk").value,spd:+$("#partSpd").value,shield:+$("#partShield").value,wtype:"",mastery:0,move:0,dtype:""};
+ D.equips.push(o);partImage="";save();$("#msg").textContent="Đã thêm bộ phận Mecha.";render();
+}
+function mechaCompleteness(m){
+ const missing=MECHA_SLOTS.filter(([k])=>{const p=D.equips.find(x=>x.id===m[k]);return !p||!p.img}).map(x=>x[1]);
+ return {ok:missing.length===0,missing,text:missing.length?`Thiếu bộ phận/ảnh: ${missing.join(", ")}`:"Đầy đủ 12/12 bộ phận và ảnh mẫu"};
+}
+function splitForm(){
+ return `<div class="card"><b>Phân tách nguyên mẫu thành bộ phận</b><p class="mut">Chỉ cho phép phân tách Mecha đã có đủ 12 bộ phận và ảnh mẫu. Hệ thống sẽ tạo bản sao độc lập của từng bộ phận.</p>
+ <span class="mut">Chọn Mecha nguyên mẫu</span><select id="splitMecha"><option value="">— Chọn Mecha —</option>${D.mechas.map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join("")}</select>
+ <button class="pri" style="margin-top:8px" onclick="splitPrototype()">Phân tách thành 12 bộ phận</button></div>
+ <div class="card"><b>Điều kiện phân tách</b><div class="mut">Mecha phải được tạo ở chế độ nguyên mẫu và đủ ảnh cho từng bộ phận. Bộ phận được sao chép sang danh sách bộ phận Mecha, không xóa dữ liệu gốc.</div></div>`;
+}
+function splitPrototype(){
+ const m=D.mechas.find(x=>x.id===$("#splitMecha").value);
+ if(!m){$("#msg").textContent="Hãy chọn Mecha nguyên mẫu.";return}
+ const check=mechaCompleteness(m);if(!check.ok){$("#msg").textContent="Không thể phân tách. "+check.text;return}
+ const copies=[];
+ MECHA_SLOTS.forEach(([k,label])=>{const p=D.equips.find(x=>x.id===m[k]);const c={...p,id:uid(),name:`${m.name} – ${label}`,slot:k};copies.push(c)});
+ D.equips.push(...copies);save();$("#msg").textContent=`Đã phân tách ${m.name} thành 12 bộ phận độc lập.`;render();
+}
+function editPrototype(id){const m=D.mechas.find(x=>x.id===id);if(!m)return;mechaMode="prototype";render();$("#msg").textContent="Nguyên mẫu hiện tại được giữ nguyên; có thể kiểm tra trong danh sách."}
+
+save();render();
+</script>
+</body>
+</html>
