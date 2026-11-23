@@ -97,15 +97,20 @@ const rnd=a=>a[Math.floor(Math.random()*a.length)],ri=(a,b)=>a+Math.floor(Math.r
 const BEASTS=["Xích Lang Cơ","Thiết Giáp Quy","Hư Ảnh Hổ","Ma Tượng Cơ","Kim Cương Sư","Sương Phách Lang"];
 const DR={sentry:{n:"Sentry Drone",ic:"🛸",d:"Tự bắn địch mỗi nhịp."},repair:{n:"Repair Pet",ic:"🐕",d:"Tự hồi HP cho mecha."},shield:{n:"Shield Orb",ic:"🔰",d:"Tự nạp lá chắn tạm."}};
 let G;
+/* Cảnh giới chính thức: G.lv là số thứ tự cảnh giới 0–48 (bậc cũ N = cảnh giới số N, không đổi công thức chiến đấu).
+   0–11: Hoàng/Huyền/Địa/Thiên Giai (mỗi giai Sơ/Trung/Hậu kỳ) · 12–47: Thánh Giai 12 tầng × Sơ/Trung/Hậu · 48: Thần Giai (tối cao). */
+const GR=["Hoàng Giai","Huyền Giai","Địa Giai","Thiên Giai"],PH=["Sơ kỳ","Trung kỳ","Hậu kỳ"],RK=[],RS=[],MAXR=48;
+(()=>{GR.forEach((g,gi)=>PH.forEach((p,pi)=>{RK.push(g+" "+p);RS.push(g.split(" ")[0]+" "+p.split(" ")[0])}));for(let t=1;t<=12;t++)PH.forEach(p=>{RK.push("Thánh Giai Tầng "+t+" "+p);RS.push("Thánh T"+t+" "+p.split(" ")[0])});RK.push("Thần Giai");RS.push("Thần Giai")})();
+const rankName=i=>RK[i]||("Cảnh giới "+i),rankShort=i=>RS[i]||("Cảnh giới "+i);
 const need=()=>60+(G.lv-12)*30;
 function newGame(){
  G={lv:12,xp:0,hp:400,max:400,atk:40,en:100,enMax:100,reg:8,soul:100,soulMax:100,sh:120,shMax:120,gear:true,spd:600,atb:650,
  items:{cell:3,tonic:3,nano:3,shcell:2},drone:null,spdX:1,auto:false,turn:false,over:false,lock:false,modal:false,od:false,round:0,log:[]};
  spawn();say("Chiến đấu bắt đầu. Vân Giáp sẵn sàng.");}
 function spawn(){
- const lv=Math.max(10,G.lv+ri(-1,1)),i=lv-12,sh=Math.random()<.4?40+ri(0,30):0,hp=Math.round((220+45*i)*(.9+Math.random()*.3));
+ const lv=Math.min(MAXR,Math.max(10,G.lv+ri(-1,1))),i=lv-12,sh=Math.random()<.4?40+ri(0,30):0,hp=Math.round((220+45*i)*(.9+Math.random()*.3));
  G.e={name:rnd(BEASTS),lv,hp,max:hp,sh,shMax:sh,atk:20+4*i,en:40,enMax:60,spd:380+ri(0,170),atb:0,dead:false};
- G.round=0;say(`${G.e.name} (bậc ${lv}) xuất hiện.`);}
+ G.round=0;say(`${G.e.name} (${rankName(lv)}) xuất hiện.`);}
 function say(t){G.log.push(t);if(G.log.length>60)G.log.shift();const l=$("#log");if(l){l.innerHTML="<h4>NHẬT KÝ</h4>"+G.log.map(x=>`<div>${x}</div>`).join("");l.scrollTop=l.scrollHeight}}
 function pop(t,side,g){const d=document.createElement("div");d.className="pop"+(g?" g":"");d.textContent=t;d.style[side==="p"?"left":"right"]="18%";$("#stage").appendChild(d);setTimeout(()=>d.remove(),900)}
 function flash(id){const g=$("#"+id);g.classList.remove("hit");void g.getBoundingClientRect();g.classList.add("hit")}
@@ -127,10 +132,10 @@ function use(i){const s=SK[i];if(!can(s))return;G.en-=s.en;G.soul-=s.so;const od
 function endAct(){G.turn=false;G.atb-=1000;renderAll()}
 function endTurn(){if(!G.turn||G.modal)return;G.soul=Math.min(G.soulMax,G.soul+12);G.en=Math.min(G.enMax,G.en+10);say("Kết lượt: nghỉ ngơi, hồi 10 năng lượng và 12 hồn lực.");endAct()}
 function win(){const e=G.e,g=40+(e.lv-12)*6;G.xp+=g;say(`${e.name} bị hạ. +${g} kinh nghiệm.`);
- while(G.xp>=need()){G.xp-=need();lvUp()}
+ while(G.lv<MAXR&&G.xp>=need()){G.xp-=need();lvUp()}if(G.lv>=MAXR)G.xp=0;
  G.lock=true;G.turn=false;G.atb=Math.min(G.atb,700);renderAll();setTimeout(()=>{spawn();G.lock=false;renderAll()},1300)}
 function lvUp(){G.lv++;G.max=Math.round(G.max*1.1);G.hp=Math.min(G.max,G.hp+Math.round(G.max*.4));G.atk=Math.round(G.atk*1.08);G.enMax+=8;G.reg+=1;G.soulMax+=4;G.spd+=8;
- if(G.gear)G.shMax+=15;say(`ĐỘT PHÁ: Thánh Giai bậc ${G.lv}!`);SK.filter(s=>s.lv===G.lv).forEach(s=>say(`Mở khóa kỹ năng: ${s.n}.`))}
+ if(G.gear)G.shMax+=15;say(`ĐỘT PHÁ: ${rankName(G.lv)}!`);SK.filter(s=>s.lv===G.lv).forEach(s=>say(`Mở khóa kỹ năng: ${s.n}.`))}
 function lose(){G.over=true;$("#modal").innerHTML=`<div class="ov"><div class="box"><h3>Mecha bị hạ gục</h3><div class="mut">Bạn giữ nguyên cấp và kinh nghiệm.</div><button class="pri" onclick="revive()">Hồi sinh</button></div></div>`}
 function revive(){G.hp=G.max;G.en=G.enMax;G.soul=G.soulMax;G.sh=G.shMax;G.drone=null;G.turn=false;G.over=false;G.atb=500;$("#modal").innerHTML="";spawn();renderAll()}
 function pace(){G.lock=true;setTimeout(()=>{G.lock=false},420/G.spdX)}
@@ -180,14 +185,14 @@ function renderAll(){
  $("#rd").textContent="Hiệp "+Math.max(1,G.round);
  $("#dm").style.display=d?"":"none";
  $("#order").innerHTML=`<div class="pt"><b>🤖</b><div class="mb"><i id="opa"></i></div>Vân Giáp</div>${d?`<div class="pt"><b>${DR[d.t].ic}</b><div class="mb"><i id="oda"></i></div>${DR[d.t].n}</div>`:""}<div class="pt"><b>👾</b><div class="mb"><i id="oea"></i></div>${e.name}</div>`;
- $("#pp").innerHTML=`<div class="hd">Thánh Giai bậc ${G.lv}</div><div class="nm">Vân Giáp<small>KN ${G.xp}/${need()}</small>${G.od?'<small style="color:var(--red)">Overdrive</small>':""}</div>`+
+ $("#pp").innerHTML=`<div class="hd">${rankName(G.lv)}</div><div class="nm">Vân Giáp<small>${G.lv>=MAXR?"Cảnh giới tối cao":"KN "+G.xp+"/"+need()}</small>${G.od?'<small style="color:var(--red)">Overdrive</small>':""}</div>`+
  B("Lá chắn",G.sh,Math.max(G.shMax,G.sh),"--sh")+B("HP",G.hp,G.max,"--hp")+B("Năng lượng",G.en,G.enMax,"--en",`+${G.reg}/lượt · `)+
  B("Hồn lực",G.soul,G.soulMax,"--so")+(G.soul<G.soulMax*.25?'<div class="flag">Kiệt sức: sát thương giảm 30%</div>':"")+AT("pa",G.atb,G.spd);
- $("#ep").innerHTML=`<div class="hd">Dị thú · bậc ${e.lv}</div><div class="nm">${e.name}</div>`+
+ $("#ep").innerHTML=`<div class="hd">Dị thú · ${rankName(e.lv)}</div><div class="nm">${e.name}</div>`+
  B("Lá chắn",e.sh,e.shMax,"--sh")+B("HP",e.hp,e.max,"--bad")+B("Năng lượng",e.en,e.enMax,"--en")+AT("ea",e.atb,e.spd);
  const dp=$("#dp");dp.style.display=d?"":"none";
  if(d)dp.innerHTML=`<div class="nm" style="font-size:14px">${DR[d.t].ic} ${DR[d.t].n}</div>`+B("HP drone",d.hp,d.max,"--hp")+AT("da",d.atb,d.spd);
- $("#skills").innerHTML=SK.map((s,i)=>G.lv<s.lv?`<button class="sk" disabled><em>🔒</em><b>${s.n}</b><span>bậc ${s.lv}</span></button>`:
+ $("#skills").innerHTML=SK.map((s,i)=>G.lv<s.lv?`<button class="sk" disabled><em>🔒</em><b>${s.n}</b><span>${rankShort(s.lv)}</span></button>`:
  `<button class="sk" ${can(s)?"":"disabled"} onclick="use(${i})"><em>${s.ic}</em><b>${s.n}</b><span>${s.d}</span><span>NL ${s.en} · HL ${s.so}</span></button>`).join("");
  const t=G.turn&&!G.modal&&!G.over;
  ["bBag","bSum","bRun","bEnd"].forEach(id=>$("#"+id).disabled=!t);
