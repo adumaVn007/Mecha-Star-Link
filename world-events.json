@@ -1,0 +1,287 @@
+{
+ "v": 1,
+ "note": "Dữ liệu sự kiện ngẫu nhiên của bản đồ 2.5D. Tách khỏi mecha-studio.json để Mecha Studio không ghi đè. Quái trong 'monsters' dùng cùng trường với tab Quái của Mecha Studio (name, lv, hp, atk, spd, sh) + shape.",
+ "tiers": {
+  "small": {
+   "name": "Nhỏ",
+   "color": "#77c5a6",
+   "weight": 55,
+   "icon": "✦"
+  },
+  "medium": {
+   "name": "Trung",
+   "color": "#6fa8dc",
+   "weight": 28,
+   "icon": "✧"
+  },
+  "large": {
+   "name": "Lớn",
+   "color": "#b98ce0",
+   "weight": 13,
+   "icon": "❖"
+  },
+  "super": {
+   "name": "Siêu Cấp",
+   "color": "#ff7a52",
+   "weight": 4,
+   "icon": "✹"
+  }
+ },
+ "monsters": [
+  {
+   "id": "mon_xich_lang",
+   "name": "Xích Lang Cơ",
+   "shape": "wolf",
+   "lv": 12,
+   "hp": 300,
+   "atk": 30,
+   "spd": 450,
+   "sh": 0
+  },
+  {
+   "id": "mon_thiet_quy",
+   "name": "Thiết Giáp Quy",
+   "shape": "turtle",
+   "lv": 12,
+   "hp": 420,
+   "atk": 24,
+   "spd": 330,
+   "sh": 50
+  },
+  {
+   "id": "mon_hu_anh_ho",
+   "name": "Hư Ảnh Hổ",
+   "shape": "tiger",
+   "lv": 12,
+   "hp": 260,
+   "atk": 36,
+   "spd": 540,
+   "sh": 0
+  }
+ ],
+ "events": [
+  {
+   "id": "ev_s1",
+   "name": "Dấu chân yêu thú",
+   "tier": "small",
+   "type": "battlevsmonster",
+   "desc": "Vài dị thú lảng vảng quanh linh mạch.",
+   "monsters": [
+    "mon_xich_lang",
+    "mon_thiet_quy",
+    "mon_hu_anh_ho"
+   ],
+   "lvDelta": -1,
+   "hpMul": 0.8,
+   "atkMul": 0.9,
+   "xp": 30,
+   "stone": {
+    "thuong": [
+     8,
+     20
+    ]
+   }
+  },
+  {
+   "id": "ev_s2",
+   "name": "Linh khí nhiễu loạn",
+   "tier": "small",
+   "type": "battlevsmonster",
+   "desc": "Linh khí dao động kéo một con cơ thú đến.",
+   "monsters": [
+    "mon_xich_lang",
+    "mon_thiet_quy",
+    "mon_hu_anh_ho"
+   ],
+   "lvDelta": -1,
+   "hpMul": 0.85,
+   "atkMul": 0.9,
+   "xp": 34,
+   "stone": {
+    "thuong": [
+     10,
+     24
+    ]
+   }
+  },
+  {
+   "id": "ev_m1",
+   "name": "Cơ thú phục kích",
+   "tier": "medium",
+   "type": "battlevsmonster",
+   "desc": "Cơ thú lao ra chặn đường.",
+   "monsters": [
+    "mon_xich_lang",
+    "mon_thiet_quy",
+    "mon_hu_anh_ho"
+   ],
+   "lvDelta": 0,
+   "hpMul": 1.0,
+   "atkMul": 1.0,
+   "xp": 60,
+   "stone": {
+    "thuong": [
+     25,
+     60
+    ]
+   }
+  },
+  {
+   "id": "ev_m2",
+   "name": "Hang ổ dị thú",
+   "tier": "medium",
+   "type": "battlevsmonster",
+   "desc": "Một ổ dị thú canh giữ khoáng thạch.",
+   "monsters": [
+    "mon_xich_lang",
+    "mon_thiet_quy",
+    "mon_hu_anh_ho"
+   ],
+   "lvDelta": 0,
+   "hpMul": 1.1,
+   "atkMul": 1.0,
+   "xp": 70,
+   "stone": {
+    "thuong": [
+     30,
+     70
+    ]
+   }
+  },
+  {
+   "id": "ev_l1",
+   "name": "Thủ lĩnh bầy thú",
+   "tier": "large",
+   "type": "battlevsmonster",
+   "desc": "Thủ lĩnh bầy thú đã tỉnh giấc.",
+   "monsters": [
+    "mon_xich_lang",
+    "mon_thiet_quy",
+    "mon_hu_anh_ho"
+   ],
+   "lvDelta": 1,
+   "hpMul": 1.4,
+   "atkMul": 1.2,
+   "xp": 120,
+   "stone": {
+    "thuong": [
+     40,
+     90
+    ],
+    "trung": [
+     3,
+     8
+    ]
+   }
+  },
+  {
+   "id": "ev_l2",
+   "name": "Cơ thú nhiễm ma khí",
+   "tier": "large",
+   "type": "battlevsmonster",
+   "desc": "Ma khí khiến cơ thú hung bạo hơn thường lệ.",
+   "monsters": [
+    "mon_xich_lang",
+    "mon_thiet_quy",
+    "mon_hu_anh_ho"
+   ],
+   "lvDelta": 1,
+   "hpMul": 1.5,
+   "atkMul": 1.2,
+   "xp": 135,
+   "stone": {
+    "thuong": [
+     50,
+     100
+    ],
+    "trung": [
+     4,
+     9
+    ]
+   }
+  },
+  {
+   "id": "ev_x1",
+   "name": "Yêu vương thức tỉnh",
+   "tier": "super",
+   "type": "battlevsmonster",
+   "desc": "Yêu vương cổ đại thức tỉnh giữa Vân Mộng Trạch.",
+   "monsters": [
+    "mon_xich_lang",
+    "mon_thiet_quy",
+    "mon_hu_anh_ho"
+   ],
+   "lvDelta": 3,
+   "hpMul": 2.2,
+   "atkMul": 1.5,
+   "xp": 300,
+   "stone": {
+    "trung": [
+     8,
+     20
+    ],
+    "cao": [
+     1,
+     3
+    ]
+   }
+  },
+  {
+   "id": "ev_x2",
+   "name": "Thiên kiếp dị thú",
+   "tier": "super",
+   "type": "battlevsmonster",
+   "desc": "Dị thú dẫn thiên kiếp, cực kỳ nguy hiểm.",
+   "monsters": [
+    "mon_xich_lang",
+    "mon_thiet_quy",
+    "mon_hu_anh_ho"
+   ],
+   "lvDelta": 3,
+   "hpMul": 2.4,
+   "atkMul": 1.6,
+   "xp": 340,
+   "stone": {
+    "trung": [
+     10,
+     22
+    ],
+    "cao": [
+     1,
+     3
+    ]
+   }
+  }
+ ],
+ "zones": [
+  {
+   "id": "van_mong_trach_ngoai_vi",
+   "name": "Vân Mộng Trạch · Ngoại Vi",
+   "w": 22,
+   "h": 22,
+   "spawn": {
+    "x": 8,
+    "y": 8
+   },
+   "eventCount": 6,
+   "places": [
+    {
+     "id": "pl_van_giap_thanh",
+     "name": "Vân Giáp Thành",
+     "kind": "city",
+     "x": 11,
+     "y": 10,
+     "desc": "Thành trì nhỏ ven đầm lầy, nơi tu sĩ nghỉ chân."
+    },
+    {
+     "id": "pl_van_mong_bi_canh",
+     "name": "Vân Mộng Bí Cảnh",
+     "kind": "realm",
+     "x": 16,
+     "y": 5,
+     "desc": "Cổng bí cảnh phát ra ánh sáng xanh ngọc."
+    }
+   ]
+  }
+ ]
+}

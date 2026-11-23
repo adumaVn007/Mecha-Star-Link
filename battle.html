@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vân Giáp – Chiến đấu</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#efe7d6;--card:#f7f1e3;--tx:#2b2118;--mut:#7a6a58;--bd:#bda985;--red:#8b1e1e;--hp:#4b7a52;--en:#3f5fa8;--sh:#2c8fa5;--so:#8a56b0;--atb:#c58a2b;--bad:#b3261e;
+--sky1:#eef0e4;--sky2:#cdd9d0;--mt1:#a9bdb0;--mt2:#86a295;--m1:#3a3f46;--m2:#23272d;--acc:#c0392b;--b1:#4a5a55;--b2:#2f3b38;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17130f;--card:#211b15;--tx:#eadfcb;--mut:#a2937d;--bd:#4a3e30;--red:#d9605a;--hp:#7fbf86;--en:#7d9be0;--sh:#5cc6dc;--so:#b98ce0;--atb:#e0aa4d;--bad:#f2766d;--sky1:#27323a;--sky2:#1b2429;--mt1:#35504a;--mt2:#27403b;--m1:#c9ced6;--m2:#8c93a0;--acc:#ff7a6b;--b1:#9fb3ab;--b2:#6b7e77;color-scheme:dark}}
+*{box-sizing:border-box}html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.35 Georgia,"Noto Serif","Times New Roman",serif}
+.wrap{max-width:980px;margin:0 auto;padding:8px;display:grid;gap:8px}
+@media(min-width:860px){.wrap{grid-template-columns:1fr 260px}}
+main{display:flex;flex-direction:column;gap:8px;min-width:0}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:6px;padding:8px}
+.order{display:flex;justify-content:center;gap:14px}
+.pt{text-align:center;width:64px;font-size:10px;color:var(--mut)}
+.pt b{display:block;font-size:22px;line-height:1.2}
+.mb{height:4px;background:var(--bd);border-radius:2px;overflow:hidden}.mb i{display:block;height:100%;background:var(--atb);width:0}
+#stage{position:relative;border:1px solid var(--bd);border-radius:6px;overflow:hidden}
+#stage svg{display:block;width:100%;height:auto}
+.tag{position:absolute;left:8px;top:8px;background:var(--card);border:1px solid var(--bd);padding:1px 7px;font-size:12px}
+.pop{position:absolute;top:34%;font:700 20px Georgia,serif;color:var(--bad);text-shadow:0 1px 0 var(--card);animation:fl .9s forwards;pointer-events:none}
+.pop.g{color:var(--hp)}
+@keyframes fl{to{transform:translateY(-34px);opacity:0}}
+.hit{animation:bl .25s}@keyframes bl{50%{opacity:.25}}
+.panels{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:560px){.panels{grid-template-columns:1fr}}
+.panel{border-left:3px solid var(--hp)}.panel.e{border-left-color:var(--red)}
+.hd{color:var(--red);font-weight:700;font-size:12px}.nm{font-size:17px;font-weight:700;margin:1px 0 4px}
+.nm small{font-weight:400;color:var(--mut);font-size:11px;margin-left:6px}
+.lb{display:flex;justify-content:space-between;font-size:11.5px}
+.bar{height:6px;background:var(--bd);border-radius:3px;overflow:hidden;margin:1px 0 5px}.bar i{display:block;height:100%;transition:width .25s}
+.flag{font-size:11px;color:var(--bad)}
+#skills{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+#skills button{padding:6px 2px;min-height:78px}
+button{font:inherit;color:var(--tx);background:var(--card);border:1px solid var(--bd);border-radius:6px;padding:9px 10px;cursor:pointer}
+button:disabled{opacity:.4;cursor:default}button.pri{background:var(--red);color:#fff;border-color:var(--red)}
+.sk b{display:block;font-size:11.5px;line-height:1.15;margin:1px 0}.sk span{display:block;font-size:10px;color:var(--mut);line-height:1.2}.sk em{font-style:normal;font-size:19px}
+#bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center}#bar .gap{flex:1}
+#log{font-size:12.5px;max-height:130px;overflow:auto}
+@media(min-width:860px){#log{max-height:none;height:100%;min-height:400px}}
+#log h4{margin:0 0 4px;font-size:11px;letter-spacing:.08em;color:var(--mut)}#log div{padding:2px 0;border-bottom:1px dotted var(--bd)}#log div:last-child{font-weight:700}
+.ov{position:fixed;inset:0;background:#0007;display:flex;align-items:center;justify-content:center;padding:16px;z-index:5}
+.box{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:14px;width:100%;max-width:380px;display:flex;flex-direction:column;gap:8px}
+.box h3{margin:0}.box button{text-align:left}.box .mut{color:var(--mut);font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<main>
+<div id="order" class="order"></div>
+<div id="stage">
+<svg viewBox="0 0 400 210" preserveAspectRatio="xMidYMid slice">
+<defs><linearGradient id="sk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--sky1)"/><stop offset="1" stop-color="var(--sky2)"/></linearGradient></defs>
+<rect width="400" height="210" fill="url(#sk)"/>
+<polygon points="0,120 50,70 95,105 150,55 215,110 270,60 330,100 400,65 400,210 0,210" fill="var(--mt1)"/>
+<polygon points="0,150 60,110 120,140 190,100 260,145 330,115 400,140 400,210 0,210" fill="var(--mt2)"/>
+<ellipse cx="200" cy="150" rx="230" ry="18" fill="var(--sky1)" opacity=".55"/>
+<rect y="168" width="400" height="42" fill="var(--sky1)" opacity=".7"/>
+<g id="pm" transform="translate(50 62)">
+<rect x="22" y="80" width="14" height="42" rx="3" fill="var(--m2)"/><rect x="46" y="80" width="14" height="42" rx="3" fill="var(--m2)"/>
+<polygon points="14,40 68,40 62,84 20,84" fill="var(--m1)"/>
+<rect x="30" y="14" width="22" height="22" rx="4" fill="var(--m1)"/><rect x="34" y="22" width="14" height="5" fill="var(--acc)"/>
+<polygon points="41,2 34,16 48,16" fill="var(--acc)"/>
+<rect x="2" y="38" width="16" height="16" rx="2" fill="var(--m2)"/><rect x="64" y="38" width="16" height="16" rx="2" fill="var(--m2)"/>
+<line x1="90" y1="26" x2="90" y2="110" stroke="var(--acc)" stroke-width="4" stroke-linecap="round"/>
+<circle cx="41" cy="60" r="6" fill="var(--acc)"/></g>
+<g id="dm" transform="translate(150 44)" style="display:none"><ellipse rx="16" ry="4" cy="2" fill="var(--m2)" opacity=".5"/><circle r="9" fill="var(--m1)"/><circle r="4" fill="var(--acc)"/></g>
+<g id="em" transform="translate(262 78)"><g class="sp" data-s="wolf">
+<path d="M6 54 Q-14 42 -8 26" stroke="var(--b2)" stroke-width="6" fill="none" stroke-linecap="round"/>
+<ellipse cx="46" cy="56" rx="40" ry="22" fill="var(--b1)"/>
+<polygon points="78,40 108,50 98,68 72,64" fill="var(--b1)"/><circle cx="96" cy="52" r="3.5" fill="var(--acc)"/>
+<rect x="20" y="70" width="8" height="34" fill="var(--b2)"/><rect x="34" y="72" width="8" height="32" fill="var(--b2)"/><rect x="58" y="72" width="8" height="32" fill="var(--b2)"/><rect x="70" y="70" width="8" height="34" fill="var(--b2)"/>
+<polygon points="22,40 32,16 40,38" fill="var(--b2)"/><polygon points="42,36 54,12 60,36" fill="var(--b2)"/></g><g class="sp" data-s="turtle" style="display:none"><ellipse cx="50" cy="62" rx="46" ry="30" fill="var(--b2)"/><path d="M12 62 Q50 8 88 62Z" fill="var(--b1)"/><path d="M30 56 L50 30 L70 56 M50 30 V62" stroke="var(--b2)" stroke-width="3" fill="none"/><ellipse cx="96" cy="64" rx="13" ry="9" fill="var(--b1)"/><circle cx="100" cy="61" r="3" fill="var(--acc)"/><rect x="22" y="80" width="14" height="22" rx="4" fill="var(--b2)"/><rect x="62" y="80" width="14" height="22" rx="4" fill="var(--b2)"/></g><g class="sp" data-s="tiger" style="display:none"><path d="M6 54 Q-18 30 -6 12" stroke="var(--b2)" stroke-width="7" fill="none" stroke-linecap="round"/><ellipse cx="46" cy="54" rx="42" ry="24" fill="var(--b1)"/><path d="M26 34 L30 74 M42 31 L46 78 M58 33 L62 76" stroke="var(--b2)" stroke-width="4" fill="none"/><circle cx="90" cy="46" r="17" fill="var(--b1)"/><polygon points="80,32 84,18 92,30" fill="var(--b2)"/><polygon points="94,30 102,18 106,34" fill="var(--b2)"/><circle cx="96" cy="44" r="3.5" fill="var(--acc)"/><rect x="18" y="70" width="9" height="34" fill="var(--b2)"/><rect x="34" y="72" width="9" height="32" fill="var(--b2)"/><rect x="58" y="72" width="9" height="32" fill="var(--b2)"/><rect x="72" y="70" width="9" height="34" fill="var(--b2)"/></g></g>
+</svg>
+<span class="tag" id="rd">Hiệp 1</span>
+</div>
+<div class="panels"><div class="card panel" id="pp"></div><div class="card panel e" id="ep"></div></div>
+<div class="card" id="dp" style="display:none"></div>
+<div id="skills"></div>
+<div id="bar">
+<button id="bBag">Hành trang</button><button id="bSum">Triệu hồi</button><button id="bRun">Chạy</button>
+<span class="gap"></span>
+<button id="bSpd">x1</button><button id="bAuto">Auto ○</button><button id="bSet">Cài đặt</button>
+<button id="bEnd" class="pri">Kết lượt</button>
+</div>
+</main>
+<aside class="card" id="log"></aside>
+</div>
+<div id="modal"></div>
+<script src="vg-github.js"></script>
+<script src="vg-core.js"></script>
+<script>
+const GM=VG.game;let SV,EV,PRACTICE=false;
+const $=s=>document.querySelector(s);
+const rnd=a=>a[Math.floor(Math.random()*a.length)],ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const BEASTS=["Xích Lang Cơ","Thiết Giáp Quy","Hư Ảnh Hổ","Ma Tượng Cơ","Kim Cương Sư","Sương Phách Lang"];
+const DR={sentry:{n:"Sentry Drone",ic:"🛸",d:"Tự bắn địch mỗi nhịp."},repair:{n:"Repair Pet",ic:"🐕",d:"Tự hồi HP cho mecha."},shield:{n:"Shield Orb",ic:"🔰",d:"Tự nạp lá chắn tạm."}};
+let G;
+/* Cảnh giới chính thức: G.lv là số thứ tự cảnh giới 0–48 (bậc cũ N = cảnh giới số N, không đổi công thức chiến đấu).
+   0–11: Hoàng/Huyền/Địa/Thiên Giai (mỗi giai Sơ/Trung/Hậu kỳ) · 12–47: Thánh Giai 12 tầng × Sơ/Trung/Hậu · 48: Thần Giai (tối cao). */
+const GR=["Hoàng Giai","Huyền Giai","Địa Giai","Thiên Giai"],PH=["Sơ kỳ","Trung kỳ","Hậu kỳ"],RK=[],RS=[],MAXR=48;
+(()=>{GR.forEach((g,gi)=>PH.forEach((p,pi)=>{RK.push(g+" "+p);RS.push(g.split(" ")[0]+" "+p.split(" ")[0])}));for(let t=1;t<=12;t++)PH.forEach(p=>{RK.push("Thánh Giai Tầng "+t+" "+p);RS.push("Thánh T"+t+" "+p.split(" ")[0])});RK.push("Thần Giai");RS.push("Thần Giai")})();
+const rankName=i=>RK[i]||("Cảnh giới "+i),rankShort=i=>RS[i]||("Cảnh giới "+i);
+const need=()=>60+(G.lv-12)*30;
+function newGame(){
+ const p=SV.p;
+ G={lv:p.lv,xp:p.xp,hp:p.hp,max:p.max,atk:p.atk,en:p.en,enMax:p.enMax,reg:p.reg,soul:p.soul,soulMax:p.soulMax,sh:p.gear?p.shMax:0,shMax:p.gear?p.shMax:0,gear:p.gear,spd:p.spd,atb:650,
+ items:Object.assign({},SV.items),drone:null,spdX:1,auto:!!SV.auto,turn:false,over:false,lock:false,modal:false,od:false,round:0,log:[]};
+ spawn();say(PRACTICE?"Chế độ luyện tập: kết quả không được lưu.":"Chiến đấu bắt đầu. Vân Giáp sẵn sàng.");}
+function spawn(){
+ const d=EV.def,m=EV.mon,lv=Math.min(MAXR,Math.max(0,G.lv+(d.lvDelta||0))),i=lv-12,f=k=>Math.max(.5,1+k*i);
+ const hp=Math.round(m.hp*f(.15)*(d.hpMul||1)*(.95+Math.random()*.15)),sh=Math.round((m.sh||0)*f(.1));
+ G.e={name:m.name,shape:m.shape||"wolf",tierName:"Sự kiện "+EV.tier.name,lv,hp,max:hp,sh,shMax:sh,atk:Math.round(m.atk*f(.13)*(d.atkMul||1)),en:40,enMax:60,spd:Math.round(m.spd+ri(-30,30)),atb:0,dead:false};
+ G.round=0;say(`${G.e.name} (${rankName(lv)}) xuất hiện.`);}
+function say(t){G.log.push(t);if(G.log.length>60)G.log.shift();const l=$("#log");if(l){l.innerHTML="<h4>NHẬT KÝ</h4>"+G.log.map(x=>`<div>${x}</div>`).join("");l.scrollTop=l.scrollHeight}}
+function pop(t,side,g){const d=document.createElement("div");d.className="pop"+(g?" g":"");d.textContent=t;d.style[side==="p"?"left":"right"]="18%";$("#stage").appendChild(d);setTimeout(()=>d.remove(),900)}
+function flash(id){const g=$("#"+id);g.classList.remove("hit");void g.getBoundingClientRect();g.classList.add("hit")}
+const dmg=m=>{let d=G.atk*m*(.9+Math.random()*.2);if(G.soul<G.soulMax*.25)d*=.7;if(G.od)d*=1.5;return Math.round(d)};
+function heal(p){const h=Math.round(G.max*p);G.hp=Math.min(G.max,G.hp+h);say(`Hồi ${h} HP.`);pop("+"+h,"p",1)}
+function hitE(d,n){const e=G.e;if(e.dead)return;const ab=Math.min(e.sh,d);e.sh-=ab;e.hp-=d-ab;say(`${n}: ${d} sát thương.`);pop(d,"e");flash("em");if(e.hp<=0){e.hp=0;e.dead=true;win()}}
+function hitP(d){const ab=Math.min(G.sh,d);G.sh-=ab;G.hp-=d-ab;pop(d,"p");flash("pm");return ab}
+const SK=[
+{n:"Súng Beam",ic:"🔫",lv:12,en:8,so:3,d:"×1.0",run:()=>hitE(dmg(1),"Súng Beam")},
+{n:"Chém Saber",ic:"⚔️",lv:12,en:15,so:5,d:"×1.6",run:()=>hitE(dmg(1.6),"Chém Saber")},
+{n:"Core Burst",ic:"💥",lv:12,en:35,so:10,d:"×2.8",run:()=>hitE(dmg(2.8),"Core Burst")},
+{n:"Tên lửa chùm",ic:"🚀",lv:13,en:25,so:8,d:"3 × 0.8",run:()=>{for(let i=0;i<3;i++)hitE(dmg(.8),"Tên lửa")}},
+{n:"Thủ thế",ic:"🛡️",lv:14,en:10,so:2,d:"+60 khiên",run:()=>{G.sh=Math.min(G.sh+60,250);say("Thủ thế: +60 lá chắn.");pop("+60","p",1)}},
+{n:"Overdrive",ic:"⚡",lv:14,en:20,so:6,d:"đòn sau ×1.5",run:()=>{G.od=true;say("Overdrive: đòn kế tiếp mạnh ×1.5.")}},
+{n:"Nano sửa chữa",ic:"🔧",lv:15,en:25,so:6,d:"+25% HP",run:()=>heal(.25)},
+{n:"Pháo Hư Không",ic:"🌑",lv:16,en:60,so:18,d:"×4.5",run:()=>hitE(dmg(4.5),"Pháo Hư Không")}];
+const can=s=>G.turn&&!G.over&&!G.modal&&G.lv>=s.lv&&G.en>=s.en&&G.soul>=s.so;
+function use(i){const s=SK[i];if(!can(s))return;G.en-=s.en;G.soul-=s.so;const od=G.od;s.run();if(od&&s.n!=="Overdrive")G.od=false;endAct()}
+function endAct(){G.turn=false;G.atb-=1000;renderAll()}
+function endTurn(){if(!G.turn||G.modal)return;G.soul=Math.min(G.soulMax,G.soul+12);G.en=Math.min(G.enMax,G.en+10);say("Kết lượt: nghỉ ngơi, hồi 10 năng lượng và 12 hồn lực.");endAct()}
+function win(){const e=G.e,d=EV.def,g=d.xp||40;G.xp+=g;say(`${e.name} bị hạ. +${g} kinh nghiệm.`);
+ while(G.lv<MAXR&&G.xp>=need()){G.xp-=need();lvUp()}if(G.lv>=MAXR)G.xp=0;
+ const st={};["thuong","trung","cao","sieu"].forEach(k=>{const r=d.stone&&d.stone[k];if(r)st[k]=ri(r[0],r[1])});
+ finish("win",g,st);G.over=true;G.turn=false;renderAll();
+ const nm={thuong:"Thường",trung:"Trung",cao:"Cao",sieu:"Siêu"},ls=Object.keys(st).map(k=>`+${st[k]} Linh Thạch ${nm[k]}`).join(", ");
+ box("Chiến thắng",`${e.name} đã bị hạ.<br>+${g} kinh nghiệm${ls?"<br>"+ls:""}${PRACTICE?"<br>(luyện tập: không lưu)":""}`,"Về bản đồ")}
+function finish(type,xp,st){
+ if(PRACTICE)return;const p=SV.p;
+ Object.assign(p,{lv:G.lv,xp:G.xp,hp:Math.max(1,Math.round(G.hp)),max:G.max,atk:G.atk,en:Math.round(G.en),enMax:G.enMax,reg:G.reg,soul:Math.round(G.soul),soulMax:G.soulMax,spd:G.spd,gear:G.gear});
+ if(G.gear)p.shMax=G.shMax;SV.items=Object.assign({},G.items);SV.auto=!!G.auto;
+ if(st)for(const k in st)SV.stones[k]=(SV.stones[k]||0)+st[k];
+ if(type==="flee"&&EV.from)SV.pos={x:EV.from.x,y:EV.from.y};
+ if(type==="lose"){p.hp=p.max;p.en=p.enMax;p.soul=p.soulMax;SV.pos={x:EV.spawn.x,y:EV.spawn.y}}
+ SV.result={type,uid:EV.uid,name:G.e.name,xp:xp||0,stone:st||{}};SV.pending=null;GM.save(SV)}
+function box(t,h,b){$("#modal").innerHTML=`<div class="ov"><div class="box"><h3>${t}</h3><div class="mut">${h}</div><button class="pri" onclick="toMap()">${b}</button></div></div>`}
+function toMap(){GM.nav("index.html")}
+function lvUp(){G.lv++;G.max=Math.round(G.max*1.1);G.hp=Math.min(G.max,G.hp+Math.round(G.max*.4));G.atk=Math.round(G.atk*1.08);G.enMax+=8;G.reg+=1;G.soulMax+=4;G.spd+=8;
+ if(G.gear)G.shMax+=15;say(`ĐỘT PHÁ: ${rankName(G.lv)}!`);SK.filter(s=>s.lv===G.lv).forEach(s=>say(`Mở khóa kỹ năng: ${s.n}.`))}
+function lose(){G.over=true;finish("lose");box("Mecha bị hạ gục","Bạn giữ nguyên cấp và kinh nghiệm. Hồi sinh tại điểm xuất phát.","Hồi sinh &amp; về bản đồ")}
+function pace(){G.lock=true;setTimeout(()=>{G.lock=false},420/G.spdX)}
+function startTurn(){G.turn=true;G.round++;G.en=Math.min(G.enMax,G.en+G.reg);G.soul=Math.min(G.soulMax,G.soul+3);if(G.gear)G.sh=Math.min(G.shMax,G.sh+8);renderAll();if(G.auto)setTimeout(autoAct,600/G.spdX)}
+function enemyAct(){const e=G.e;e.atb-=1000;e.en=Math.min(e.enMax,e.en+6);
+ const hv=e.en>=30&&Math.random()<.4;if(hv)e.en-=30;
+ const d=Math.round(e.atk*(hv?1.9:1)*(.9+Math.random()*.2));
+ if(G.drone&&Math.random()<.25){G.drone.hp-=d;say(`${e.name} bắn trúng drone: ${d}.`);if(G.drone.hp<=0){say("Drone bị phá hủy.");G.drone=null}}
+ else{const ab=hitP(d);say(`${e.name} ${hv?"tung đòn nặng":"tấn công"}: ${d} sát thương${ab?` (khiên chặn ${ab})`:""}.`);if(G.hp<=0){G.hp=0;pace();renderAll();return lose()}}
+ pace();renderAll()}
+function droneAct(){const d=G.drone;d.atb-=1000;
+ if(d.t==="sentry")hitE(25+3*(G.lv-12),"Sentry Drone");
+ if(d.t==="repair"){const h=Math.round(G.max*.07);G.hp=Math.min(G.max,G.hp+h);say(`Repair Pet hồi ${h} HP.`);pop("+"+h,"p",1)}
+ if(d.t==="shield"){G.sh=Math.min(G.sh+35,250);say("Shield Orb nạp +35 lá chắn.")}
+ pace();renderAll()}
+function tick(){
+ if(G.over||G.turn||G.lock||G.modal)return;const k=.04*G.spdX;
+ G.atb+=G.spd*k;G.e.atb+=G.e.spd*k;if(G.drone)G.drone.atb+=G.drone.spd*k;
+ const a=[["p",G.atb],["e",G.e.atb],["d",G.drone?G.drone.atb:0]].filter(x=>x[1]>=1000).sort((x,y)=>y[1]-x[1])[0];
+ if(a){if(a[0]==="p")startTurn();else if(a[0]==="e")enemyAct();else droneAct()}
+ tickUI()}
+function autoAct(){
+ if(!G.auto||!G.turn||G.modal||G.over||G.lock)return;
+ if(!G.drone&&G.en>=45&&G.soul>=15)return summon("sentry");
+ const ok=SK.map((s,i)=>[s,i]).filter(([s])=>can(s));
+ const h=ok.find(([s])=>s.n==="Nano sửa chữa");if(G.hp<G.max*.4&&h)return use(h[1]);
+ const at=ok.filter(([s,i])=>[0,1,2,3,7].includes(i)).sort((a,b)=>b[0].en-a[0].en);
+ if(!at.length)return endTurn();
+ use((Math.random()<.7?at[0]:rnd(at))[1])}
+const IT={cell:["Pin năng lượng","+60 năng lượng"],tonic:["Tinh dịch hồn lực","+40 hồn lực"],nano:["Gói nano","+30% HP"],shcell:["Pin lá chắn","+80 lá chắn (cần trang bị)"]};
+function modal(h){G.modal=true;$("#modal").innerHTML=`<div class="ov" onclick="if(event.target===this)closeM()"><div class="box">${h}<button onclick="closeM()">Đóng</button></div></div>`;renderAll()}
+function closeM(){G.modal=false;$("#modal").innerHTML="";renderAll();if(G.turn&&G.auto)setTimeout(autoAct,300)}
+function bag(){modal(`<h3>Hành trang</h3>${Object.keys(IT).map(k=>`<button ${G.turn&&G.items[k]>0&&(k!=="shcell"||G.gear)?"":"disabled"} onclick="item('${k}')">${IT[k][0]} ×${G.items[k]}<div class="mut">${IT[k][1]}</div></button>`).join("")}<div class="mut">Dùng vật phẩm tốn một lượt.</div>`)}
+function item(k){if(!G.turn||G.items[k]<1)return;G.items[k]--;
+ if(k==="cell")G.en=Math.min(G.enMax,G.en+60);if(k==="tonic")G.soul=Math.min(G.soulMax,G.soul+40);if(k==="nano")heal(.3);if(k==="shcell")G.sh=Math.min(G.sh+80,250);
+ say(`Dùng ${IT[k][0]}.`);G.modal=false;$("#modal").innerHTML="";endAct()}
+function sumM(){modal(`<h3>Triệu hồi</h3><div class="mut">Chi phí: 30 năng lượng, 10 hồn lực. Chỉ một drone cùng lúc, triệu hồi mới sẽ thay thế.</div>${Object.entries(DR).map(([k,v])=>`<button ${G.turn&&G.en>=30&&G.soul>=10?"":"disabled"} onclick="summon('${k}')">${v.ic} <b>${v.n}</b><div class="mut">${v.d}</div></button>`).join("")}`)}
+function summon(t){if(!G.turn||G.en<30||G.soul<10)return;G.en-=30;G.soul-=10;G.drone={t,hp:90,max:90,atb:300,spd:520};say(`Triệu hồi ${DR[t].n}.`);G.modal=false;$("#modal").innerHTML="";endAct()}
+function run(){if(!G.turn||G.modal)return;const c=Math.max(.2,Math.min(.85,.45+(G.spd-G.e.spd)/1000));
+ if(Math.random()<c){say("Thoát khỏi giao tranh thành công.");G.turn=false;G.over=true;finish("flee");renderAll();setTimeout(toMap,700)}
+ else{say("Chạy thất bại, mất lượt.");endAct()}}
+function setM(){modal(`<h3>Cài đặt</h3><button onclick="G.gear=!G.gear;G.shMax=G.gear?120+15*(G.lv-12):0;G.sh=G.shMax;closeM()">Trang bị lá chắn: ${G.gear?"Đang mang":"Không mang"} (bấm để đổi)</button><button onclick="if(confirm('Xóa bản lưu và làm lại từ đầu?')){GM.reset();toMap()}">Làm lại từ đầu</button>`)}
+const B=(l,v,m,c,x)=>`<div class="lb"><span>${l}</span><span>${x||""}${Math.round(v)} / ${Math.round(m)}</span></div><div class="bar"><i style="width:${m>0?Math.min(100,v/m*100):0}%;background:var(${c})"></i></div>`;
+const AT=(id,v,s)=>`<div class="lb"><span>ATB</span><span><span id="${id}t">${Math.round(v)}</span> / 1000 · Tốc ${s}</span></div><div class="bar"><i id="${id}" style="width:${Math.min(100,v/10)}%;background:var(--atb)"></i></div>`;
+function renderAll(){
+ const e=G.e,d=G.drone;
+ document.querySelectorAll("#em .sp").forEach(n=>n.style.display=n.dataset.s===e.shape?"":"none");
+ $("#rd").textContent="Hiệp "+Math.max(1,G.round);
+ $("#dm").style.display=d?"":"none";
+ $("#order").innerHTML=`<div class="pt"><b>🤖</b><div class="mb"><i id="opa"></i></div>Vân Giáp</div>${d?`<div class="pt"><b>${DR[d.t].ic}</b><div class="mb"><i id="oda"></i></div>${DR[d.t].n}</div>`:""}<div class="pt"><b>👾</b><div class="mb"><i id="oea"></i></div>${e.name}</div>`;
+ $("#pp").innerHTML=`<div class="hd">${rankName(G.lv)}</div><div class="nm">Vân Giáp<small>${G.lv>=MAXR?"Cảnh giới tối cao":"KN "+G.xp+"/"+need()}</small>${G.od?'<small style="color:var(--red)">Overdrive</small>':""}</div>`+
+ B("Lá chắn",G.sh,Math.max(G.shMax,G.sh),"--sh")+B("HP",G.hp,G.max,"--hp")+B("Năng lượng",G.en,G.enMax,"--en",`+${G.reg}/lượt · `)+
+ B("Hồn lực",G.soul,G.soulMax,"--so")+(G.soul<G.soulMax*.25?'<div class="flag">Kiệt sức: sát thương giảm 30%</div>':"")+AT("pa",G.atb,G.spd);
+ $("#ep").innerHTML=`<div class="hd">${e.tierName} · ${rankName(e.lv)}</div><div class="nm">${e.name}</div>`+
+ B("Lá chắn",e.sh,e.shMax,"--sh")+B("HP",e.hp,e.max,"--bad")+B("Năng lượng",e.en,e.enMax,"--en")+AT("ea",e.atb,e.spd);
+ const dp=$("#dp");dp.style.display=d?"":"none";
+ if(d)dp.innerHTML=`<div class="nm" style="font-size:14px">${DR[d.t].ic} ${DR[d.t].n}</div>`+B("HP drone",d.hp,d.max,"--hp")+AT("da",d.atb,d.spd);
+ $("#skills").innerHTML=SK.map((s,i)=>G.lv<s.lv?`<button class="sk" disabled><em>🔒</em><b>${s.n}</b><span>${rankShort(s.lv)}</span></button>`:
+ `<button class="sk" ${can(s)?"":"disabled"} onclick="use(${i})"><em>${s.ic}</em><b>${s.n}</b><span>${s.d}</span><span>NL ${s.en} · HL ${s.so}</span></button>`).join("");
+ const t=G.turn&&!G.modal&&!G.over;
+ ["bBag","bSum","bRun","bEnd"].forEach(id=>$("#"+id).disabled=!t);
+ $("#bSpd").textContent="x"+G.spdX;$("#bAuto").textContent="Auto "+(G.auto?"●":"○");
+ tickUI()}
+function tickUI(){
+ const w=(id,v)=>{const n=$("#"+id);if(n)n.style.width=Math.min(100,Math.max(0,v/10))+"%"};
+ const t=(id,v)=>{const n=$("#"+id+"t");if(n)n.textContent=Math.round(v)};
+ w("pa",G.atb);t("pa",G.atb);w("opa",G.atb);w("ea",G.e.atb);t("ea",G.e.atb);w("oea",G.e.atb);
+ if(G.drone){w("da",G.drone.atb);t("da",G.drone.atb);w("oda",G.drone.atb)}}
+$("#bBag").onclick=bag;$("#bSum").onclick=sumM;$("#bRun").onclick=run;$("#bEnd").onclick=endTurn;$("#bSet").onclick=setM;
+$("#bSpd").onclick=()=>{G.spdX=G.spdX%3+1;renderAll()};
+$("#bAuto").onclick=()=>{G.auto=!G.auto;renderAll();if(G.auto&&G.turn)setTimeout(autoAct,300)};
+GM.loadWorld().then(w=>{const z=w.zones[0];SV=GM.load(z);const pd=SV.pending;let def,mon;
+ if(pd){def=w.events.find(v=>v.id===pd.id);mon=w.monsters.find(v=>v.id===pd.mon)}
+ if(!def||!mon){PRACTICE=true;def=GM.rnd(w.events);mon=w.monsters.find(m=>m.id===GM.rnd(def.monsters))||w.monsters[0]}
+ EV={def,mon,tier:w.tiers[def.tier]||{name:"?"},uid:pd&&pd.uid,from:pd&&pd.from,spawn:z.spawn};
+ newGame();renderAll();setInterval(tick,100)}).catch(e=>{document.body.innerHTML='<p style="padding:20px">Không tải được dữ liệu: '+e.message+' <a href="index.html">Về bản đồ</a></p>'});
+</script>
+</body>
+</html>
