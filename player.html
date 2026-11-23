@@ -1,0 +1,198 @@
+<!doctype html><html lang="vi"><head><title>Vân Giáp – Hồ sơ &amp; Thư viện</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><style>
+:root{--bg:#f4f6fb;--card:#fff;--tx:#1b2333;--mu:#6b7488;--ac:#2563eb;--bd:#dde2ee;--ok:#16a34a;--er:#dc2626;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0f1420;--card:#192032;--tx:#e8ecf5;--mu:#98a2b8;--ac:#5b8def;--bd:#2a3550;--ok:#4ade80;--er:#f87171;color-scheme:dark}}
+*{box-sizing:border-box}body{margin:0 auto;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;padding:12px;max-width:680px}
+h1{font-size:18px;margin:4px 0 10px}h2{font-size:15px;margin:0 0 8px}.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:10px}
+.tabs{display:flex;gap:6px;margin-bottom:10px}.tabs button{flex:1;padding:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;font-size:15px}
+.tabs button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+input,select,textarea{width:100%;padding:8px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font-size:15px}
+.btn{padding:10px 12px;border:0;border-radius:10px;background:var(--ac);color:#fff;font-size:14px}.btn.g{background:var(--bd);color:var(--tx)}.btn.r{background:var(--er)}
+.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1;min-width:90px}.mu{color:var(--mu);font-size:13px}.bar{height:8px;background:var(--bd);border-radius:6px;overflow:hidden}.bar i{display:block;height:100%;background:var(--ac)}
+.ok{color:var(--ok)}.er{color:var(--er);font-size:13px}.box{overflow-x:auto}table{width:100%;border-collapse:collapse}td,th{padding:4px;text-align:left;font-size:13px}th{color:var(--mu);font-weight:500}</style>
+
+<style>.stat{display:grid;grid-template-columns:104px 1fr 50px 88px;gap:6px;align-items:center;padding:5px 0;font-size:14px}.stat.h{color:var(--mu);font-size:12px}.pos{color:var(--ok);font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}.it{border:1px solid var(--bd);border-radius:10px;padding:8px;background:var(--bg);text-align:center;font-size:13px}.it.sel{border-color:var(--ac);box-shadow:0 0 0 2px var(--ac)}.it .ic{font-size:26px;height:56px;display:flex;align-items:center;justify-content:center}.it img,.dimg{max-width:100%;max-height:56px;object-fit:contain}.dimg{max-height:120px;display:block;margin:0 0 8px}
+.slot{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px dashed var(--bd);font-size:14px}.chips{display:flex;gap:6px;margin-bottom:8px;overflow-x:auto}.chips button{padding:6px 12px;border-radius:20px;border:1px solid var(--bd);background:var(--card);color:var(--tx);white-space:nowrap}.chips .on{background:var(--ac);color:#fff}.kv{display:flex;justify-content:space-between;border-bottom:1px dashed var(--bd);padding:3px 0;font-size:14px;gap:8px}.kv span:last-child{text-align:right}label{display:flex;align-items:center;gap:6px}</style></head><body>
+<h1>🤖 Vân Giáp – Hồ sơ &amp; Thư viện</h1>
+<div class="tabs"><button id="t1">Hồ sơ</button><button id="t2">Thư viện</button></div>
+<div id="v1"></div><div id="v2" style="display:none"></div>
+<div class="card mu"><div id="src"></div><div class="row" style="margin-top:8px"><button class="btn g" id="imb">Dán JSON (công thức hoặc thư viện)</button></div><textarea id="io" rows="4" style="display:none;margin-top:8px"></textarea><div id="msg" style="margin-top:6px"></div></div>
+<script>
+/* vg-github.js — hàm liên kết GitHub cho Vân Giáp.
+   - Đọc: tải JSON công khai từ raw.githubusercontent.com (không cần token).
+   - Ghi: GitHub Contents API, cần token do người dùng tự nhập (chỉ lưu sessionStorage, KHÔNG ghi vào code/repo).
+   - Chỉ ghi được các đường dẫn trong VG.cfg.writable (mặc định KHÔNG gồm mecha-studio.json để không ghi đè dữ liệu gốc). */
+(function (g) {
+  var VG = g.VG = g.VG || {};
+  VG.cfg = {
+    owner: 'adumavn007', repo: 'Mecha-Star-Link', branch: 'main',
+    paths: { db: 'database/mecha-studio.json', formula: 'database/stat-formula.json' },
+    writable: ['database/stat-formula.json']
+  };
+  VG.rawUrl = function (p) { var c = VG.cfg; return 'https://raw.githubusercontent.com/' + c.owner + '/' + c.repo + '/' + c.branch + '/' + p; };
+  VG.fetchJSON = function (path, ms) {
+    var ac = typeof AbortController != 'undefined' ? new AbortController() : null;
+    var t = ac && setTimeout(function () { ac.abort(); }, ms || 8000);
+    return fetch(VG.rawUrl(path) + '?t=' + Date.now(), ac ? { signal: ac.signal } : {}).then(function (r) {
+      if (r.status == 404) return null;
+      if (!r.ok) throw new Error('GitHub trả về ' + r.status);
+      return r.json();
+    }).finally(function () { if (t) clearTimeout(t); });
+  };
+  VG.loadDB = function () { return VG.fetchJSON(VG.cfg.paths.db); };
+  VG.loadFormula = function () { return VG.fetchJSON(VG.cfg.paths.formula); };
+  VG.getToken = function () { try { return sessionStorage.getItem('vg_gh_token') || ''; } catch (e) { return ''; } };
+  VG.setToken = function (t) { try { sessionStorage.setItem('vg_gh_token', t); } catch (e) {} };
+  VG.clearToken = function () { try { sessionStorage.removeItem('vg_gh_token'); } catch (e) {} };
+  VG.b64 = function (s) { return btoa(unescape(encodeURIComponent(s))); };
+  VG.save = function (path, obj, message) {
+    if (VG.cfg.writable.indexOf(path) < 0) return Promise.reject(new Error('Đường dẫn không nằm trong danh sách được phép ghi: ' + path));
+    var tk = VG.getToken();
+    if (!tk) return Promise.reject(new Error('Chưa có token GitHub'));
+    var c = VG.cfg, api = 'https://api.github.com/repos/' + c.owner + '/' + c.repo + '/contents/' + path;
+    var h = { Authorization: 'Bearer ' + tk, Accept: 'application/vnd.github+json' };
+    return fetch(api + '?ref=' + encodeURIComponent(c.branch), { headers: h }).then(function (r) {
+      if (r.status == 404) return null;
+      if (!r.ok) throw new Error('Đọc sha lỗi ' + r.status);
+      return r.json();
+    }).then(function (cur) {
+      var body = { message: message || ('Cập nhật ' + path), content: VG.b64(JSON.stringify(obj, null, 1)), branch: c.branch };
+      if (cur && cur.sha) body.sha = cur.sha;
+      return fetch(api, { method: 'PUT', headers: Object.assign({ 'Content-Type': 'application/json' }, h), body: JSON.stringify(body) });
+    }).then(function (r) {
+      return r.json().then(function (j) { if (!r.ok) throw new Error((j && j.message) || ('Ghi lỗi ' + r.status)); return j; });
+    });
+  };
+})(typeof window != 'undefined' ? window : globalThis);
+
+var KEY='vg_formula3',RESERVED=['level','rank','grade','exp','base','pts','g','pt','pm','mbase'];
+function calc(src,V){var T=[],re=/\s*(?:(\d*\.?\d+)|([A-Za-z_]\w*)|(\S))/y,m,p=0;src=String(src);re.lastIndex=0;
+while(re.lastIndex<src.length&&(m=re.exec(src)))T.push(m[1]!==undefined?{n:+m[1]}:m[2]?{i:m[2]}:{o:m[3]});
+var F={min:Math.min,max:Math.max,floor:Math.floor,round:Math.round,ceil:Math.ceil,sqrt:Math.sqrt,abs:Math.abs,pow:Math.pow,log:Math.log};
+function eat(o){if(T[p]&&T[p].o==o){p++;return true}return false}
+function E(){var v=Tm();for(;;){if(eat('+'))v+=Tm();else if(eat('-'))v-=Tm();else return v}}
+function Tm(){var v=Pw();for(;;){if(eat('*'))v*=Pw();else if(eat('/'))v/=Pw();else return v}}
+function Pw(){var b=U();return eat('^')?Math.pow(b,Pw()):b}
+function U(){return eat('-')?-U():Pr()}
+function Pr(){var t=T[p++];if(!t)throw Error('Công thức bị thiếu giá trị');
+if(t.n!==undefined)return t.n;
+if(t.i){if(eat('(')){var a=[];if(!eat(')')){do a.push(E());while(eat(','));if(!eat(')'))throw Error('Thiếu dấu )')}
+if(!F[t.i])throw Error('Không có hàm: '+t.i);return F[t.i].apply(null,a)}
+if(!(t.i in V))throw Error('Chưa có biến: '+t.i);return V[t.i]}
+if(t.o=='('){var v=E();if(!eat(')'))throw Error('Thiếu dấu )');return v}
+throw Error('Ký tự lạ: '+t.o)}
+var r=E();if(p<T.length)throw Error('Thừa: '+(T[p].o||T[p].i||T[p].n));if(!isFinite(r))throw Error('Kết quả không hợp lệ');return r}
+
+
+var GR=['Hoàng Giai','Huyền Giai','Địa Giai','Thiên Giai','Thánh Giai','Thần Giai'],PH=['Sơ kỳ','Trung kỳ','Hậu kỳ'],RK=[];
+(function(){var g,p,t;for(g=0;g<4;g++)for(p=0;p<3;p++)RK.push({n:GR[g]+' '+PH[p],g:g});for(t=1;t<=12;t++)for(p=0;p<3;p++)RK.push({n:'Thánh Giai Tầng '+t+' '+PH[p],g:4});RK.push({n:'Thần Giai',g:5})})();
+function rankName(i){i=Math.floor(+i);return RK[i]?RK[i].n:'Cấp bậc '+i}
+function gradeOf(i){i=Math.floor(+i);return RK[i]?RK[i].g:-1}
+function rankOpts(sel){var h='',g=-1;RK.forEach(function(r,i){if(r.g!=g){if(g>=0)h+='</optgroup>';g=r.g;h+='<optgroup label="'+GR[g]+'">'}h+='<option value="'+i+'"'+(i==sel?' selected':'')+'>'+r.n+'</option>'});return h+'</optgroup>'}
+var SF='base+pts*pt+g*(level-1)';
+var DEF={v:3,coef:{exp_k:100,rank_k:.05,hp_per_str:10,atk_per_str:1,spd_per_agi:.5,acc_per_agi:.5,mana_per_int:5,eff_per_int:.3},
+stats:[
+{k:'str',l:'Sức mạnh (Strength)',max:500,g:1,pt:1,mb:0,pm:0,f:SF,mf:''},
+{k:'agi',l:'Nhanh nhẹn (Agility)',max:500,g:1,pt:1,mb:0,pm:0,f:SF,mf:''},
+{k:'int',l:'Trí tuệ (Int)',max:500,g:1,pt:1,mb:0,pm:0,f:SF,mf:''},
+{k:'hp',l:'Sinh lực',max:3000,g:0,pt:0,mb:500,pm:2,f:'base+str*hp_per_str',mf:'mbase+p_hp*pm*(1+rank*rank_k)'},
+{k:'atk',l:'Sát thương cơ bản',max:300,g:0,pt:0,mb:40,pm:2,f:'base+str*atk_per_str',mf:'mbase+p_atk*pm*(1+rank*rank_k)'},
+{k:'shield',l:'Khiên',max:500,g:.5,pt:1,mb:30,pm:1.5,f:SF,mf:'mbase+p_shield*pm*(1+rank*rank_k)'},
+{k:'spd',l:'Tốc độ',max:100,g:0,pt:0,mb:20,pm:1,f:'base+agi*spd_per_agi',mf:'mbase+p_spd*pm'},
+{k:'acc',l:'Chính xác',max:100,g:0,pt:0,mb:0,pm:1,f:'min(100,base+agi*acc_per_agi)',mf:'min(100,mbase+p_acc*pm)'},
+{k:'mana',l:'Mana',max:1000,g:0,pt:0,mb:100,pm:1,f:'base+int*mana_per_int',mf:'mbase+p_mana*pm'},
+{k:'eff',l:'Khả năng áp dụng hiệu ứng %',max:100,g:0,pt:0,mb:0,pm:1,f:'min(100,base+int*eff_per_int)',mf:'min(100,mbase+p_eff*pm)'}],
+pilot:{name:'Phi công',level:1,rank:0,exp:0,base:{str:10,agi:10,int:10,hp:100,atk:10,shield:5,spd:10,acc:50,mana:30,eff:0},pts:{str:0,agi:0,int:0,hp:0,atk:0,shield:0,spd:0,acc:0,mana:0,eff:0}}};
+function clone(o){return JSON.parse(JSON.stringify(o))}
+function ld(k,d){try{var s=localStorage.getItem(k);if(s)return JSON.parse(s)}catch(e){}return d}
+function valid(j){return !!(j&&j.v==3&&j.coef&&Array.isArray(j.stats)&&j.pilot&&j.pilot.base&&j.pilot.pts)}
+function setv(V,s,e){V.base=+e.base[s.k]||0;V.pts=+e.pts[s.k]||0;V.g=+s.g||0;V.pt=+s.pt||0;V.pm=+s.pm||0;V.mbase=+s.mb||0}
+function rd(x){return Math.round(x*100)/100}
+function compute(D){var e=D.pilot,B={level:e.level,rank:e.rank,grade:gradeOf(e.rank),exp:e.exp},k,P={},M={};for(k in D.coef)B[k]=+D.coef[k]||0;
+var V=Object.assign({},B),W=Object.assign({},B);
+D.stats.forEach(function(s){var r;setv(V,s,e);try{r=calc(s.f,V);P[s.k]={v:rd(r)}}catch(x){r=0;P[s.k]={v:0,err:x.message}}V[s.k]=r;W['p_'+s.k]=r});
+D.stats.forEach(function(s){var r;setv(W,s,e);if(!String(s.mf||'').trim()){M[s.k]={v:0,na:1};W['m_'+s.k]=0;return}try{r=calc(s.mf,W);M[s.k]={v:rd(r)}}catch(x){r=0;M[s.k]={v:0,err:x.message}}W['m_'+s.k]=r});
+return{P:P,M:M}}
+function need(D){return D.pilot.level*(+D.coef.exp_k||100)}
+function badName(D,k){return !/^[A-Za-z_]\w*$/.test(k)||RESERVED.indexOf(k)>=0||/^[pm]_/.test(k)||k in D.coef||D.stats.some(function(s){return s.k==k})}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+
+var SNAP={"v":1,"humans":[{"id":"piv2c08","name":"Embe","rank":12,"soul":100,"bio":"Đẹp"},{"id":"qtiktta","name":"Mới","rank":12,"soul":100,"bio":""}],"mechas":[],"equips":[{"id":"skkqkbg","name":"Đao 2 tay","slot":"weapon","shield":0,"hp":0,"atk":0,"spd":0,"wtype":"","mastery":0,"move":0,"dtype":"","weaponKind":"sword"},{"id":"s18j3f3","name":"Đao 5 dòng ","slot":"weapon","shield":0,"hp":0,"atk":0,"spd":0,"wtype":"","mastery":0,"move":0,"dtype":"","weaponKind":"sword"},{"id":"zcxkgji","name":"Mới","slot":"weapon","shield":0,"hp":0,"atk":0,"spd":0,"wtype":"","mastery":0,"move":0,"dtype":"","weaponKind":"sword"}],"items":[],"monsters":[],"places":[],"map":""};
+var SAMPLE={equips:[{id:'x1',name:'Backpack phản lực (mẫu)',slot:'backpack',hp:30,spd:2},{id:'x2',name:'Găng tay trọng lực (mẫu)',slot:'glove',atk:5,shield:5},{id:'x3',name:'Cánh Starlink (mẫu)',slot:'wing',spd:8},{id:'x6',name:'Kiếm Plasma (mẫu)',slot:'weapon',atk:15},{id:'x7',name:'Giáp bụng Titan (mẫu)',slot:'body',hp:100,shield:20},
+{id:'pt1',name:'Mèo cơ (mẫu)',slot:'pet',dtype:'repair',hp:100,mpAtk:5,dmg:12,dmgType:'nontype',dmgShape:'single',acc:80,skill:'sk1',dur:3,recipe:[{m:'m1',q:2},{m:'m3',q:1}]},{id:'pt2',name:'Sói thép (mẫu)',slot:'pet',dtype:'sentry',hp:160,mpAtk:8,dmg:18,dmgType:'nontype',dmgShape:'aoe',acc:70,skill:'sk2',dur:2,recipe:[{m:'m2',q:3},{m:'m4',q:1}]},
+{id:'dr1',name:'Drone Sentry (mẫu)',slot:'drone',dtype:'sentry',hp:60,mpAtk:4,dmg:15,dmgType:'nontype',dmgShape:'single',acc:90,skill:'sk1',dur:4,recipe:[{m:'m2',q:1}]},{id:'dr2',name:'Drone Shield (mẫu)',slot:'drone',dtype:'shield',hp:90,mpAtk:6,dmg:8,dmgType:'nontype',dmgShape:'aoe',acc:75,skill:'',dur:3,recipe:[{m:'m1',q:1},{m:'m3',q:2}]}],
+materials:[{id:'m1',name:'Vảy giáp thú (mẫu)',branch:'monster',fxHp:20,fxDmg:2},{id:'m2',name:'Nanh sói thép (mẫu)',branch:'monster',fxDmg:4,fxAcc:2},{id:'m3',name:'Linh quả Huyết Châu (mẫu)',branch:'herb',fxHp:50},{id:'m4',name:'Đan Cố Thể (mẫu)',branch:'pill',fxHp:30,fxDur:1},{id:'m5',name:'Công pháp Tụ Linh (mẫu)',branch:'method',realm:3,fxMp:-1},
+{id:'sk1',name:'Cắn Xé (mẫu)',branch:'skill',realm:0},{id:'sk2',name:'Lôi Quang Trảm (mẫu)',branch:'skill',realm:7},{id:'sk3',name:'Thần Thông (mẫu)',branch:'skill',realm:48}],
+items:[{id:'y1',name:'Pin năng lượng (mẫu)',desc:'Vật phẩm tiêu hao mẫu.'}]};
+var CATS=[['humans','Phi công','👤'],['mechas','Mecha','🤖'],['equips','Trang bị','🛡️'],['pets','Pet','🐾'],['drones','Drone','🛸'],['materials','Nguyên liệu','🧪'],['items','Vật phẩm','🎒'],['monsters','Quái vật','👾'],['places','Địa điểm','📍']];
+var BR=[['monster','Tài liệu từ quái vật'],['herb','Linh dược / quả kì bí'],['pill','Đan dược'],['method','Công pháp'],['skill','Skill']];
+var DT={nontype:'Non type'},DS={single:'Đơn mục tiêu',aoe:'Diện rộng (AoE)'};
+var SL={head:'Giáp đầu',body:'Giáp bụng',shoulder:'Giáp vai',arm:'Giáp tay',glove:'Găng tay',leg:'Giáp chân',boot:'Giày',backpack:'Backpack',wing:'Cánh',weapon:'Vũ khí',pet:'Pet',drone:'Drone'},BASESLOTS=['head','body','shoulder','arm','glove','leg','boot','weapon','backpack','wing'];
+var LB={name:'Tên',slot:'Ô trang bị',hp:'Sinh lực',atk:'Công',spd:'Tốc độ',shield:'Khiên',mastery:'Thông thạo',move:'Di chuyển',rank:'Cấp bậc',soul:'Linh hồn',bio:'Tiểu sử',desc:'Mô tả',branch:'Nhánh',realm:'Cảnh giới',str:'Sức mạnh',agi:'Nhanh nhẹn',int:'Trí tuệ',dtype:'Loại',lv:'Bậc',sh:'Lá chắn',en:'Năng lượng',reg:'Hồi NL mỗi lượt',val:'Giá trị',qty:'Số lượng',type:'Hiệu ứng',mpAtk:'MP mỗi đòn',dmg:'Sát thương',dmgType:'Hệ sát thương',dmgShape:'Dạng sát thương',acc:'Chính xác',skill:'Skill',dur:'Độ bền (ẩn)'};
+var FXL={hp:'HP',mpAtk:'MP mỗi đòn',dmg:'Sát thương',acc:'Chính xác',dur:'Độ bền (ẩn)'};
+var FXK={hp:'fxHp',mpAtk:'fxMp',dmg:'fxDmg',acc:'fxAcc',dur:'fxDur'};function fxv(m,k){return (m.fx&&+m.fx[k])||+m[FXK[k]]||0}
+var PDK=['hp','mpAtk','dmg','dmgType','dmgShape','acc','skill','dur','recipe'];
+var $=function(i){return document.getElementById(i)},D=ld(KEY,null),own=valid(D);if(!own)D=clone(DEF);
+var EQ=ld('vg_equip2',{}),PD=ld('vg_pd',{}),LIB=SNAP,srcTxt='bản chụp dữ liệu từ mecha-studio.json (demo, không có ảnh).',fsrc='mặc định mẫu',cat='all',slotF='all',brF='all',grF='all',sel=null,showSample=true,dev=false;
+function sn(s){return SL[s]||s}
+function lib(){var o={},ks=CATS.map(function(c){return c[0]});Object.keys(LIB).forEach(function(k){if(Array.isArray(LIB[k])&&ks.indexOf(k)<0)ks.push(k)});
+ks.forEach(function(k){o[k]=(Array.isArray(LIB[k])?LIB[k]:[]).slice();if(showSample&&SAMPLE[k])o[k]=o[k].concat(SAMPLE[k])});
+o.pets=(o.pets||[]).concat(o.equips.filter(function(i){return i.slot=='pet'}));o.drones=(o.drones||[]).concat(o.equips.filter(function(i){return i.slot=='drone'}));o.equips=o.equips.filter(function(i){return i.slot!='pet'&&i.slot!='drone'});return o}
+function find(id){var L=lib(),k,i;if(!id)return null;for(k in L)for(i=0;i<L[k].length;i++)if(L[k][i].id==id)return L[k][i];return null}
+function eqIt(slot){return EQ[slot]?find(EQ[slot]):null}
+function bonus(k){var t=0,s;for(s in EQ){var it=eqIt(s);if(it&&+it[k])t+=+it[k]}return rd(t)}
+function pdStats(p){var a={hp:0,mpAtk:0,dmg:0,acc:0,dur:0},r={},k;(p.recipe||[]).forEach(function(x){var m=find(x.m);if(m)for(k in a)a[k]+=fxv(m,k)*(+x.q||1)});
+for(k in a){a[k]=rd(a[k]);r[k]=Math.max(0,rd((+p[k]||0)+a[k]))}return{v:r,add:a}}
+function pdHtml(p){var s=pdStats(p),sk=find(p.skill);
+function row(a,b){return '<div class="kv"><span class="mu">'+a+'</span><span>'+b+'</span></div>'}
+function num(k){return s.v[k]+(s.add[k]?' <span class="pos">('+(s.add[k]>0?'+':'')+s.add[k]+')</span>':'')}
+return row('HP',num('hp'))+row('MP mỗi đòn',num('mpAtk'))+row('Sát thương',num('dmg'))+row('Hệ sát thương',esc(DT[p.dmgType||'nontype']||p.dmgType))+row('Dạng sát thương',esc(DS[p.dmgShape||'single']||p.dmgShape))+row('Chính xác',num('acc'))+row('Skill',sk?esc(sk.name):(p.skill?esc(p.skill):'—'))+(dev?row('Độ bền (ẩn)',num('dur')):'')}
+function fmt(k,v){if(k=='slot')return sn(v);if(k=='rank')return 'Thánh Giai bậc '+v;if(k=='realm')return rankName(v);if(k=='dtype')return {sentry:'Sentry',repair:'Repair',shield:'Shield'}[v]||v;if(k=='branch')return (BR.filter(function(b){return b[0]==v})[0]||[0,v])[1];if(k=='dmgType')return DT[v]||v;if(k=='dmgShape')return DS[v]||v;if(k=='skill'){var s=find(v);return s?s.name:v}return v}
+function r1(){var e=D.pilot,c=compute(D),nd=need(D),pr={str:1,agi:1,int:1};
+var h='<div class="card"><div style="display:flex;justify-content:space-between;gap:8px"><b>👤 '+esc(e.name)+'</b><span class="mu" style="text-align:right">'+esc(rankName(e.rank))+' · Cấp '+e.level+'</span></div><div class="mu" style="margin:6px 0 3px">EXP '+e.exp+' / '+nd+'</div><div class="bar"><i style="width:'+Math.min(100,e.exp/nd*100)+'%"></i></div></div>';
+h+='<div class="card"><b>Chỉ số: Phi công → Mecha</b><div class="stat h" style="margin-top:6px"><span></span><span></span><span>Phi công</span><span>Mecha</span></div>'+D.stats.map(function(s){var p=c.P[s.k],m=c.M[s.k],x=m.na?0:bonus(s.k);
+return '<div class="stat"><span'+(pr[s.k]?' style="font-weight:600"':'')+'>'+esc(s.l)+'</span><div class="bar"><i style="width:'+Math.min(100,(m.na?p.v:m.v+x)/(s.max||100)*100)+'%"></i></div><span>'+p.v+'</span><b>'+(m.na?'—':rd(m.v+x)+(x?' <span class="pos">(+'+x+')</span>':''))+((p.err||m.err)?' ⚠':'')+'</b></div>'}).join('')+'</div>';
+var sl=BASESLOTS.slice();(lib().equips||[]).forEach(function(i){if(i.slot&&sl.indexOf(i.slot)<0)sl.push(i.slot)});
+h+='<div class="card"><b>Trang bị Mecha</b>'+sl.map(function(s){var it=eqIt(s);return '<div class="slot"><span class="mu">'+esc(sn(s))+'</span><span>'+(it?esc(it.name):(EQ[s]?'(không còn trong thư viện)':'— trống —'))+'</span></div>'}).join('')+'</div>';
+[['pet','🐾 Pet'],['drone','🛸 Drone']].forEach(function(z){var it=find(PD[z[0]]);h+='<div class="card"><b>'+z[1]+'</b>'+(it?'<div style="margin:4px 0">'+esc(it.name)+'</div>'+pdHtml(it):'<div class="mu">— chưa mang — (chọn trong Thư viện)</div>')+'</div>'});
+$('v1').innerHTML=h;
+$('src').innerHTML='Công thức: '+esc(fsrc)+'.<br>Thư viện: '+esc(srcTxt)}
+function img(it,c){return it.img&&/^(data:image\/|https:)/.test(it.img)?'<img class="'+(c||'')+'" src="'+esc(it.img)+'" alt="">':''}
+function chips(a,arr,cur){return '<div class="chips">'+arr.map(function(c){return '<button data-'+a+'="'+esc(c[0])+'" class="'+(cur==c[0]?'on':'')+'">'+esc(c[1])+'</button>'}).join('')+'</div>'}
+function bn(k){return (BR.filter(function(b){return b[0]==k})[0]||[0,k])[1]}
+function r2(){var L=lib(),all=[],cnt={};
+Object.keys(L).forEach(function(k){var c=CATS.filter(function(x){return x[0]==k})[0]||[k,k,'📦'];cnt[k]=L[k].length;L[k].forEach(function(it){all.push({k:k,ic:c[2],it:it})})});
+var h='<div class="row mu" style="margin-bottom:8px"><label><input type="checkbox" id="cs" '+(showSample?'checked':'')+' style="width:auto">Mục mẫu</label><label><input type="checkbox" id="cd" '+(dev?'checked':'')+' style="width:auto">Chỉ số ẩn</label><button class="btn g" id="rl" style="flex:0 0 auto">Tải lại từ GitHub</button></div>';
+h+=chips('c',[['all','Tất cả ('+all.length+')']].concat(Object.keys(L).map(function(k){var c=CATS.filter(function(x){return x[0]==k})[0];return [k,(c?c[1]:k)+' ('+cnt[k]+')']})),cat);
+if(cat=='equips'){var ss={};L.equips.forEach(function(i){ss[i.slot||'?']=1});h+=chips('sl',[['all','Mọi ô']].concat(Object.keys(ss).map(function(s){return [s,sn(s)]})),slotF)}
+if(cat=='materials'){h+=chips('br',[['all','Mọi nhánh']].concat(BR.map(function(b){return [b[0],b[1]+' ('+L.materials.filter(function(i){return i.branch==b[0]}).length+')']})),brF);if(brF=='skill')h+=chips('gr',[['all','Mọi bậc']].concat(GR.map(function(g,i){return [''+i,g]})),grF)}
+var list=all.filter(function(x){var it=x.it;if(cat!='all'&&x.k!=cat)return false;if(cat=='equips'&&slotF!='all'&&(it.slot||'?')!=slotF)return false;
+if(cat=='materials'){if(brF!='all'&&it.branch!=brF)return false;if(brF=='skill'&&grF!='all'&&(it.realm===''||it.realm===undefined||gradeOf(it.realm)!=+grF))return false}return true});
+function sub(x){var it=x.it;if(x.k=='equips')return EQ[it.slot]==it.id?'✔ Đang mang':sn(it.slot||'?');if(x.k=='materials')return bn(it.branch)+(it.realm!==''&&it.realm!==undefined?' · '+rankName(it.realm):'');
+if(x.k=='pets'||x.k=='drones')return PD[x.k=='pets'?'pet':'drone']==it.id?'✔ Đang mang':(x.k=='pets'?'Pet':'Drone');return (CATS.filter(function(c){return c[0]==x.k})[0]||[0,x.k])[1]}
+h+=list.length?'<div class="grid">'+list.map(function(x){var it=x.it;return '<div class="it'+(sel==it.id?' sel':'')+'" data-i="'+esc(it.id)+'"><div class="ic">'+(img(it)||x.ic)+'</div>'+esc(it.name||'(chưa đặt tên)')+'<div class="mu">'+esc(sub(x))+'</div></div>'}).join('')+'</div>':'<div class="mu">Chưa có mục nào ở đây. Thêm bằng Mecha Studio rồi đồng bộ lên GitHub.</div>';
+var it=sel&&find(sel);if(it){var isEq=L.equips.indexOf(it)>=0,isPet=L.pets.indexOf(it)>=0,isDr=L.drones.indexOf(it)>=0,isPD=isPet||isDr,isMat=L.materials.indexOf(it)>=0,kind=isPet?'pet':'drone',eq=isEq&&EQ[it.slot]==it.id,on=isPD&&PD[kind]==it.id;
+h+='<div class="card" style="margin-top:10px">'+img(it,'dimg')+'<b>'+esc(it.name||'(chưa đặt tên)')+'</b>'+Object.keys(it).filter(function(k){return k!='img'&&k!='id'&&k!='name'&&it[k]!==''&&it[k]!==0&&it[k]!==null&&typeof it[k]!='object'&&!/^fx/.test(k)&&!(isPD&&PDK.indexOf(k)>=0)&&!(k=='dur')}).map(function(k){return '<div class="kv"><span class="mu">'+esc(LB[k]||k)+'</span><span>'+esc(fmt(k,it[k]))+'</span></div>'}).join('');
+if(isPD){h+='<div class="mu" style="margin-top:8px">Chỉ số sau khi cộng nguyên liệu chế tạo</div>'+pdHtml(it);
+if((it.recipe||[]).length)h+='<div class="mu" style="margin-top:8px">Nguyên liệu chế tạo</div>'+it.recipe.map(function(x){var m=find(x.m);return '<div class="kv"><span>'+(m?esc(m.name):esc(x.m)+' (không có trong thư viện)')+'</span><span>x'+(+x.q||1)+'</span></div>'}).join('');
+h+='<button class="btn" style="margin-top:8px" id="pdb">'+(on?'Tháo ra':'Mang theo')+'</button>'}
+if(isMat){var f=Object.keys(FXK).filter(function(k){return fxv(it,k)&&(dev||k!='dur')}).map(function(k){var v=fxv(it,k);return esc(FXL[k]||k)+' '+(v>0?'+':'')+v});if(f.length)h+='<div class="pos" style="margin-top:8px">Ảnh hưởng Pet/Drone: '+f.join(', ')+'</div>'}
+if(isEq)h+='<button class="btn" style="margin-top:8px" id="eqb">'+(eq?'Tháo ra':'Trang bị cho Mecha')+'</button>';h+='</div>'}
+$('v2').innerHTML=h}
+function sv(k,o){try{localStorage.setItem(k,JSON.stringify(o))}catch(e){}}
+$('v2').addEventListener('click',function(ev){var t=ev.target,q=function(a){return t.closest('['+a+']')},c=q('data-c'),s=q('data-sl'),b=q('data-br'),g=q('data-gr'),i=q('data-i');
+if(c){cat=c.dataset.c;slotF=brF=grF='all';r2()}else if(s){slotF=s.dataset.sl;r2()}else if(b){brF=b.dataset.br;grF='all';r2()}else if(g){grF=g.dataset.gr;r2()}else if(i){sel=i.dataset.i;r2()}
+else if(t.id=='eqb'){var it=find(sel);if(EQ[it.slot]==it.id)delete EQ[it.slot];else EQ[it.slot]=it.id;sv('vg_equip2',EQ);r2();r1()}
+else if(t.id=='pdb'){var p=find(sel),k=lib().pets.indexOf(p)>=0?'pet':'drone';if(PD[k]==p.id)delete PD[k];else PD[k]=p.id;sv('vg_pd',PD);r2();r1()}
+else if(t.id=='rl'){gh(true)}});
+$('v2').addEventListener('change',function(ev){if(ev.target.id=='cs')showSample=ev.target.checked;else if(ev.target.id=='cd')dev=ev.target.checked;else return;r1();r2()});
+function gh(manual){var m=function(t){$('msg').textContent=t};if(manual)m('Đang tải từ GitHub…');
+VG.loadDB().then(function(j){if(!j)throw Error('không thấy '+VG.cfg.paths.db);LIB=j;srcTxt='GitHub (mecha-studio.json tải trực tiếp).';if(manual)m('✅ Đã tải thư viện.');r1();r2()}).catch(function(e){if(manual)m('❌ '+e.message+' (demo trên claude.ai chặn kết nối ra ngoài; chạy trên Cloudflare/GitHub Pages thì dùng được)')});
+VG.loadFormula().then(function(j){if(valid(j)){D=j;own=true;fsrc='GitHub (stat-formula.json)';r1();r2()}}).catch(function(){})}
+$('imb').onclick=function(){var io=$('io');if(io.style.display=='none'){io.style.display='block';io.value='';$('msg').textContent='Dán JSON công thức hoặc mecha-studio.json rồi bấm lại nút.';return}
+try{var j=JSON.parse(io.value);if(valid(j)){D=j;own=true;fsrc='JSON bạn vừa dán';sv(KEY,D);$('msg').textContent='✅ Đã áp dụng công thức.'}
+else if(j&&typeof j=='object'&&(Array.isArray(j.equips)||Array.isArray(j.humans)||Array.isArray(j.items)||Array.isArray(j.materials)||Array.isArray(j.pets))){LIB=j;srcTxt='JSON bạn vừa dán.';$('msg').textContent='✅ Đã nạp thư viện.'}else throw Error('không nhận ra định dạng');r1();r2()}catch(e){$('msg').textContent='❌ JSON không hợp lệ: '+e.message}};
+function tab(n){$('v1').style.display=n==1?'':'none';$('v2').style.display=n==2?'':'none';$('t1').className=n==1?'on':'';$('t2').className=n==2?'on':''}
+if(own)fsrc='đã lưu từ trang Công thức';
+$('t1').onclick=function(){tab(1)};$('t2').onclick=function(){tab(2)};tab(1);r1();r2();try{gh(false)}catch(e){}
+</script></body></html>
