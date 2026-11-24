@@ -182,7 +182,7 @@ function draw(){
  if(detail){
   for(x=x0;x<=x1;x++)for(y=y0;y<=y1;y++){var px=sx(wx(x,y)),py=sy(wy(x,y));if(px<-w-4||px>cw+w+4||py<-h*3||py>ch+h*2)continue;
    i=idx(x,y);var t=TER[M.tiles[i]],n=((x*73856093^y*19349663)&15)-8,own=M.owner[i];
-   var lift=t.k==='rock'?6*z:0;
+   var lift=(t.k==='rock'||t.k==='wall')?6*z:0;
    if(!drawTerrainAsset(t,px,py,w,h)){dia(g,px,py,w,h);g.fillStyle=shade(t.col,1+n/90);g.fill()}
    if(own){dia(g,px,py,w,h);g.fillStyle=OWN(own).color+'26';g.fill()}
    if(t.k==='water'){g.fillStyle='#ffffff10';if((x+y)%3===0){g.fillRect(px-5*z,py+h-1,10*z,1.2)}}

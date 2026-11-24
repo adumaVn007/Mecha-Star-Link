@@ -104,8 +104,8 @@ html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none;backgrou
 "use strict";
 const $=s=>document.querySelector(s),GM=VG.game;
 const TW=64,TH=32;
-const COL={grass:'#527e68',forest:'#315c4c',rock:'#777c78',ruin:'#9a825e',herb:'#6b9777',water:'#315f76',city:'#a08a62',portal:'#3d8f86',sand:'#a99a6a',snow:'#c9d8dc',swamp:'#46604a',road:'#9a8660'};
-const TN={grass:['Bãi cỏ linh khí','Linh khí lưu chuyển nhẹ.'],forest:['Rừng tùng cổ','Có dấu vết yêu thú và dược liệu.'],rock:['Vách đá linh thạch','Vách đá dựng đứng, không thể đi qua.'],ruin:['Di tích cổ','Tàn tích cổ đang tỏa ánh sáng.'],herb:['Ô linh thảo','Có linh thảo mọc quanh đây.'],water:['Vực nước sâu','Địa hình hiểm trở, không thể đi qua.'],city:['Thành trì','Có thể vào thành.'],portal:['Cổng bí cảnh','Ánh sáng xanh ngọc lưu chuyển.'],sand:['Bãi cát','Cát vàng, đi lại bình thường.'],snow:['Tuyết sơn','Tuyết phủ lạnh giá, vẫn đi được.'],swamp:['Đầm lầy','Bùn lầy ẩm ướt, vẫn đi được.'],road:['Đường mòn','Đường của lữ khách và thương nhân.']};
+const COL={grass:'#527e68',forest:'#315c4c',rock:'#777c78',ruin:'#9a825e',herb:'#6b9777',water:'#315f76',city:'#a08a62',portal:'#3d8f86',sand:'#a99a6a',snow:'#c9d8dc',swamp:'#46604a',road:'#9a8660',wall:'#8a7f62'};
+const TN={grass:['Bãi cỏ linh khí','Linh khí lưu chuyển nhẹ.'],forest:['Rừng tùng cổ','Có dấu vết yêu thú và dược liệu.'],rock:['Vách đá linh thạch','Vách đá dựng đứng, không thể đi qua.'],ruin:['Di tích cổ','Tàn tích cổ đang tỏa ánh sáng.'],herb:['Ô linh thảo','Có linh thảo mọc quanh đây.'],water:['Vực nước sâu','Địa hình hiểm trở, không thể đi qua.'],city:['Thành trì','Có thể vào thành.'],portal:['Cổng bí cảnh','Ánh sáng xanh ngọc lưu chuyển.'],sand:['Bãi cát','Cát vàng, đi lại bình thường.'],snow:['Tuyết sơn','Tuyết phủ lạnh giá, vẫn đi được.'],swamp:['Đầm lầy','Bùn lầy ẩm ướt, vẫn đi được.'],road:['Đường mòn','Đường của lữ khách và thương nhân.'],wall:['Tường thành','Vòng tường biên giới quốc gia, chỉ đi qua được ở cổng thành trì.']};
 const TIERS_ORDER=['small','medium','large','super'];
 const IT={cell:['Pin năng lượng','+60 năng lượng'],tonic:['Tinh dịch hồn lực','+40 hồn lực'],nano:['Gói nano','+30% HP'],shcell:['Pin lá chắn','+80 lá chắn (chỉ dùng khi chiến đấu)']};
 const SKILLS=[
@@ -137,7 +137,10 @@ function typ(x,y){
  if(x<2||y<2||x>zone.w-3||y>zone.h-3)return'water';
  const n=(x*17+y*31+x*y*3)%31;
  return n<4?'forest':n===8?'rock':n===14?'ruin':n===19?'herb':'grass'}
-const blocked=t=>t==='water'||t==='rock'||t===null||t===undefined;
+/* FREE_MOVE=true: đi được mọi ô (kể cả núi/nước/tường). Đặt false để chặn lại địa hình hiểm trở. */
+const FREE_MOVE=true;
+const hard=t=>t==='water'||t==='rock'||t==='wall';
+const blocked=t=>t===null||t===undefined||(!FREE_MOVE&&hard(t));
 const placeAt=(x,y)=>pmap?pmap[x*1000+y]:zone.places.find(p=>p.x===x&&p.y===y);
 const evAt=(x,y)=>ST.events.find(e=>e.x===x&&e.y===y);
 const evDef=e=>world.events.find(v=>v.id===e.id);
@@ -153,7 +156,7 @@ function spawnEvents(){
  let guard=500;
  while(ST.events.length<zone.eventCount&&guard-->0){
   const x=GM.ri(2,zone.w-3),y=GM.ri(2,zone.h-3),t=typ(x,y);
-  if(blocked(t)||t==='city'||t==='portal'||evAt(x,y))continue;
+  if(hard(t)||blocked(t)||t==='city'||t==='portal'||evAt(x,y))continue;
   if(Math.abs(x-ST.pos.x)+Math.abs(y-ST.pos.y)<3)continue;
   const p=pickEvent();if(!p)break;
   ST.events.push({uid:'e'+Date.now().toString(36)+GM.ri(0,9999),id:p.def.id,mon:p.mon,x,y})}}
@@ -208,7 +211,7 @@ function draw(now){
   dia(px,py,0);g.strokeStyle=WM?'#d6c18a22':'#d6c18a55';g.lineWidth=1;g.stroke();
   if(r2.has(x+','+y)){dia(px,py,0);g.fillStyle='#ffe08b44';g.fill()}
   const ev=evAt(x,y),dc=WM?wmap.dec[x*1000+y]:null;
-  if(WM?(t==='city'||t==='portal'||t==='ruin'||t==='herb'||ev||dc):(t!=='grass'||ev))objs.push({k:x+y+x*.001,px,py,t,ev,x,y,dc})}
+  if(WM?(t==='city'||t==='portal'||t==='ruin'||t==='herb'||t==='wall'||ev||dc):(t!=='grass'||ev))objs.push({k:x+y+x*.001,px,py,t,ev,x,y,dc})}
  /* viền 3 màu phạm vi quốc gia */
  g.lineCap='round';g.lineJoin='round';
  for(const id in seg){const col=wmap.cols[id],lw=Math.max(z,.6);g.beginPath();seg[id].forEach(s=>{g.moveTo(s[0],s[1]);g.lineTo(s[2],s[3])});g.strokeStyle=col+'55';g.lineWidth=7*lw;g.stroke();g.strokeStyle=col;g.lineWidth=2.6*lw;g.stroke()}
@@ -221,6 +224,7 @@ function draw(now){
   if(WM&&o.dc){if(!drawAsset('d_'+o.dc,cx,cy,z)&&A&&A.DRAW[o.dc])A.DRAW[o.dc](g,cx,cy,z)}
   else if(t==='forest'&&!WM){g.fillStyle='#21483d';g.beginPath();g.arc(cx,cy-9*z,10*z,0,7);g.fill();g.fillStyle='#2d6150';g.beginPath();g.arc(cx-2*z,cy-12*z,5*z,0,7);g.fill();g.fillStyle='#4a3a28';g.fillRect(cx-1.5*z,cy-3*z,3*z,6*z)}
   else if(t==='rock'&&!WM)block(px,py,13,COL.rock);
+  else if(t==='wall')block(px,py,10,COL.wall);
   else if(t==='ruin'){g.fillStyle='#c6aa72';g.fillRect(cx-5*z,cy-11*z,10*z,13*z);g.fillStyle='#8a7248';g.fillRect(cx-5*z,cy-11*z,10*z,3*z)}
   else if(t==='herb'){g.fillStyle='#f0d48c';g.beginPath();g.arc(cx,cy,3.2*z,0,7);g.fill()}
   else if(t==='city'||t==='portal'){
@@ -242,7 +246,7 @@ function draw(now){
  else if(z>=.75){g.font='bold '+(11*z)+'px Georgia';g.textAlign='center';g.textBaseline='alphabetic';g.lineJoin='round';
   for(const p of zone.places){const px=toSX(wx(p.x,p.y)),py=toSY(wy(p.x,p.y))+TH*z+12*z;if(px<-80||px>cw+80||py<0||py>ch+30)continue;g.lineWidth=3;g.strokeStyle='#0a1117';g.strokeText(p.name,px,py);g.fillStyle='#e4c27b';g.fillText(p.name,px,py)}}}
 /* ===== Nạp bản đồ thế giới (database/worldmap.json). Không có file -> dùng khu 22×22 cũ trong world-events.json ===== */
-const TCODE={'.':'grass',f:'forest',w:'water',r:'rock',s:'sand',n:'snow',m:'swamp',d:'road',u:'ruin',h:'herb'};
+const TCODE={'.':'grass',f:'forest',w:'water',r:'rock',s:'sand',n:'snow',m:'swamp',d:'road',u:'ruin',h:'herb',x:'wall'};
 function loadMap(){
  const get=p=>fetch(p+'?t='+Date.now()).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).catch(()=>VG.fetchJSON?VG.fetchJSON(p).catch(()=>null):null);
  return Promise.all([get('database/worldmap.json'),get('database/worldmap-assets.json')]).then(([j,a])=>{
@@ -444,7 +448,7 @@ function startCreate(){
   for(let r=1;r<=8&&!best;r++)for(let dx=-r;dx<=r;dx++)for(let dy=-r;dy<=r;dy++){
    if(Math.max(Math.abs(dx),Math.abs(dy))!==r)continue;
    const x=cap.x+dx,y=cap.y+dy,t=typ(x,y);
-   if(t===null||blocked(t)||t==='city'||t==='portal'||placeAt(x,y))continue;
+   if(t===null||hard(t)||t==='city'||t==='portal'||placeAt(x,y))continue;
    if(wmap.owner[y*W+x]!==id)continue;
    const d=Math.abs(dx)+Math.abs(dy);if(d<bd){bd=d;best={x,y}}}
   return best}
