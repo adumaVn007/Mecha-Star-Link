@@ -1,0 +1,11 @@
+{
+ "v": 1,
+ "note": "Xuất thân nhân vật (bản nháp, chỉnh tự do). Dùng bởi màn hình tạo nhân vật (vg-char.js). bonus: max=HP tối đa, atk=công kích, spd=tốc độ, en=năng lượng tối đa, soul=hồn lực tối đa, stones={thuong,trung,cao,sieu}, items={cell,tonic,nano,shcell}. Bỏ trống = không cộng.",
+ "origins": [
+  { "id": "dan_thuong", "name": "Dân thường", "desc": "Sinh ra nơi thôn dã, không nền tảng nhưng được tự do lựa chọn con đường.", "bonus": { "stones": { "thuong": 50 }, "items": { "nano": 2 } } },
+  { "id": "thuong_nhan", "name": "Thương nhân", "desc": "Lớn lên giữa phố chợ, quen buôn bán trao đổi linh thạch.", "bonus": { "stones": { "thuong": 200, "trung": 5 } } },
+  { "id": "vo_gia", "name": "Võ gia", "desc": "Con cháu gia tộc luyện võ, thể chất bền bỉ, đòn đánh nặng.", "bonus": { "max": 60, "atk": 6 } },
+  { "id": "hoc_do", "name": "Học đồ tông môn", "desc": "Từng theo học trong tông môn, hồn lực và linh lực dồi dào.", "bonus": { "en": 20, "soul": 20 } },
+  { "id": "tho_co_khi", "name": "Thợ cơ khí", "desc": "Xuất thân xưởng chế tạo mecha, nhanh tay và có sẵn pin dự phòng.", "bonus": { "spd": 40, "items": { "cell": 2, "shcell": 1 } } }
+ ]
+}
