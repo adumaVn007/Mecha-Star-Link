@@ -31,3 +31,8 @@ Xuất từ trang Công thức. Trang Hồ sơ đọc tệp này. Có thể chư
 ## Hàm GitHub cho trang Công thức/Hồ sơ (`vg-github.js`)
 `VG.loadDB()`, `VG.loadFormula()`, `VG.save(path, obj, message)`. Chỉ ghi được `database/stat-formula.json`. Token lưu sessionStorage.
 Mecha Studio (`admin.html`) có đồng bộ GitHub riêng, đã có sẵn từ trước.
+
+## `database/npc.json` (v:1) — NPC trong game (MỚI)
+Tạo/sửa bằng `AdminEditNPCPlayer.html` (trước đây là `player.html`). `{ v:1, npcs:[ … ] }`
+Mỗi NPC: `id`, `name`, `title`, `role` (dan|thuong|dan_su|tho_ren|nhiem_vu|thu_ve|tong_mon|khac), `faction`, `rank` (0–48, cảnh giới như `realm`), `level`, `str`/`agi`/`int` (chỉ số gốc), `zone` (id trong `world-events.json`), `x`/`y` (ô trên bản đồ), `attitude` (friendly|neutral|hostile), `lines[]` (lời thoại), `bio`, `img` (data URL).
+Ràng buộc khi lưu: ô nằm trong bản đồ khu vực, không trùng điểm xuất phát, không trùng NPC khác cùng ô.
