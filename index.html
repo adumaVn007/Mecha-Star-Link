@@ -97,13 +97,14 @@ html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none;backgrou
 
 <script src="vg-github.js"></script>
 <script src="vg-core.js"></script>
+<script src="vg-mapart.js"></script>
 <script>
 (function(){
 "use strict";
 const $=s=>document.querySelector(s),GM=VG.game;
 const TW=64,TH=32;
-const COL={grass:'#527e68',forest:'#315c4c',rock:'#777c78',ruin:'#9a825e',herb:'#6b9777',water:'#315f76',city:'#a08a62',portal:'#3d8f86'};
-const TN={grass:['Bãi cỏ linh khí','Linh khí lưu chuyển nhẹ.'],forest:['Rừng tùng cổ','Có dấu vết yêu thú và dược liệu.'],rock:['Vách đá linh thạch','Vách đá dựng đứng, không thể đi qua.'],ruin:['Di tích cổ','Tàn tích cổ đang tỏa ánh sáng.'],herb:['Ô linh thảo','Có linh thảo mọc quanh đây.'],water:['Vực nước sâu','Địa hình hiểm trở, không thể đi qua.'],city:['Thành trì','Có thể vào thành.'],portal:['Cổng bí cảnh','Ánh sáng xanh ngọc lưu chuyển.']};
+const COL={grass:'#527e68',forest:'#315c4c',rock:'#777c78',ruin:'#9a825e',herb:'#6b9777',water:'#315f76',city:'#a08a62',portal:'#3d8f86',sand:'#a99a6a',snow:'#c9d8dc',swamp:'#46604a',road:'#9a8660'};
+const TN={grass:['Bãi cỏ linh khí','Linh khí lưu chuyển nhẹ.'],forest:['Rừng tùng cổ','Có dấu vết yêu thú và dược liệu.'],rock:['Vách đá linh thạch','Vách đá dựng đứng, không thể đi qua.'],ruin:['Di tích cổ','Tàn tích cổ đang tỏa ánh sáng.'],herb:['Ô linh thảo','Có linh thảo mọc quanh đây.'],water:['Vực nước sâu','Địa hình hiểm trở, không thể đi qua.'],city:['Thành trì','Có thể vào thành.'],portal:['Cổng bí cảnh','Ánh sáng xanh ngọc lưu chuyển.'],sand:['Bãi cát','Cát vàng, đi lại bình thường.'],snow:['Tuyết sơn','Tuyết phủ lạnh giá, vẫn đi được.'],swamp:['Đầm lầy','Bùn lầy ẩm ướt, vẫn đi được.'],road:['Đường mòn','Đường của lữ khách và thương nhân.']};
 const TIERS_ORDER=['small','medium','large','super'];
 const IT={cell:['Pin năng lượng','+60 năng lượng'],tonic:['Tinh dịch hồn lực','+40 hồn lực'],nano:['Gói nano','+30% HP'],shcell:['Pin lá chắn','+80 lá chắn (chỉ dùng khi chiến đấu)']};
 const SKILLS=[
@@ -115,7 +116,8 @@ const SKILLS=[
  {id:'ult',ic:'✦',n:'Tuyệt kỹ',d:'Pháo Hư Không',lv:16}];
 const FUNCS=[['tinhchu','🌟','Tinh Chủ'],['char','🧙','Nhân vật'],['bag','🎒','Túi đồ'],['sect','🏯','Tông môn'],['craft','⚒','Nghề'],['quest','📜','Nhiệm vụ'],['map','🧭','Bản đồ']];
 
-let world=null,zone=null,ST=null,tiles=[];
+let world=null,zone=null,ST=null,tiles=[],wmap=null,pmap=null;
+const isTown=p=>p&&(p.kind==='city'||p.kind==='capital'||p.kind==='fortress'||p.kind==='village');
 const cv=$('#map'),g=cv.getContext('2d');
 let cw=0,ch=0,dpr=1,zoom=1,cam={x:0,y:0},follow=true;
 let sel=null,route=[],mv=null,pv={x:0,y:0},modal=false,lastT=0,lastDraw=0;
@@ -128,12 +130,13 @@ function persist(){GM.save(ST)}
 
 function typ(x,y){
  if(x<0||y<0||x>=zone.w||y>=zone.h)return null;
- const pl=zone.places.find(p=>p.x===x&&p.y===y);if(pl)return pl.kind==='city'?'city':'portal';
+ const pl=placeAt(x,y);if(pl)return isTown(pl)?'city':'portal';
+ if(wmap)return wmap.ter[y*zone.w+x]||'grass';
  if(x<2||y<2||x>zone.w-3||y>zone.h-3)return'water';
  const n=(x*17+y*31+x*y*3)%31;
  return n<4?'forest':n===8?'rock':n===14?'ruin':n===19?'herb':'grass'}
 const blocked=t=>t==='water'||t==='rock'||t===null||t===undefined;
-const placeAt=(x,y)=>zone.places.find(p=>p.x===x&&p.y===y);
+const placeAt=(x,y)=>pmap?pmap[x*1000+y]:zone.places.find(p=>p.x===x&&p.y===y);
 const evAt=(x,y)=>ST.events.find(e=>e.x===x&&e.y===y);
 const evDef=e=>world.events.find(v=>v.id===e.id);
 const tierOf=e=>world.tiers[(evDef(e)||{}).tier]||{name:'?',color:'#ffffff',icon:'✦'};
@@ -173,38 +176,81 @@ function block(px,py,hgt,col){const w=TW/2*zoom,h=TH/2*zoom,L=hgt*zoom;
  g.fillStyle=shade(col,.62);g.beginPath();g.moveTo(px-w,py+h-L);g.lineTo(px,py+2*h-L);g.lineTo(px,py+2*h);g.lineTo(px-w,py+h);g.closePath();g.fill();
  g.fillStyle=shade(col,.78);g.beginPath();g.moveTo(px+w,py+h-L);g.lineTo(px,py+2*h-L);g.lineTo(px,py+2*h);g.lineTo(px+w,py+h);g.closePath();g.fill();
  dia(px,py,L);g.fillStyle=col;g.fill();g.strokeStyle='#d6c18a66';g.lineWidth=1;g.stroke()}
+const imgs={};
+function getImg(src){let i=imgs[src];if(i)return i.ok?i.el:null;const el=new Image();imgs[src]=i={el,ok:false};el.onload=()=>{i.ok=true};el.src=src;return null}
+function drawAsset(key,x,y,z,ov){const a=ov?{src:ov,s:1,dy:0}:(wmap&&wmap.assets[key]);if(!a||!a.src)return false;const im=getImg(a.src);if(!im)return true;const w=TW*(a.s||1)*z,h=w*im.naturalHeight/im.naturalWidth;g.drawImage(im,x-w/2,y-h+TH/2*z*.5+(a.dy||0)*z,w,h);return true}
 function draw(now){
  g.clearRect(0,0,cw,ch);if(!zone||!ST)return;
- const mx=TW*zoom,my=90*zoom,objs=[],pulse=(Math.sin(now/260)+1)/2,z=zoom;
+ const mx=TW*zoom,my=90*zoom,objs=[],pulse=(Math.sin(now/260)+1)/2,z=zoom,WM=!!wmap,A=VG.art;
  const r2=new Set(route.map(t=>t.x+','+t.y));
- for(let x=0;x<zone.w;x++)for(let y=0;y<zone.h;y++){
+ let x0=0,x1=zone.w-1,y0=0,y1=zone.h-1;
+ if(WM){const cs=[[0,0],[cw,0],[0,ch],[cw,ch]].map(p=>{const a=((p[0]-cw/2)/z+cam.x)/(TW/2),b=((p[1]-ch/2)/z+cam.y-TH/2)/(TH/2);return[(a+b)/2,(b-a)/2]});
+  x0=Math.max(0,Math.floor(Math.min(...cs.map(c=>c[0]))-3));x1=Math.min(zone.w-1,Math.ceil(Math.max(...cs.map(c=>c[0]))+3));
+  y0=Math.max(0,Math.floor(Math.min(...cs.map(c=>c[1]))-3));y1=Math.min(zone.h-1,Math.ceil(Math.max(...cs.map(c=>c[1]))+3))}
+ const seg={};
+ for(let x=x0;x<=x1;x++)for(let y=y0;y<=y1;y++){
   const px=toSX(wx(x,y)),py=toSY(wy(x,y));
   if(px<-mx||px>cw+mx||py<-my||py>ch+TH*z+10)continue;
   const t=tiles[x][y];
-  dia(px,py,0);g.fillStyle=COL[t];g.fill();
-  if((x+y)%2){g.fillStyle='#ffffff0d';g.fill()}
-  g.strokeStyle='#d6c18a55';g.lineWidth=1;g.stroke();
+  let tex=false;
+  if(WM&&wmap.assets['t_'+t]){const im=getImg(wmap.assets['t_'+t].src);if(im){g.save();dia(px,py,0);g.clip();g.drawImage(im,px-TW/2*z,py,TW*z,TH*z);g.restore();tex=true}}
+  if(!tex){dia(px,py,0);g.fillStyle=COL[t];g.fill()}
+  if((x+y)%2){dia(px,py,0);g.fillStyle='#ffffff0d';g.fill()}
+  if(WM){const own=wmap.owner[y*zone.w+x];
+   if(own){dia(px,py,0);g.fillStyle=wmap.cols[own]+'26';g.fill();
+    const w=TW/2*z,h=TH/2*z,L=(seg[own]=seg[own]||[]);
+    if(y===0||wmap.owner[(y-1)*zone.w+x]!==own)L.push([px,py,px+w,py+h]);
+    if(x===zone.w-1||wmap.owner[y*zone.w+x+1]!==own)L.push([px+w,py+h,px,py+2*h]);
+    if(y===zone.h-1||wmap.owner[(y+1)*zone.w+x]!==own)L.push([px,py+2*h,px-w,py+h]);
+    if(x===0||wmap.owner[y*zone.w+x-1]!==own)L.push([px-w,py+h,px,py])}}
+  dia(px,py,0);g.strokeStyle=WM?'#d6c18a22':'#d6c18a55';g.lineWidth=1;g.stroke();
   if(r2.has(x+','+y)){dia(px,py,0);g.fillStyle='#ffe08b44';g.fill()}
-  const ev=evAt(x,y);
-  if(t!=='grass'||ev)objs.push({k:x+y+x*.001,px,py,t,ev,x,y})}
+  const ev=evAt(x,y),dc=WM?wmap.dec[x*1000+y]:null;
+  if(WM?(t==='city'||t==='portal'||t==='ruin'||t==='herb'||ev||dc):(t!=='grass'||ev))objs.push({k:x+y+x*.001,px,py,t,ev,x,y,dc})}
+ /* viền 3 màu phạm vi quốc gia */
+ g.lineCap='round';g.lineJoin='round';
+ for(const id in seg){const col=wmap.cols[id],lw=Math.max(z,.6);g.beginPath();seg[id].forEach(s=>{g.moveTo(s[0],s[1]);g.lineTo(s[2],s[3])});g.strokeStyle=col+'55';g.lineWidth=7*lw;g.stroke();g.strokeStyle=col;g.lineWidth=2.6*lw;g.stroke()}
  if(sel){const px=toSX(wx(sel.x,sel.y)),py=toSY(wy(sel.x,sel.y));dia(px,py,0);g.lineWidth=3;g.strokeStyle=blocked(tiles[sel.x][sel.y])?'#ff7d70':'#ffe08b';g.stroke()}
  objs.push({k:pv.x+pv.y+.0005,me:true});
  objs.sort((a,b)=>a.k-b.k);
  for(const o of objs){
   if(o.me){drawMe(now);continue}
   const{px,py,t,ev}=o,cx=px,cy=py+TH/2*z;
-  if(t==='forest'){g.fillStyle='#21483d';g.beginPath();g.arc(cx,cy-9*z,10*z,0,7);g.fill();g.fillStyle='#2d6150';g.beginPath();g.arc(cx-2*z,cy-12*z,5*z,0,7);g.fill();g.fillStyle='#4a3a28';g.fillRect(cx-1.5*z,cy-3*z,3*z,6*z)}
-  else if(t==='rock')block(px,py,13,COL.rock);
+  if(WM&&o.dc){if(!drawAsset('d_'+o.dc,cx,cy,z)&&A&&A.DRAW[o.dc])A.DRAW[o.dc](g,cx,cy,z)}
+  else if(t==='forest'&&!WM){g.fillStyle='#21483d';g.beginPath();g.arc(cx,cy-9*z,10*z,0,7);g.fill();g.fillStyle='#2d6150';g.beginPath();g.arc(cx-2*z,cy-12*z,5*z,0,7);g.fill();g.fillStyle='#4a3a28';g.fillRect(cx-1.5*z,cy-3*z,3*z,6*z)}
+  else if(t==='rock'&&!WM)block(px,py,13,COL.rock);
   else if(t==='ruin'){g.fillStyle='#c6aa72';g.fillRect(cx-5*z,cy-11*z,10*z,13*z);g.fillStyle='#8a7248';g.fillRect(cx-5*z,cy-11*z,10*z,3*z)}
   else if(t==='herb'){g.fillStyle='#f0d48c';g.beginPath();g.arc(cx,cy,3.2*z,0,7);g.fill()}
-  else if(t==='city'){block(px,py,5,COL.city);g.fillStyle='#7a5a34';g.fillRect(cx-9*z,cy-14*z,18*z,12*z);g.fillStyle='#2f7d6f';g.beginPath();g.moveTo(cx-14*z,cy-13*z);g.lineTo(cx,cy-24*z);g.lineTo(cx+14*z,cy-13*z);g.closePath();g.fill();g.fillStyle='#e4c27b';g.fillRect(cx-1.5*z,cy-27*z,3*z,5*z)}
-  else if(t==='portal'){const r=(11+3*pulse)*z;g.strokeStyle='#8fe3cf';g.lineWidth=2.5*z;g.beginPath();g.ellipse(cx,cy-8*z,r*.7,r,0,0,7);g.stroke();g.fillStyle='#8fe3cf33';g.fill()}
+  else if(t==='city'||t==='portal'){
+   const pl=WM?placeAt(o.x,o.y):null;
+   if(pl){const zz=Math.max(z,.28);if(!drawAsset('k_'+pl.kind,cx,cy,zz,pl.img)&&A&&A.KDRAW[pl.kind])A.KDRAW[pl.kind](g,cx,cy,zz,pl.country?wmap.cols[pl.country]:null)}
+   else if(t==='city'){block(px,py,5,COL.city);g.fillStyle='#7a5a34';g.fillRect(cx-9*z,cy-14*z,18*z,12*z);g.fillStyle='#2f7d6f';g.beginPath();g.moveTo(cx-14*z,cy-13*z);g.lineTo(cx,cy-24*z);g.lineTo(cx+14*z,cy-13*z);g.closePath();g.fill();g.fillStyle='#e4c27b';g.fillRect(cx-1.5*z,cy-27*z,3*z,5*z)}
+   else{const r=(11+3*pulse)*z;g.strokeStyle='#8fe3cf';g.lineWidth=2.5*z;g.beginPath();g.ellipse(cx,cy-8*z,r*.7,r,0,0,7);g.stroke();g.fillStyle='#8fe3cf33';g.fill()}}
   if(ev){const T=tierOf(ev),bob=Math.sin(now/300+o.x)*2.5*z;
    dia(px,py,0);g.lineWidth=2*z;g.strokeStyle=T.color;g.globalAlpha=.55+.45*pulse;g.stroke();g.globalAlpha=1;g.fillStyle=T.color+'33';g.fill();
    const by=cy-17*z+bob;g.fillStyle=T.color+'55';g.beginPath();g.arc(cx,by,(10+3*pulse)*z,0,7);g.fill();
    g.fillStyle=T.color;g.beginPath();g.arc(cx,by,7.5*z,0,7);g.fill();g.fillStyle='#10181e';g.font='bold '+(10*z)+'px Georgia';g.textAlign='center';g.textBaseline='middle';g.fillText('!',cx,by+.5*z)}}
- if(z>=.75){g.font='bold '+(11*z)+'px Georgia';g.textAlign='center';g.textBaseline='alphabetic';g.lineJoin='round';
+ /* nhãn tên nổi: để người chơi biết thành / tông môn / hang động ở đâu */
+ if(WM&&A){const pr={capital:0,city:1,fortress:2,sect:3,realm:4,cave:5,village:6,other:7},minZ={capital:.3,city:.45,fortress:.55,sect:.5,realm:.5,cave:.55,village:.8,other:.8},zz=Math.max(z,.28),s=Math.max(.75,Math.min(1.25,z+.3)),L=[];
+  for(const p of zone.places){const px=toSX(wx(p.x,p.y)),py=toSY(wy(p.x,p.y))+TH/2*z;if(px<-90||px>cw+90||py<-30||py>ch+130)continue;
+   L.push({p,px,py:py-(p.kind==='capital'?56:p.kind==='realm'?40:p.kind==='village'?16:34)*zz,col:p.country?wmap.cols[p.country]:'#77c5a6'})}
+  L.sort((a,b)=>pr[a.p.kind]-pr[b.p.kind]);const taken=[];
+  for(const l of L){if(z<minZ[l.p.kind])continue;g.font='bold '+(12*s)+'px Georgia';const tw=g.measureText(l.p.name).width+14*s,r=[l.px-tw/2,l.py-22*s,tw,22*s];
+   if(taken.some(q=>r[0]<q[0]+q[2]&&r[0]+r[2]>q[0]&&r[1]<q[1]+q[3]&&r[1]+r[3]>q[1]))continue;taken.push(r);A.banner(g,l.px,l.py,l.p.name,l.col,s,false)}}
+ else if(z>=.75){g.font='bold '+(11*z)+'px Georgia';g.textAlign='center';g.textBaseline='alphabetic';g.lineJoin='round';
   for(const p of zone.places){const px=toSX(wx(p.x,p.y)),py=toSY(wy(p.x,p.y))+TH*z+12*z;if(px<-80||px>cw+80||py<0||py>ch+30)continue;g.lineWidth=3;g.strokeStyle='#0a1117';g.strokeText(p.name,px,py);g.fillStyle='#e4c27b';g.fillText(p.name,px,py)}}}
+/* ===== Nạp bản đồ thế giới (database/worldmap.json). Không có file -> dùng khu 22×22 cũ trong world-events.json ===== */
+const TCODE={'.':'grass',f:'forest',w:'water',r:'rock',s:'sand',n:'snow',m:'swamp',d:'road',u:'ruin',h:'herb'};
+function loadMap(){
+ const get=p=>fetch(p+'?t='+Date.now()).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).catch(()=>VG.fetchJSON?VG.fetchJSON(p).catch(()=>null):null);
+ return Promise.all([get('database/worldmap.json'),get('database/worldmap-assets.json')]).then(([j,a])=>{
+  if(!j||!j.tiles||!j.tiles.length||!j.w||!j.h)return;
+  const W=j.w,H=j.h,ter=new Array(W*H),owner=new Uint8Array(W*H),cols=['#000'],names=['Vô chủ'];
+  for(let y=0;y<H;y++){const r=j.tiles[y]||'',o=(j.owner&&j.owner[y])||'';for(let x=0;x<W;x++){ter[y*W+x]=TCODE[r[x]]||'grass';owner[y*W+x]=+o[x]||0}}
+  (j.countries||[]).forEach(c=>{cols[c.id]=c.color;names[c.id]=c.name});
+  const dec={};(j.decos||[]).forEach(d=>{if(Array.isArray(d)&&d[1]>=0&&d[1]<W&&d[2]>=0&&d[2]<H)dec[d[1]*1000+d[2]]=d[0]});
+  const places=(j.places||[]).filter(p=>p.x>=0&&p.y>=0&&p.x<W&&p.y<H);
+  wmap={ter,owner,cols,names,dec,assets:(a&&a.assets)||{},zone:{id:'the_gioi_van_giap',name:'Thế giới Vân Giáp',w:W,h:H,spawn:j.spawn||{x:W>>1,y:H>>1},places,eventCount:160}}})}
 function drawMe(now){
  const z=zoom,px=toSX(wx(pv.x,pv.y)),py=toSY(wy(pv.x,pv.y))+TH/2*z,b=mv?Math.abs(Math.sin(now/90))*2*z:0;
  g.fillStyle='#0006';g.beginPath();g.ellipse(px,py,10*z,4.5*z,0,0,7);g.fill();
@@ -229,6 +275,7 @@ function info(t){
  let n=TN[ty][0],d=TN[ty][1];
  if(pl){n=pl.name;d=pl.desc||d}
  let st=blocked(ty)?'⛔ Bị chặn':'✔ Có thể di chuyển';
+ if(wmap){const o=wmap.owner[t.y*zone.w+t.x];st+=' · '+(o?wmap.names[o]:'Vô chủ')}
  if(ev){const T=tierOf(ev);n+=' · Sự kiện '+T.name;st+=' · ⚔ '+T.name}
  $('#tName').textContent=n;$('#tDesc').textContent=d;$('#tCo').textContent='Ô: '+t.x+', '+t.y+' · '+st}
 function select(t){sel=t;info(t)}
@@ -251,7 +298,7 @@ function stepUpdate(now){
 function arrive(){
  const{x,y}=ST.pos,ev=evAt(x,y),pl=placeAt(x,y);
  if(ev)return openEvent(ev);
- if(pl&&pl.kind==='city')return openCity(pl);
+ if(isTown(pl))return openCity(pl);
  if(pl)return openRealm(pl)}
 function openEvent(ev){
  const d=evDef(ev),T=tierOf(ev),m=world.monsters.find(v=>v.id===ev.mon),lv=Math.max(0,Math.min(GM.MAXR,ST.p.lv+(d.lvDelta||0)));
@@ -269,7 +316,7 @@ function rest(full){
 function openCity(pl){
  openModal(pl.name,`<p>${esc(pl.desc||'')}</p><button class="btn pri" data-a="restfull">🏯 Nghỉ ngơi trong thành<small>Hồi đầy HP, linh lực, hồn lực. Qua một ngày.</small></button>
  <button class="btn" disabled>🏪 Cửa hàng<small>Chưa kết nối hệ thống vật phẩm thật</small></button><button class="btn" disabled>🏯 Tông môn<small>Chưa kết nối</small></button><button class="btn" data-a="close">Rời thành</button>`)}
-function openRealm(pl){openModal(pl.name,`<p>${esc(pl.desc||'')}</p><div class="note">Bí cảnh chưa mở: chưa có dữ liệu bản đồ bí cảnh trong database.</div><button class="btn" data-a="close">Quay lại</button>`)}
+function openRealm(pl){openModal(pl.name,`<p>${esc(pl.desc||'')}</p><div class="note">${pl.kind==='realm'?'Bí cảnh chưa mở: chưa có dữ liệu bản đồ bí cảnh trong database.':'Nơi này chưa mở: chưa có dữ liệu nội dung (tông môn / hang động) trong database.'}</div><button class="btn" data-a="close">Quay lại</button>`)}
 
 function openModal(t,h){modal=true;$('#oT').textContent=t;$('#oB').innerHTML=h;$('#ov').classList.add('show');$('#oB').scrollTop=0}
 function closeModal(){modal=false;$('#ov').classList.remove('show');renderHUD()}
@@ -287,9 +334,10 @@ function panel(k){
  if(k==='quest')return['Nhiệm vụ',`<div class="tabs"><button class="on">Quốc gia</button><button data-a="qs">Tông môn</button></div>`+row('Dị thú đã hạ',ST.kills)+row('Sự kiện hoàn thành',ST.cleared)+row('Sự kiện còn lại trong khu',ST.events.length)+`<div class="note">Hệ thống nhiệm vụ chưa có dữ liệu thật; đây là thống kê thực từ tiến trình chơi.</div>`];
  if(k==='qs')return['Nhiệm vụ',`<div class="tabs"><button data-a="quest">Quốc gia</button><button class="on">Tông môn</button></div>`+soon('Nhiệm vụ tông môn.')];
  if(k==='map'){const cnt={};ST.events.forEach(e=>{const t=(evDef(e)||{}).tier;cnt[t]=(cnt[t]||0)+1});
+  const cn=wmap?wmap.names.slice(1).map((n,i)=>`<div class="row"><span><i class="sw" style="background:${wmap.cols[i+1]}"></i>${esc(n)}</span><span>Quốc gia</span></div>`).join(''):'';
   const lg=Object.keys(COL).map(t=>`<div class="row"><span><i class="sw" style="background:${COL[t]}"></i>${TN[t][0]}</span><span>${blocked(t)?'⛔ chặn':'✔ đi được'}</span></div>`).join('');
   const ev=TIERS_ORDER.filter(t=>world.tiers[t]).map(t=>`<div class="row"><span><i class="sw" style="background:${world.tiers[t].color}"></i>Sự kiện ${world.tiers[t].name}</span><span>${cnt[t]||0}</span></div>`).join('');
-  return['Bản đồ',`<p><b style="color:var(--gold)">${esc(zone.name)}</b> · ${zone.w}×${zone.h} ô</p>`+ev+lg+`<h2 style="font-size:13px;margin:12px 0 4px">Nhật ký hành trình</h2>`+(ST.log.slice(0,15).map(l=>`<div class="row"><span style="color:var(--txt)">${esc(l)}</span></div>`).join('')||'<p>Chưa có.</p>')+`<button class="btn" style="margin-top:12px" data-a="reset">Làm lại từ đầu (xóa bản lưu)</button>`]}
+  return['Bản đồ',`<p><b style="color:var(--gold)">${esc(zone.name)}</b> · ${zone.w}×${zone.h} ô</p>`+ev+cn+lg+`<h2 style="font-size:13px;margin:12px 0 4px">Nhật ký hành trình</h2>`+(ST.log.slice(0,15).map(l=>`<div class="row"><span style="color:var(--txt)">${esc(l)}</span></div>`).join('')||'<p>Chưa có.</p>')+`<button class="btn" style="margin-top:12px" data-a="reset">Làm lại từ đầu (xóa bản lưu)</button>`]}
  return['','']}
 function openPanel(k){const[t,h]=panel(k);openModal(t,h)}
 function useItem(i){
@@ -368,7 +416,7 @@ function loop(now){
 
 function fail(msg){$('#pZone').textContent='Lỗi dữ liệu';openModal('Không tải được dữ liệu',`<p>${esc(msg)}</p><div class="note">Cần file <b>database/world-events.json</b> cùng thư mục với index.html (hoặc đã up lên GitHub). Nếu mở file trực tiếp từ bộ nhớ điện thoại, trình duyệt sẽ chặn đọc file: hãy mở qua link Cloudflare/GitHub Pages.</div><button class="btn pri" onclick="location.reload()">Thử lại</button>`)}
 function init(w){
- world=w;zone=w.zones[0];
+ world=w;zone=wmap?wmap.zone:w.zones[0];pmap={};zone.places.forEach(p=>{pmap[p.x*1000+p.y]=p});
  tiles=[];for(let x=0;x<zone.w;x++){tiles[x]=[];for(let y=0;y<zone.h;y++)tiles[x][y]=typ(x,y)}
  ST=GM.load(zone);
  if(ST.zone!==zone.id){const k=ST;ST=GM.defaults(zone);ST.p=k.p;ST.items=k.items;ST.stones=k.stones;ST.auto=k.auto;ST.day=k.day;ST.kills=k.kills;ST.cleared=k.cleared}
@@ -392,7 +440,7 @@ function init(w){
 buildTaskbar();resize();
 window.addEventListener('resize',resize);window.addEventListener('orientationchange',()=>setTimeout(resize,200));
 window.addEventListener('pageshow',e=>{if(e.persisted)location.reload()});
-GM.loadWorld().then(init).catch(e=>fail(e.message||String(e)));
+GM.loadWorld().then(w=>loadMap().then(()=>init(w))).catch(e=>fail(e.message||String(e)));
 requestAnimationFrame(loop);
 window.__vg={get ST(){return ST},get zone(){return zone},hit,onTap,get mv(){return mv},get route(){return route},wx,wy,toSX,toSY,get zoom(){return zoom},get modal(){return modal}};
 })();
