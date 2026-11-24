@@ -102,6 +102,7 @@ html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none;backgrou
 <script src="vg-github.js"></script>
 <script src="vg-core.js"></script>
 <script src="vg-char.js"></script>
+<script src="vg-bag.js"></script>
 <script src="vg-mapart.js"></script>
 <script>
 (function(){
@@ -321,7 +322,7 @@ function fight(){
  ST.pending={uid:ev.uid,id:ev.id,mon:ev.mon,x:ev.x,y:ev.y,from:ST.prev||{x:ev.x,y:ev.y}};ST.result=null;
  persist();GM.nav('battle.html')}
 function rest(full){
- const p=ST.p;p.en=p.enMax;p.soul=p.soulMax;p.hp=full?p.max:Math.min(p.max,p.hp+Math.round(p.max*.25));
+ const p=ST.p;p.en=p.enMax;p.soul=p.soulMax;p.hp=full?EM():Math.min(EM(),p.hp+Math.round(EM()*.25));
  ST.day++;persist();renderHUD();say(full?'Nghỉ ngơi trong thành, hồi phục toàn bộ.':'Nghỉ ngơi, hồi phục linh lực và một phần HP.');toast(full?'Đã hồi phục toàn bộ.':'Đã nghỉ ngơi: linh lực đầy, HP +25%.')}
 function openCity(pl){
  openModal(pl.name,`<p>${esc(pl.desc||'')}</p><button class="btn pri" data-a="restfull">🏯 Nghỉ ngơi trong thành<small>Hồi đầy HP, linh lực, hồn lực. Qua một ngày.</small></button>
@@ -351,9 +352,8 @@ function jobPanel(){
 function panel(k){
  const p=ST.p;
  if(k==='char')return['Nhân vật',idRows()+`<div class="grid"><div class="tile"><b>Cảnh giới</b>${esc(GM.rankName(p.lv))}</div><div class="tile"><b>Kinh nghiệm</b>${p.lv>=GM.MAXR?'Tối cao':p.xp+' / '+GM.need(p.lv)}</div></div>`+
-  row('HP',Math.round(p.hp)+' / '+p.max)+row('Năng lượng (Linh lực)',Math.round(p.en)+' / '+p.enMax+' · +'+p.reg+'/lượt')+row('Hồn lực',Math.round(p.soul)+' / '+p.soulMax)+row('Giáp cơ giới (lá chắn)',p.gear?p.shMax:'Không mang')+row('Công kích',p.atk)+row('Tốc độ',p.spd)+row('Dị thú đã hạ',ST.kills)+row('Sự kiện hoàn thành',ST.cleared)+
-  `<div class="note">Điều kiện đột phá theo nghề / đan dược chưa được nối: hiện cảnh giới tăng khi đủ kinh nghiệm (hệ thống chiến đấu gốc).</div>`+`<button class="btn" data-a="savefile">💾 Xuất file save<small>Tải bản sao tiến trình về máy để dự phòng.</small></button><button class="btn" data-a="loadfile">📂 Nạp file save<small>Khôi phục từ file đã xuất (ghi đè bản hiện tại).</small></button>`];
- if(k==='bag')return['Túi đồ',Object.keys(IT).map(i=>`<button class="btn" data-a="use:${i}" ${ST.items[i]>0&&i!=='shcell'?'':'disabled'}>${IT[i][0]} ×${ST.items[i]}<small>${IT[i][1]}</small></button>`).join('')+`<div class="note">Trang bị & nguyên liệu: chưa nối vào bản đồ (dữ liệu nằm ở Mecha Studio).</div>`];
+  row('HP',Math.round(p.hp)+' / '+EM())+row('Năng lượng (Linh lực)',Math.round(p.en)+' / '+p.enMax+' · +'+p.reg+'/lượt')+row('Hồn lực',Math.round(p.soul)+' / '+p.soulMax)+row('Giáp cơ giới (lá chắn)',p.gear?VG.bag.eff(ST).sh:'Không mang')+row('Công kích',VG.bag.eff(ST).atk)+row('Tốc độ',VG.bag.eff(ST).spd)+row('Dị thú đã hạ',ST.kills)+row('Sự kiện hoàn thành',ST.cleared)+
+  `<div class="note">Điều kiện đột phá theo nghề / đan dược chưa được nối: hiện cảnh giới tăng khi đủ kinh nghiệm (hệ thống chiến đấu gốc).</div>`+`<button class="btn" data-a="equip">🛡 Trang bị<small>Mặc / tháo trang bị, xem chỉ số.</small></button><button class="btn" data-a="savefile">💾 Xuất file save<small>Tải bản sao tiến trình về máy để dự phòng.</small></button><button class="btn" data-a="loadfile">📂 Nạp file save<small>Khôi phục từ file đã xuất (ghi đè bản hiện tại).</small></button>`];
  if(k==='tinhchu')return['Hệ thống Tinh Chủ',soon('Star General System: chỉ điểm yếu, dẫn đường, auto battle. Dành cho người ủng hộ (donate / nạp).')];
  if(k==='sect')return['Tông môn',soon('Gia nhập tông môn, nhiệm vụ tông môn, cống hiến.')];
  if(k==='craft')return['Nghề',jobPanel()];
@@ -365,10 +365,13 @@ function panel(k){
   const ev=TIERS_ORDER.filter(t=>world.tiers[t]).map(t=>`<div class="row"><span><i class="sw" style="background:${world.tiers[t].color}"></i>Sự kiện ${world.tiers[t].name}</span><span>${cnt[t]||0}</span></div>`).join('');
   return['Bản đồ',`<p><b style="color:var(--gold)">${esc(zone.name)}</b> · ${zone.w}×${zone.h} ô</p>`+ev+cn+lg+`<h2 style="font-size:13px;margin:12px 0 4px">Nhật ký hành trình</h2>`+(ST.log.slice(0,15).map(l=>`<div class="row"><span style="color:var(--txt)">${esc(l)}</span></div>`).join('')||'<p>Chưa có.</p>')+`<button class="btn" style="margin-top:12px" data-a="reset">Làm lại từ đầu (xóa bản lưu)</button>`]}
  return['','']}
-function openPanel(k){const[t,h]=panel(k);openModal(t,h)}
+const EM=()=>VG.bag.eff(ST).max;
+VG.bag.setLegacy(IT);
+function openBag(tab){modal=true;VG.bag.open({get:()=>ST,persist,toast,IT,loadLib:()=>GM.loadLib(),useLegacy:useItem,after:renderHUD,onClose:()=>{modal=false;renderHUD()}},tab)}
+function openPanel(k){if(k==='bag'||k==='equip'){$('#ov').classList.remove('show');openBag(k);return}const[t,h]=panel(k);openModal(t,h)}
 function useItem(i){
  const p=ST.p;if(ST.items[i]<1||i==='shcell')return;ST.items[i]--;
- if(i==='cell')p.en=Math.min(p.enMax,p.en+60);if(i==='tonic')p.soul=Math.min(p.soulMax,p.soul+40);if(i==='nano')p.hp=Math.min(p.max,p.hp+Math.round(p.max*.3));
+ if(i==='cell')p.en=Math.min(p.enMax,p.en+60);if(i==='tonic')p.soul=Math.min(p.soulMax,p.soul+40);if(i==='nano')p.hp=Math.min(EM(),p.hp+Math.round(EM()*.3));
  say('Dùng '+IT[i][0]+'.');persist();renderHUD();openPanel('bag')}
 function skillTap(s){
  if(s.id==='item')return openPanel('bag');
@@ -394,7 +397,7 @@ function renderHUD(){
  if(ST.char){$('#sName').textContent=ST.char.name;const av=$('#av');if(!av.querySelector('img'))av.textContent=VG.char.avatar(ST.char)}
  const need=GM.need(p.lv),xpv=p.lv>=GM.MAXR?1:p.xp/need;
  $('#bXp').style.width=Math.min(100,xpv*100)+'%';$('#tXp').textContent=p.lv>=GM.MAXR?'MAX':p.xp+'/'+need;
- $('#bHp').style.width=Math.min(100,p.hp/p.max*100)+'%';$('#tHp').textContent=Math.round(p.hp)+'/'+p.max;
+ $('#bHp').style.width=Math.min(100,p.hp/EM()*100)+'%';$('#tHp').textContent=Math.round(p.hp)+'/'+EM();
  $('#bLl').style.width=Math.min(100,p.en/p.enMax*100)+'%';$('#tLl').textContent=Math.round(p.en)+'/'+p.enMax;
  const S=ST.stones;$('#cur').innerHTML=[['thuong','Thường','#cfd8d6'],['trung','Trung','#8fd0ff'],['cao','Cao','#d9a6ff'],['sieu','Siêu','#ffb16b']].map(c=>`<div title="Linh Thạch ${c[1]}"><b style="color:${c[2]}">${nf(S[c[0]])}</b><small>${c[1]}</small></div>`).join('');
  const sn=['Xuân','Hạ','Thu','Đông'][Math.floor((ST.day-1)/30)%4];
@@ -449,7 +452,7 @@ function init(w){
  world=w;zone=wmap?wmap.zone:w.zones[0];pmap={};zone.places.forEach(p=>{pmap[p.x*1000+p.y]=p});
  tiles=[];for(let x=0;x<zone.w;x++){tiles[x]=[];for(let y=0;y<zone.h;y++)tiles[x][y]=typ(x,y)}
  ST=GM.load(zone);
- if(ST.zone!==zone.id){const k=ST;ST=GM.defaults(zone);ST.char=k.char;ST.p=k.p;ST.items=k.items;ST.stones=k.stones;ST.auto=k.auto;ST.day=k.day;ST.kills=k.kills;ST.cleared=k.cleared;if(k.jobs)ST.jobs=k.jobs}
+ if(ST.zone!==zone.id){const k=ST;ST=GM.defaults(zone);ST.char=k.char;ST.p=k.p;ST.items=k.items;ST.stones=k.stones;ST.auto=k.auto;ST.day=k.day;ST.kills=k.kills;ST.cleared=k.cleared;if(k.jobs)ST.jobs=k.jobs;['inv','eq','petBag','eqB'].forEach(x=>{if(k[x])ST[x]=k[x]})}
  if(!ST.char)return startCreate();
  boot()}
 function startCreate(){

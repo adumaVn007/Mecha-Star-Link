@@ -1,0 +1,14 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Test Túi đồ & Trang bị — Vân Giáp</title>
+<style>body{margin:0;background:#16212a;color:#f3e7c9;font:14px/1.5 system-ui,sans-serif;padding:calc(16px + env(safe-area-inset-top,0px)) 16px 16px}button{min-height:46px;padding:0 16px;border-radius:8px;border:1px solid #c9a25e;background:linear-gradient(#b78f50,#77552d);color:#fff;font:bold 15px system-ui;margin:4px 6px 4px 0}.n{border:1px dashed #c9a25e;border-radius:8px;padding:10px;color:#e4c27b;font-size:13px}</style></head><body>
+<h3>Test Túi đồ & Trang bị</h3>
+<div class="n">Trang TEST: dùng đúng database/mecha-studio.json thật, nhưng chạy trên save tạm trong bộ nhớ — KHÔNG đọc/ghi save thật (vg_save_v1) và không ghi database. Mỗi vật phẩm database được cấp 2 cái để thử mặc/tháo/so sánh.</div>
+<p id="m">Đang đọc database…</p><button id="b1">Mở Trang bị</button><button id="b2">Mở Túi đồ</button>
+<script src="vg-core.js"></script><script src="vg-bag.js"></script>
+<script>
+(function(){var GM=VG.game,BG=VG.bag,ST=GM.defaults({id:'test',spawn:{x:1,y:1}}),IT={cell:['Pin năng lượng','+60 năng lượng'],tonic:['Tinh dịch hồn lực','+40 hồn lực'],nano:['Gói nano','+30% HP'],shcell:['Pin lá chắn','+80 lá chắn (chỉ dùng khi chiến đấu)']},ready=false;
+BG.setLegacy(IT);BG.init(ST);
+var ctx={get:function(){return ST},persist:function(){},toast:function(){},IT:IT,loadLib:function(){return GM.loadLib()},useLegacy:function(i){if(ST.items[i]>0&&i!=='shcell'){ST.items[i]--;var p=ST.p;if(i==='cell')p.en=Math.min(p.enMax,p.en+60);if(i==='tonic')p.soul=Math.min(p.soulMax,p.soul+40);if(i==='nano')p.hp=Math.min(BG.eff(ST).max,p.hp+Math.round(BG.eff(ST).max*.3))}},after:function(){},onClose:function(){}};
+GM.loadLib().then(function(l){if(!l)throw 0;BG.setLib(l);var n=0;['equips','items','materials'].forEach(function(c){(l[c]||[]).forEach(function(d){BG.add(ST,d.id,2);n++})});
+document.getElementById('m').textContent='Đã nạp database: '+n+' vật phẩm/trang bị (đọc từ mecha-studio.json).';ready=true;BG.open(ctx,'equip')}).catch(function(){document.getElementById('m').textContent='Không đọc được database/mecha-studio.json.'});
+document.getElementById('b1').onclick=function(){BG.open(ctx,'equip')};document.getElementById('b2').onclick=function(){BG.open(ctx,'bag')};})();
+</script></body></html>

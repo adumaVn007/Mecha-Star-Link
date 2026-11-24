@@ -42,3 +42,11 @@ Tạo/sửa bằng `EditJobMSL.html`. `{ v:1, jobs:[ … ] }`. Mỗi nghề: `id
 `levels[]` (`{name, exp}` — thứ tự = cấp 1,2,3…; `exp` = EXP lên cấp kế tiếp, cấp cuối 0),
 `equips[]` (`{id, name, slot, reqLv, desc, img}`), `recipes[]` (`{id, name, reqLv, exp, mats, out, desc}`; `reqLv` = cấp nghề mở khóa, `exp` = EXP nhận khi chế).
 Tiến trình nghề của người chơi lưu trong save: `ST.jobs[jobId] = { lv, xp }` (mặc định cấp 1, 0 EXP).
+
+## Phẩm chất — trường `rarity` (MỚI, tùy chọn) trên `equips[]`, `items[]`, `materials[]`
+Số 1–6: 1 Phổ thông · 2 Tốt · 3 Hiếm · 4 Sử thi · 5 Truyền thuyết · 6 Thần thoại. Thiếu trường = 1. Thêm/sửa trong Mecha Studio (`admin.html`, ô "Phẩm chất"). Dữ liệu cũ vẫn đọc được.
+
+## Túi đồ & Trang bị của người chơi — nằm trong SAVE (`vg_save_v1`), KHÔNG ghi vào database (MỚI)
+Module `vg-bag.js`. Khóa tùy chọn trong save: `inv {id:số lượng}` (id = id trong `mecha-studio.json`), `eq {slot:id}` (slot: head, body, shoulder, arm, glove, leg, boot, weapon, backpack, wing, pet, drone), `petBag {id:số lượng}`, `eqB {max,atk,spd,sh}` (tổng chỉ số trang bị, tính lại từ database mỗi lần mặc/tháo/mở túi). Vật phẩm cũ `cell/tonic/nano/shcell` vẫn ở `ST.items`. Save cũ không có các khóa này vẫn chạy.
+Sức chứa túi chính 200 ô (10 ô/hàng), mỗi id là 1 ô (cộng dồn số lượng). Túi đầy → vào `petBag` (cần mặc Ba lô + Pet, tối đa 20 ô); không có Pet thì báo không nhặt được. Hàm nhặt đồ: `VG.bag.add(ST, id, qty)` → `{ok, where, msg}`.
+Pet/Drone: `hp` là HP riêng, không cộng vào chỉ số Mecha. Cánh/Drone/Pet cần mặc Ba lô trước.

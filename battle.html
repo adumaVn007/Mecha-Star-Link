@@ -107,8 +107,8 @@ const GR=["Hoàng Giai","Huyền Giai","Địa Giai","Thiên Giai"],PH=["Sơ k�
 const rankName=i=>RK[i]||("Cảnh giới "+i),rankShort=i=>RS[i]||("Cảnh giới "+i);
 const need=()=>60+(G.lv-12)*30;
 function newGame(){
- const p=SV.p;
- G={lv:p.lv,xp:p.xp,hp:p.hp,max:p.max,atk:p.atk,en:p.en,enMax:p.enMax,reg:p.reg,soul:p.soul,soulMax:p.soulMax,sh:p.gear?p.shMax:0,shMax:p.gear?p.shMax:0,gear:p.gear,spd:p.spd,atb:650,
+ const p=SV.p,B=SV.eqB||{};
+ G={b:{max:+B.max||0,atk:+B.atk||0,spd:+B.spd||0,sh:+B.sh||0},lv0:p.lv,lv:p.lv,xp:p.xp,hp:p.hp,max:p.max+(+B.max||0),atk:p.atk+(+B.atk||0),en:p.en,enMax:p.enMax,reg:p.reg,soul:p.soul,soulMax:p.soulMax,sh:p.gear?p.shMax+(+B.sh||0):0,shMax:p.gear?p.shMax+(+B.sh||0):0,gear:p.gear,spd:p.spd+(+B.spd||0),atb:650,
  items:Object.assign({},SV.items),drone:null,spdX:1,auto:!!SV.auto,turn:false,over:false,lock:false,modal:false,od:false,round:0,log:[]};
  spawn();say(PRACTICE?"Chế độ luyện tập: kết quả không được lưu.":"Chiến đấu bắt đầu. Vân Giáp sẵn sàng.");}
 function spawn(){
@@ -144,8 +144,8 @@ function win(){const e=G.e,d=EV.def,g=d.xp||40;G.xp+=g;say(`${e.name} bị hạ.
  box("Chiến thắng",`${e.name} đã bị hạ.<br>+${g} kinh nghiệm${ls?"<br>"+ls:""}${PRACTICE?"<br>(luyện tập: không lưu)":""}`,"Về bản đồ")}
 function finish(type,xp,st){
  if(PRACTICE)return;const p=SV.p;
- Object.assign(p,{lv:G.lv,xp:G.xp,hp:Math.max(1,Math.round(G.hp)),max:G.max,atk:G.atk,en:Math.round(G.en),enMax:G.enMax,reg:G.reg,soul:Math.round(G.soul),soulMax:G.soulMax,spd:G.spd,gear:G.gear});
- if(G.gear)p.shMax=G.shMax;SV.items=Object.assign({},G.items);SV.auto=!!G.auto;
+ const n=G.lv-G.lv0,B=G.b;Object.assign(p,{lv:G.lv,xp:G.xp,hp:Math.max(1,Math.round(G.hp)),max:G.max-Math.round(B.max*Math.pow(1.1,n)),atk:G.atk-Math.round(B.atk*Math.pow(1.08,n)),en:Math.round(G.en),enMax:G.enMax,reg:G.reg,soul:Math.round(G.soul),soulMax:G.soulMax,spd:G.spd-B.spd,gear:G.gear});
+ if(G.gear)p.shMax=G.shMax-B.sh;SV.items=Object.assign({},G.items);SV.auto=!!G.auto;
  if(st)for(const k in st)SV.stones[k]=(SV.stones[k]||0)+st[k];
  if(type==="flee"&&EV.from)SV.pos={x:EV.from.x,y:EV.from.y};
  if(type==="lose"){p.hp=p.max;p.en=p.enMax;p.soul=p.soulMax;SV.pos={x:EV.spawn.x,y:EV.spawn.y}}
@@ -194,7 +194,7 @@ function summon(t){if(!G.turn||G.en<30||G.soul<10)return;G.en-=30;G.soul-=10;G.d
 function run(){if(!G.turn||G.modal)return;const c=Math.max(.2,Math.min(.85,.45+(G.spd-G.e.spd)/1000));
  if(Math.random()<c){say("Thoát khỏi giao tranh thành công.");G.turn=false;G.over=true;finish("flee");renderAll();setTimeout(toMap,700)}
  else{say("Chạy thất bại, mất lượt.");endAct()}}
-function setM(){modal(`<h3>Cài đặt</h3><button onclick="G.gear=!G.gear;G.shMax=G.gear?120+15*(G.lv-12):0;G.sh=G.shMax;closeM()">Trang bị lá chắn: ${G.gear?"Đang mang":"Không mang"} (bấm để đổi)</button><button onclick="if(confirm('Xóa bản lưu và làm lại từ đầu?')){GM.reset();toMap()}">Làm lại từ đầu</button>`)}
+function setM(){modal(`<h3>Cài đặt</h3><button onclick="G.gear=!G.gear;G.shMax=G.gear?120+15*(G.lv-12)+G.b.sh:0;G.sh=G.shMax;closeM()">Trang bị lá chắn: ${G.gear?"Đang mang":"Không mang"} (bấm để đổi)</button><button onclick="if(confirm('Xóa bản lưu và làm lại từ đầu?')){GM.reset();toMap()}">Làm lại từ đầu</button>`)}
 const B=(l,v,m,c,x)=>`<div class="lb"><span>${l}</span><span>${x||""}${Math.round(v)} / ${Math.round(m)}</span></div><div class="bar"><i style="width:${m>0?Math.min(100,v/m*100):0}%;background:var(${c})"></i></div>`;
 const AT=(id,v,s)=>`<div class="lb"><span>ATB</span><span><span id="${id}t">${Math.round(v)}</span> / 1000 · Tốc ${s}</span></div><div class="bar"><i id="${id}" style="width:${Math.min(100,v/10)}%;background:var(--atb)"></i></div>`;
 function renderAll(){
