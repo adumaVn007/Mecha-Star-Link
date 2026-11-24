@@ -1,0 +1,221 @@
+{
+ "v": 1,
+ "jobs": [
+  {
+   "id": "luyenkhi",
+   "name": "Luyện khí",
+   "icon": "⚒",
+   "desc": "Chế tạo và cường hóa trang bị, linh khí.",
+   "levels": [
+    {
+     "name": "Học đồ",
+     "exp": 100
+    },
+    {
+     "name": "Thợ rèn",
+     "exp": 300
+    }
+   ],
+   "equips": [
+    {
+     "id": "luyenkhi_e1",
+     "name": "Búa rèn sơ cấp",
+     "slot": "Công cụ",
+     "reqLv": 1,
+     "desc": "Dụng cụ cơ bản của thợ luyện khí.",
+     "img": ""
+    },
+    {
+     "id": "luyenkhi_e2",
+     "name": "Lò luyện khí nhỏ",
+     "slot": "Lò",
+     "reqLv": 2,
+     "desc": "Tăng tỉ lệ thành công khi luyện.",
+     "img": ""
+    }
+   ],
+   "recipes": [
+    {
+     "id": "luyenkhi_r1",
+     "name": "Kiếm sắt linh",
+     "reqLv": 1,
+     "exp": 20,
+     "mats": "Sắt linh x3",
+     "out": "Kiếm sắt linh",
+     "desc": ""
+    },
+    {
+     "id": "luyenkhi_r2",
+     "name": "Giáp vảy đồng",
+     "reqLv": 2,
+     "exp": 45,
+     "mats": "Đồng tinh x5",
+     "out": "Giáp vảy đồng",
+     "desc": ""
+    }
+   ]
+  },
+  {
+   "id": "luyendan",
+   "name": "Luyện đan",
+   "icon": "⚗",
+   "desc": "Điều chế đan dược hỗ trợ tu luyện và đột phá.",
+   "levels": [
+    {
+     "name": "Học đồ",
+     "exp": 100
+    },
+    {
+     "name": "Đan sư",
+     "exp": 300
+    }
+   ],
+   "equips": [
+    {
+     "id": "luyendan_e1",
+     "name": "Đan lô sơ cấp",
+     "slot": "Lò",
+     "reqLv": 1,
+     "desc": "Lò đan cơ bản.",
+     "img": ""
+    },
+    {
+     "id": "luyendan_e2",
+     "name": "Chày nghiền thảo dược",
+     "slot": "Công cụ",
+     "reqLv": 2,
+     "desc": "Tăng hiệu suất nghiền dược liệu.",
+     "img": ""
+    }
+   ],
+   "recipes": [
+    {
+     "id": "luyendan_r1",
+     "name": "Hồi khí đan",
+     "reqLv": 1,
+     "exp": 20,
+     "mats": "Linh thảo x2",
+     "out": "Hồi khí đan",
+     "desc": ""
+    },
+    {
+     "id": "luyendan_r2",
+     "name": "Đột phá đan sơ",
+     "reqLv": 2,
+     "exp": 50,
+     "mats": "Linh thảo x4; Yêu đan x1",
+     "out": "Đột phá đan sơ",
+     "desc": ""
+    }
+   ]
+  },
+  {
+   "id": "phuluc",
+   "name": "Phù lục",
+   "icon": "📜",
+   "desc": "Vẽ phù chú tăng sức mạnh trong chiến đấu.",
+   "levels": [
+    {
+     "name": "Học đồ",
+     "exp": 100
+    },
+    {
+     "name": "Phù sư",
+     "exp": 300
+    }
+   ],
+   "equips": [
+    {
+     "id": "phuluc_e1",
+     "name": "Bút phù lông sói",
+     "slot": "Công cụ",
+     "reqLv": 1,
+     "desc": "Bút vẽ phù cơ bản.",
+     "img": ""
+    },
+    {
+     "id": "phuluc_e2",
+     "name": "Chu sa linh",
+     "slot": "Vật liệu",
+     "reqLv": 2,
+     "desc": "Mực vẽ phù chất lượng cao.",
+     "img": ""
+    }
+   ],
+   "recipes": [
+    {
+     "id": "phuluc_r1",
+     "name": "Phù tăng tốc",
+     "reqLv": 1,
+     "exp": 20,
+     "mats": "Giấy phù x1; Chu sa x1",
+     "out": "Phù tăng tốc",
+     "desc": ""
+    },
+    {
+     "id": "phuluc_r2",
+     "name": "Phù hộ thân",
+     "reqLv": 2,
+     "exp": 45,
+     "mats": "Giấy phù x2; Chu sa x2",
+     "out": "Phù hộ thân",
+     "desc": ""
+    }
+   ]
+  },
+  {
+   "id": "tranphap",
+   "name": "Trận pháp",
+   "icon": "☯",
+   "desc": "Bố trận hỗ trợ trong chiến đấu và phòng thủ.",
+   "levels": [
+    {
+     "name": "Học đồ",
+     "exp": 100
+    },
+    {
+     "name": "Trận sư",
+     "exp": 300
+    }
+   ],
+   "equips": [
+    {
+     "id": "tranphap_e1",
+     "name": "La bàn trận",
+     "slot": "Công cụ",
+     "reqLv": 1,
+     "desc": "Định vị khi bố trận.",
+     "img": ""
+    },
+    {
+     "id": "tranphap_e2",
+     "name": "Trận kỳ sơ cấp",
+     "slot": "Công cụ",
+     "reqLv": 2,
+     "desc": "Cờ hiệu bố trận cơ bản.",
+     "img": ""
+    }
+   ],
+   "recipes": [
+    {
+     "id": "tranphap_r1",
+     "name": "Tụ linh trận",
+     "reqLv": 1,
+     "exp": 20,
+     "mats": "Linh thạch thường x5",
+     "out": "Tụ linh trận",
+     "desc": ""
+    },
+    {
+     "id": "tranphap_r2",
+     "name": "Hộ thân trận",
+     "reqLv": 2,
+     "exp": 45,
+     "mats": "Linh thạch trung x2",
+     "out": "Hộ thân trận",
+     "desc": ""
+    }
+   ]
+  }
+ ]
+}
