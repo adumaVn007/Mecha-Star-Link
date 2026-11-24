@@ -66,6 +66,10 @@ html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none;backgrou
 .btn.pri{background:linear-gradient(#b78f50,#77552d);font-weight:bold;text-align:center}.btn:disabled{opacity:.45;cursor:default}
 .btn small{display:block;color:var(--mut);font-size:11px;margin-top:1px}
 .tag{display:inline-block;border-radius:10px;padding:1px 8px;font-size:11px;font-weight:bold;color:#10181e;margin-right:6px}
+.jb{border:1px solid #806b48;border-radius:9px;background:#213842;margin-bottom:8px}.jb>summary{list-style:none;cursor:pointer;padding:10px;min-height:48px;display:flex;align-items:center;gap:9px}.jb>summary::-webkit-details-marker{display:none}
+.jb .ji{font-size:24px;width:30px;text-align:center}.jb .jm{flex:1;min-width:0}.jb .jm b{color:var(--gold);font-size:14px}.jb .jm small{display:block;color:var(--mut);font-size:11px}
+.jb .jbar{height:6px;border-radius:4px;background:#0a1117;margin-top:4px;overflow:hidden}.jb .jbar i{display:block;height:100%;background:linear-gradient(90deg,#4f9a82,var(--gold))}
+.jb .jc{padding:0 10px 10px}.jb h5{margin:8px 0 3px;color:var(--gold);font-size:12px}.jb .jr{padding:5px 0;border-bottom:1px dotted #776644;font-size:12px;color:var(--txt)}.jb .jr small{display:block;color:var(--mut);font-size:11px}.jb .lk{opacity:.55}
 .note{border:1px dashed var(--bronze);border-radius:8px;padding:8px 10px;color:var(--mut);font-size:12px;margin-top:8px}
 .sw{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px;border:1px solid #0006}
 .tabs{display:flex;gap:6px;margin-bottom:8px}.tabs button{flex:1;padding:9px;min-height:40px;border-radius:7px;border:1px solid #8d754b;background:#1a2d36;color:var(--txt);font:inherit;cursor:pointer}.tabs button.on{background:linear-gradient(#b68d4d,#75542c)}
@@ -330,6 +334,20 @@ const row=(a,b)=>`<div class="row"><span>${a}</span><span>${b}</span></div>`;
 const soon=d=>`<p>${d}</p><div class="note">⚠ Chưa kết nối hệ thống thật: mục này chưa có dữ liệu trong database nên chưa hoạt động. Không dùng số liệu giả.</div>`;
 function idRows(){const c=ST.char;if(!c)return'';const G=VG.char.GENDERS[c.gender];
  return row('Tên',esc(c.name))+row('Giới tính',G?G.n:'—')+row('Xuất thân',esc(c.originName||c.origin||'—'))+row('Quốc gia',esc((wmap&&wmap.names[c.country])||zone.name))}
+let JOBS=null;
+function loadJobs(){return fetch('database/jobs.json?t='+Date.now()).then(r=>{if(!r.ok)throw 0;return r.json()}).catch(()=>VG.fetchJSON?VG.fetchJSON('database/jobs.json'):null).then(j=>{JOBS=j&&Array.isArray(j.jobs)?j:null}).catch(()=>{JOBS=null})}
+function jobPanel(){
+ if(!JOBS)return soon('Luyện khí, luyện đan, phù lục, trận pháp. Không đọc được database/jobs.json (chưa có hoặc lỗi mạng).');
+ if(!JOBS.jobs.length)return'<p>Chưa có nghề nào trong database. Thêm bằng EditJobMSL.html.</p>';
+ const sj=ST.jobs||{};
+ return JOBS.jobs.map(b=>{const lvs=b.levels||[],n=lvs.length,pr=sj[b.id]||{},lv=Math.max(1,Math.min(n||1,pr.lv|0||1)),xp=Math.max(0,pr.xp|0),L=lvs[lv-1]||{},nd=+L.exp||0,max=lv>=n||nd<=0;
+  const rc=b.recipes||[],un=rc.filter(r=>(+r.reqLv||1)<=lv),lk=rc.filter(r=>(+r.reqLv||1)>lv),eq=b.equips||[];
+  return`<details class="jb"><summary><span class="ji">${esc(b.icon||'⚒')}</span><span class="jm"><b>${esc(b.name)}</b><small>${esc(L.name||'Cấp '+lv)} · Cấp ${lv}/${n} · EXP ${max?'Tối đa':xp+'/'+nd}</small><div class="jbar"><i style="width:${max?100:Math.min(100,xp/nd*100)}%"></i></div></span><span>▾</span></summary><div class="jc">`+
+   (b.desc?`<p>${esc(b.desc)}</p>`:'')+`<h5>Công thức đã mở khóa (${un.length}/${rc.length})</h5>`+
+   (un.map(r=>`<div class="jr">${esc(r.name)}<small>${esc(r.mats||'')}${r.out?' → '+esc(r.out):''} · +${+r.exp||0} EXP</small></div>`).join('')||'<div class="jr"><small>Chưa mở khóa công thức nào.</small></div>')+
+   lk.map(r=>`<div class="jr lk">🔒 ${esc(r.name)}<small>Mở ở cấp nghề ${+r.reqLv||1}</small></div>`).join('')+
+   `<h5>Trang bị của nghề (${eq.length})</h5>`+(eq.map(e=>`<div class="jr ${(+e.reqLv||1)>lv?'lk':''}">${(+e.reqLv||1)>lv?'🔒 ':''}${esc(e.name)}<small>${esc(e.slot||'')}${(+e.reqLv||1)>1?' · yêu cầu cấp '+(+e.reqLv):''}</small></div>`).join('')||'<div class="jr"><small>Chưa có.</small></div>')+
+   `</div></details>`}).join('')+`<div class="note">Cấp bậc và kinh nghiệm nghề lưu trong bản save của bạn. Chế tạo thật (nhận EXP nghề) chưa nối vào game.</div>`}
 function panel(k){
  const p=ST.p;
  if(k==='char')return['Nhân vật',idRows()+`<div class="grid"><div class="tile"><b>Cảnh giới</b>${esc(GM.rankName(p.lv))}</div><div class="tile"><b>Kinh nghiệm</b>${p.lv>=GM.MAXR?'Tối cao':p.xp+' / '+GM.need(p.lv)}</div></div>`+
@@ -338,7 +356,7 @@ function panel(k){
  if(k==='bag')return['Túi đồ',Object.keys(IT).map(i=>`<button class="btn" data-a="use:${i}" ${ST.items[i]>0&&i!=='shcell'?'':'disabled'}>${IT[i][0]} ×${ST.items[i]}<small>${IT[i][1]}</small></button>`).join('')+`<div class="note">Trang bị & nguyên liệu: chưa nối vào bản đồ (dữ liệu nằm ở Mecha Studio).</div>`];
  if(k==='tinhchu')return['Hệ thống Tinh Chủ',soon('Star General System: chỉ điểm yếu, dẫn đường, auto battle. Dành cho người ủng hộ (donate / nạp).')];
  if(k==='sect')return['Tông môn',soon('Gia nhập tông môn, nhiệm vụ tông môn, cống hiến.')];
- if(k==='craft')return['Nghề',soon('Luyện khí, luyện đan, phù lục, trận pháp. Level nghề là điều kiện đột phá.')];
+ if(k==='craft')return['Nghề',jobPanel()];
  if(k==='quest')return['Nhiệm vụ',`<div class="tabs"><button class="on">Quốc gia</button><button data-a="qs">Tông môn</button></div>`+row('Dị thú đã hạ',ST.kills)+row('Sự kiện hoàn thành',ST.cleared)+row('Sự kiện còn lại trong khu',ST.events.length)+`<div class="note">Hệ thống nhiệm vụ chưa có dữ liệu thật; đây là thống kê thực từ tiến trình chơi.</div>`];
  if(k==='qs')return['Nhiệm vụ',`<div class="tabs"><button data-a="quest">Quốc gia</button><button class="on">Tông môn</button></div>`+soon('Nhiệm vụ tông môn.')];
  if(k==='map'){const cnt={};ST.events.forEach(e=>{const t=(evDef(e)||{}).tier;cnt[t]=(cnt[t]||0)+1});
@@ -431,7 +449,7 @@ function init(w){
  world=w;zone=wmap?wmap.zone:w.zones[0];pmap={};zone.places.forEach(p=>{pmap[p.x*1000+p.y]=p});
  tiles=[];for(let x=0;x<zone.w;x++){tiles[x]=[];for(let y=0;y<zone.h;y++)tiles[x][y]=typ(x,y)}
  ST=GM.load(zone);
- if(ST.zone!==zone.id){const k=ST;ST=GM.defaults(zone);ST.char=k.char;ST.p=k.p;ST.items=k.items;ST.stones=k.stones;ST.auto=k.auto;ST.day=k.day;ST.kills=k.kills;ST.cleared=k.cleared}
+ if(ST.zone!==zone.id){const k=ST;ST=GM.defaults(zone);ST.char=k.char;ST.p=k.p;ST.items=k.items;ST.stones=k.stones;ST.auto=k.auto;ST.day=k.day;ST.kills=k.kills;ST.cleared=k.cleared;if(k.jobs)ST.jobs=k.jobs}
  if(!ST.char)return startCreate();
  boot()}
 function startCreate(){
@@ -477,7 +495,7 @@ function boot(){
 buildTaskbar();resize();
 window.addEventListener('resize',resize);window.addEventListener('orientationchange',()=>setTimeout(resize,200));
 window.addEventListener('pageshow',e=>{if(e.persisted)location.reload()});
-GM.restore().catch(()=>0).then(()=>GM.loadWorld()).then(w=>loadMap().then(()=>init(w))).catch(e=>fail(e.message||String(e)));
+loadJobs();GM.restore().catch(()=>0).then(()=>GM.loadWorld()).then(w=>loadMap().then(()=>init(w))).catch(e=>fail(e.message||String(e)));
 requestAnimationFrame(loop);
 window.__vg={get ST(){return ST},get zone(){return zone},hit,onTap,get mv(){return mv},get route(){return route},wx,wy,toSX,toSY,get zoom(){return zoom},get modal(){return modal}};
 })();

@@ -36,3 +36,9 @@ Mecha Studio (`admin.html`) có đồng bộ GitHub riêng, đã có sẵn từ 
 Tạo/sửa bằng `AdminEditNPCPlayer.html` (trước đây là `player.html`). `{ v:1, npcs:[ … ] }`
 Mỗi NPC: `id`, `name`, `title`, `role` (dan|thuong|dan_su|tho_ren|nhiem_vu|thu_ve|tong_mon|khac), `faction`, `rank` (0–48, cảnh giới như `realm`), `level`, `str`/`agi`/`int` (chỉ số gốc), `zone` (id trong `world-events.json`), `x`/`y` (ô trên bản đồ), `attitude` (friendly|neutral|hostile), `lines[]` (lời thoại), `bio`, `img` (data URL).
 Ràng buộc khi lưu: ô nằm trong bản đồ khu vực, không trùng điểm xuất phát, không trùng NPC khác cùng ô.
+
+## `database/jobs.json` (v:1) — Nghề (MỚI)
+Tạo/sửa bằng `EditJobMSL.html`. `{ v:1, jobs:[ … ] }`. Mỗi nghề: `id`, `name`, `icon`, `desc`,
+`levels[]` (`{name, exp}` — thứ tự = cấp 1,2,3…; `exp` = EXP lên cấp kế tiếp, cấp cuối 0),
+`equips[]` (`{id, name, slot, reqLv, desc, img}`), `recipes[]` (`{id, name, reqLv, exp, mats, out, desc}`; `reqLv` = cấp nghề mở khóa, `exp` = EXP nhận khi chế).
+Tiến trình nghề của người chơi lưu trong save: `ST.jobs[jobId] = { lv, xp }` (mặc định cấp 1, 0 EXP).
