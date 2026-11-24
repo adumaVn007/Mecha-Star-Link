@@ -97,6 +97,7 @@ html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none;backgrou
 
 <script src="vg-github.js"></script>
 <script src="vg-core.js"></script>
+<script src="vg-char.js"></script>
 <script src="vg-mapart.js"></script>
 <script>
 (function(){
@@ -126,7 +127,8 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 let tt=0;
 function toast(s){const t=$('#toast');t.textContent=s;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2400)}
 function say(s){ST.log.unshift(s);if(ST.log.length>40)ST.log.length=40;$('#tLog').textContent='✦ '+s}
-function persist(){GM.save(ST)}
+let saveWarn=false;
+function persist(){if(!GM.save(ST)&&!saveWarn){saveWarn=true;toast("Trình duyệt đang chặn lưu dữ liệu: hãy bấm Nhân vật → Xuất file save để giữ tiến trình.")}}
 
 function typ(x,y){
  if(x<0||y<0||x>=zone.w||y>=zone.h)return null;
@@ -322,11 +324,13 @@ function openModal(t,h){modal=true;$('#oT').textContent=t;$('#oB').innerHTML=h;$
 function closeModal(){modal=false;$('#ov').classList.remove('show');renderHUD()}
 const row=(a,b)=>`<div class="row"><span>${a}</span><span>${b}</span></div>`;
 const soon=d=>`<p>${d}</p><div class="note">⚠ Chưa kết nối hệ thống thật: mục này chưa có dữ liệu trong database nên chưa hoạt động. Không dùng số liệu giả.</div>`;
+function idRows(){const c=ST.char;if(!c)return'';const G=VG.char.GENDERS[c.gender];
+ return row('Tên',esc(c.name))+row('Giới tính',G?G.n:'—')+row('Xuất thân',esc(c.originName||c.origin||'—'))+row('Quốc gia',esc((wmap&&wmap.names[c.country])||zone.name))}
 function panel(k){
  const p=ST.p;
- if(k==='char')return['Nhân vật',`<div class="grid"><div class="tile"><b>Cảnh giới</b>${esc(GM.rankName(p.lv))}</div><div class="tile"><b>Kinh nghiệm</b>${p.lv>=GM.MAXR?'Tối cao':p.xp+' / '+GM.need(p.lv)}</div></div>`+
+ if(k==='char')return['Nhân vật',idRows()+`<div class="grid"><div class="tile"><b>Cảnh giới</b>${esc(GM.rankName(p.lv))}</div><div class="tile"><b>Kinh nghiệm</b>${p.lv>=GM.MAXR?'Tối cao':p.xp+' / '+GM.need(p.lv)}</div></div>`+
   row('HP',Math.round(p.hp)+' / '+p.max)+row('Năng lượng (Linh lực)',Math.round(p.en)+' / '+p.enMax+' · +'+p.reg+'/lượt')+row('Hồn lực',Math.round(p.soul)+' / '+p.soulMax)+row('Giáp cơ giới (lá chắn)',p.gear?p.shMax:'Không mang')+row('Công kích',p.atk)+row('Tốc độ',p.spd)+row('Dị thú đã hạ',ST.kills)+row('Sự kiện hoàn thành',ST.cleared)+
-  `<div class="note">Điều kiện đột phá theo nghề / đan dược chưa được nối: hiện cảnh giới tăng khi đủ kinh nghiệm (hệ thống chiến đấu gốc).</div>`];
+  `<div class="note">Điều kiện đột phá theo nghề / đan dược chưa được nối: hiện cảnh giới tăng khi đủ kinh nghiệm (hệ thống chiến đấu gốc).</div>`+`<button class="btn" data-a="savefile">💾 Xuất file save<small>Tải bản sao tiến trình về máy để dự phòng.</small></button><button class="btn" data-a="loadfile">📂 Nạp file save<small>Khôi phục từ file đã xuất (ghi đè bản hiện tại).</small></button>`];
  if(k==='bag')return['Túi đồ',Object.keys(IT).map(i=>`<button class="btn" data-a="use:${i}" ${ST.items[i]>0&&i!=='shcell'?'':'disabled'}>${IT[i][0]} ×${ST.items[i]}<small>${IT[i][1]}</small></button>`).join('')+`<div class="note">Trang bị & nguyên liệu: chưa nối vào bản đồ (dữ liệu nằm ở Mecha Studio).</div>`];
  if(k==='tinhchu')return['Hệ thống Tinh Chủ',soon('Star General System: chỉ điểm yếu, dẫn đường, auto battle. Dành cho người ủng hộ (donate / nạp).')];
  if(k==='sect')return['Tông môn',soon('Gia nhập tông môn, nhiệm vụ tông môn, cống hiến.')];
@@ -354,7 +358,10 @@ $('#ov').addEventListener('click',e=>{
  const b=e.target.closest('[data-a]');if(!b||b.disabled)return;const a=b.dataset.a;
  if(a==='close')closeModal();else if(a==='fight')fight();else if(a==='restfull'){rest(true);closeModal()}
  else if(a.indexOf('use:')===0)useItem(a.slice(4));
- else if(a==='reset'){if(confirm('Xóa toàn bộ tiến trình và làm lại từ đầu?')){GM.reset();location.reload()}}
+ else if(a==='savefile'){const n=VG.char.exportSave(ST);toast('Đã xuất file: '+n)}
+ else if(a==='loadfile'){if(!confirm('Nạp file sẽ ghi đè bản save hiện tại. Tiếp tục?'))return;const i=document.createElement('input');i.type='file';i.accept='.json,application/json';
+  i.onchange=()=>{const f=i.files&&i.files[0];if(!f)return;VG.char.importSave(f).then(sv=>{GM.setSave(sv);location.reload()}).catch(e=>toast(e.message))};i.click()}
+ else if(a==='reset'){if(confirm('Xóa toàn bộ tiến trình VÀ nhân vật để tạo lại từ đầu? (Nên bấm Nhân vật → Xuất file save trước.)')){GM.reset().then(()=>location.reload())}}
  else openPanel(a)});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal)closeModal()});
 
@@ -362,6 +369,7 @@ const nf=n=>n>=10000?(n/1000).toFixed(n>=100000?0:1)+'k':GM.fmt(n);
 function renderHUD(){
  if(!ST)return;const p=ST.p;
  $('#sRealm').textContent=GM.rankShort(p.lv);
+ if(ST.char){$('#sName').textContent=ST.char.name;const av=$('#av');if(!av.querySelector('img'))av.textContent=VG.char.avatar(ST.char)}
  const need=GM.need(p.lv),xpv=p.lv>=GM.MAXR?1:p.xp/need;
  $('#bXp').style.width=Math.min(100,xpv*100)+'%';$('#tXp').textContent=p.lv>=GM.MAXR?'MAX':p.xp+'/'+need;
  $('#bHp').style.width=Math.min(100,p.hp/p.max*100)+'%';$('#tHp').textContent=Math.round(p.hp)+'/'+p.max;
@@ -419,7 +427,32 @@ function init(w){
  world=w;zone=wmap?wmap.zone:w.zones[0];pmap={};zone.places.forEach(p=>{pmap[p.x*1000+p.y]=p});
  tiles=[];for(let x=0;x<zone.w;x++){tiles[x]=[];for(let y=0;y<zone.h;y++)tiles[x][y]=typ(x,y)}
  ST=GM.load(zone);
- if(ST.zone!==zone.id){const k=ST;ST=GM.defaults(zone);ST.p=k.p;ST.items=k.items;ST.stones=k.stones;ST.auto=k.auto;ST.day=k.day;ST.kills=k.kills;ST.cleared=k.cleared}
+ if(ST.zone!==zone.id){const k=ST;ST=GM.defaults(zone);ST.char=k.char;ST.p=k.p;ST.items=k.items;ST.stones=k.stones;ST.auto=k.auto;ST.day=k.day;ST.kills=k.kills;ST.cleared=k.cleared}
+ if(!ST.char)return startCreate();
+ boot()}
+function startCreate(){
+ $('#pZone').textContent='Tạo nhân vật';
+ const W=zone.w,cs=[];
+ if(wmap&&wmap.names.length>1){for(let id=1;id<wmap.names.length;id++){
+  const cap=zone.places.find(p=>p.kind==='capital'&&p.country===id);
+  cs.push({id,name:wmap.names[id],color:wmap.cols[id],capital:cap?cap.name:'',cities:zone.places.filter(p=>p.country===id&&isTown(p)&&p!==cap).length})}}
+ else cs.push({id:0,name:zone.name,color:'#77c5a6',capital:'',cities:0});
+ function spawnFor(id){
+  const cap=zone.places.find(p=>p.kind==='capital'&&p.country===id),sp=zone.spawn;
+  if(!cap||!wmap)return{x:sp.x,y:sp.y};
+  let best=null,bd=1e9;
+  for(let r=1;r<=8&&!best;r++)for(let dx=-r;dx<=r;dx++)for(let dy=-r;dy<=r;dy++){
+   if(Math.max(Math.abs(dx),Math.abs(dy))!==r)continue;
+   const x=cap.x+dx,y=cap.y+dy,t=typ(x,y);
+   if(t===null||blocked(t)||t==='city'||t==='portal'||placeAt(x,y))continue;
+   if(wmap.owner[y*W+x]!==id)continue;
+   const d=Math.abs(dx)+Math.abs(dy);if(d<bd){bd=d;best={x,y}}}
+  return best}
+ VG.char.open({countries:cs,spawnFor,done:(c,org,sp)=>{
+  VG.char.apply(ST,c,org,sp,zone.id);
+  const cn=(cs.find(v=>v.id===c.country)||{}).name||'';
+  ST.log=[];say('Khởi đầu tại '+cn+'.');persist();boot()}})}
+function boot(){
  const r=ST.result;
  if(r){
   if(r.type==='win'){ST.events=ST.events.filter(e=>e.uid!==r.uid);ST.kills++;ST.cleared++;
@@ -436,11 +469,11 @@ function init(w){
  spawnEvents();persist();
  pv={x:ST.pos.x,y:ST.pos.y};zoom=Math.min(cw,ch)<520?.85:1;focusPlayer();select({x:ST.pos.x,y:ST.pos.y});
  $('#pZone').textContent=zone.name;renderHUD();
- GM.loadLib().then(l=>{const h=l&&l.humans&&l.humans[0];if(h&&typeof h.img==='string'&&h.img.indexOf('data:image')===0){const i=new Image();i.src=h.img;$('#av').textContent='';$('#av').appendChild(i)}}).catch(()=>{})}
+ !ST.char&&GM.loadLib().then(l=>{const h=l&&l.humans&&l.humans[0];if(h&&typeof h.img==='string'&&h.img.indexOf('data:image')===0){const i=new Image();i.src=h.img;$('#av').textContent='';$('#av').appendChild(i)}}).catch(()=>{})}
 buildTaskbar();resize();
 window.addEventListener('resize',resize);window.addEventListener('orientationchange',()=>setTimeout(resize,200));
 window.addEventListener('pageshow',e=>{if(e.persisted)location.reload()});
-GM.loadWorld().then(w=>loadMap().then(()=>init(w))).catch(e=>fail(e.message||String(e)));
+GM.restore().catch(()=>0).then(()=>GM.loadWorld()).then(w=>loadMap().then(()=>init(w))).catch(e=>fail(e.message||String(e)));
 requestAnimationFrame(loop);
 window.__vg={get ST(){return ST},get zone(){return zone},hit,onTap,get mv(){return mv},get route(){return route},wx,wy,toSX,toSY,get zoom(){return zoom},get modal(){return modal}};
 })();

@@ -34,13 +34,54 @@
     ['p', 'items', 'stones', 'pos'].forEach(function (k) { o[k] = Object.assign({}, d[k], o[k] || {}); });
     return Object.assign(d, o);
   };
+  /* ===== Lưu bền: localStorage chính + bản dự phòng (trạng thái liền trước) + IndexedDB. Không mất khi cập nhật code/game. ===== */
+  var BAK = 'vg_save_bak', IDB = 'vg_db', idbT = 0;
+  GM.SV = 2;
+  function idb(fn) {
+    return new Promise(function (res) {
+      try {
+        var q = g.indexedDB.open(IDB, 1);
+        q.onupgradeneeded = function () { q.result.createObjectStore('s'); };
+        q.onerror = function () { res(null); };
+        q.onsuccess = function () { var db = q.result; try { fn(db, function (v) { db.close(); res(v); }); } catch (e) { db.close(); res(null); } };
+      } catch (e) { res(null); }
+    });
+  }
+  function idbPut(txt) { clearTimeout(idbT); idbT = setTimeout(function () { idb(function (db, done) { var t = db.transaction('s', 'readwrite'); t.objectStore('s').put(txt, KEY); t.oncomplete = function () { done(1); }; t.onerror = function () { done(null); }; }); }, 400); }
+  function ok(txt) { try { var o = JSON.parse(txt); return o && typeof o === 'object' && o.p && o.pos ? txt : null; } catch (e) { return null; } }
   GM.save = function (st) {
     mem = st; if (g.__VG_EMBED) { try { g.parent.postMessage({ vgsave: st }, '*'); } catch (e) {} return true; }
+    st.sv = GM.SV;
     var s = store();
-    try { if (s) { s.setItem(KEY, JSON.stringify(st)); return true; } } catch (e) {}
+    try {
+      if (s) {
+        var cur = JSON.stringify(st), prev = s.getItem(KEY);
+        if (prev && prev !== cur && ok(prev)) s.setItem(BAK, prev);
+        s.setItem(KEY, cur); idbPut(cur); return true;
+      }
+    } catch (e) {}
+    try { idbPut(JSON.stringify(st)); } catch (e2) {}
     return false;
   };
-  GM.reset = function () { mem = null; if (g.__VG_EMBED) { try { g.parent.postMessage({ vgsave: null }, '*'); } catch (e) {} return; } var s = store(); try { if (s) s.removeItem(KEY); } catch (e) {} };
+  /* Gọi 1 lần lúc khởi động (trước GM.load): nếu bản chính mất/hỏng thì khôi phục từ bản dự phòng hoặc IndexedDB. */
+  GM.restore = function () {
+    if (g.__VG_EMBED) return Promise.resolve('embed');
+    try { if (g.navigator && navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
+    var s = store(); if (!s) return Promise.resolve('nostore');
+    var main = null, bak = null;
+    try { main = ok(s.getItem(KEY)); bak = ok(s.getItem(BAK)); } catch (e) {}
+    if (main) { idbPut(main); return Promise.resolve('main'); }
+    if (bak) { try { s.setItem(KEY, bak); } catch (e) {} return Promise.resolve('bak'); }
+    return idb(function (db, done) { var r = db.transaction('s').objectStore('s').get(KEY); r.onsuccess = function () { done(r.result || null); }; r.onerror = function () { done(null); }; })
+      .then(function (txt) { if (txt && ok(txt)) { try { s.setItem(KEY, txt); } catch (e) {} return 'idb'; } return 'none'; });
+  };
+  GM.setSave = function (st) { /* nạp bản save từ file */ st.sv = GM.SV; return GM.save(st); };
+  GM.reset = function () {
+    mem = null; clearTimeout(idbT);
+    if (g.__VG_EMBED) { try { g.parent.postMessage({ vgsave: null }, '*'); } catch (e) {} return Promise.resolve(); }
+    var s = store(); try { if (s) { s.removeItem(KEY); s.removeItem(BAK); } } catch (e) {}
+    return idb(function (db, done) { var t = db.transaction('s', 'readwrite'); t.objectStore('s').delete(KEY); t.oncomplete = function () { done(1); }; t.onerror = function () { done(null); }; });
+  };
   /* Dữ liệu: ưu tiên cùng thư mục (Cloudflare/GitHub Pages), sau đó raw GitHub. */
   function getJSON(path) {
     if (g.__VG_DATA && g.__VG_DATA[path]) return Promise.resolve(g.__VG_DATA[path]);
