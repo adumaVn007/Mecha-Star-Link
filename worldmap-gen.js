@@ -15,7 +15,8 @@
     { k: 'swamp',  c: 'm', name: 'Đầm lầy',    col: '#46604a', block: 0 },
     { k: 'road',   c: 'd', name: 'Đường',      col: '#9a8660', block: 0 },
     { k: 'ruin',   c: 'u', name: 'Phế tích',   col: '#9a825e', block: 0 },
-    { k: 'herb',   c: 'h', name: 'Linh thảo',  col: '#6b9777', block: 0 }
+    { k: 'herb',   c: 'h', name: 'Linh thảo',  col: '#6b9777', block: 0 },
+    { k: 'wall',   c: 'x', name: 'Tường thành', col: '#8a7f62', block: 1 }
   ];
   WM.COUNTRIES = [
     { id: 1, k: 'hi_thu',   name: 'Hi Thủ Quốc',   color: '#3a8dff', cn: 'Blue' },
@@ -85,6 +86,53 @@
     }
   };
 
+  /* Vòng viền quốc gia: ô sát biên giới (phía trong lãnh thổ, tiếp giáp ô đi được của nước khác/vô chủ) thành TƯỜNG THÀNH (chặn).
+     Cổng mở tại Thành trì (fortress) + mọi địa điểm nằm trên biên. Núi/nước/tường đều không đi được.
+     Trả về {walls, gates, unreachable:[tên địa điểm]} */
+  WM.buildBorders = function (m) {
+    var W = m.w, H = m.h, T = WM.tIndex, D = [[1, 0], [-1, 0], [0, 1], [0, -1]], x, y, i, k, walls = 0, gates = 0;
+    var ct = {}; m.places.forEach(function (p) { ct[p.x + ',' + p.y] = 1; });
+    var dk = {}; m.decos.forEach(function (d) { dk[d.x + ',' + d.y] = d; });
+    function open(c) { return c !== T.water && c !== T.rock && c !== T.wall; }
+    /* 1) bỏ tường cũ (chạy lại nhiều lần vẫn đúng) */
+    for (i = 0; i < W * H; i++) if (m.tiles[i] === T.wall) m.tiles[i] = T.grass;
+    /* 2) dựng tường */
+    var wl = [];
+    for (y = 0; y < H; y++) for (x = 0; x < W; x++) {
+      i = y * W + x; var o = m.owner[i]; if (!o || !open(m.tiles[i]) || ct[x + ',' + y]) continue;
+      for (k = 0; k < 4; k++) {
+        var nx = x + D[k][0], ny = y + D[k][1]; if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+        var j = ny * W + nx; if (m.owner[j] !== o && open(m.tiles[j])) { wl.push(i); break; }
+      }
+    }
+    wl.forEach(function (i) { m.tiles[i] = T.wall; walls++; });
+    m.decos = m.decos.filter(function (d) { return m.tiles[d.y * W + d.x] !== T.wall; });
+    /* 3) mở cổng: gần mỗi Thành trì nhất, rộng 3 ô */
+    function gateNear(px, py, owner) {
+      var best = -1, bd = 1e9;
+      wl.forEach(function (i) { if (m.owner[i] !== owner || m.tiles[i] !== T.wall) return; var dx = (i % W) - px, dy = ((i / W) | 0) - py, d = dx * dx + dy * dy; if (d < bd) { bd = d; best = i; } });
+      if (best < 0) return;
+      var bx = best % W, by = (best / W) | 0;
+      for (var a = -1; a <= 1; a++) for (var b = -1; b <= 1; b++) { var q = (by + b) * W + bx + a; if (bx + a >= 0 && by + b >= 0 && bx + a < W && by + b < H && m.tiles[q] === T.wall) { m.tiles[q] = T.road; gates++; walls--; } }
+    }
+    m.places.forEach(function (p) { if (p.kind === 'fortress' && p.country) gateNear(p.x, p.y, p.country); });
+    /* 4) kiểm tra: mọi địa điểm phải tới được từ điểm xuất phát; thiếu thì mở thêm cổng gần nó nhất */
+    function reach() {
+      var seen = new Uint8Array(W * H), q = [], s = m.spawn.y * W + m.spawn.x;
+      if (!open(m.tiles[s])) return seen; seen[s] = 1; q.push(s);
+      for (var h = 0; h < q.length; h++) { var c = q[h], cx = c % W, cy = (c / W) | 0;
+        for (var k2 = 0; k2 < 4; k2++) { var nx = cx + D[k2][0], ny = cy + D[k2][1]; if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue; var n = ny * W + nx; if (!seen[n] && open(m.tiles[n])) { seen[n] = 1; q.push(n); } } }
+      return seen;
+    }
+    for (var pass = 0; pass < 6; pass++) {
+      var seen = reach(), bad = m.places.filter(function (p) { return !seen[p.y * W + p.x]; });
+      if (!bad.length) break;
+      bad.forEach(function (p) { gateNear(p.x, p.y, m.owner[p.y * W + p.x] || p.country); });
+    }
+    var seen2 = reach();
+    return { walls: walls, gates: gates, unreachable: m.places.filter(function (p) { return !seen2[p.y * W + p.x]; }).map(function (p) { return p.name + '@' + p.x + ',' + p.y; }) };
+  };
+
   /* Random toàn bản đồ. Giữ nguyên các địa điểm do người dùng đặt nếu opts.keepPlaces. */
   WM.generate = function (seed, opts) {
     opts = opts || {};
@@ -148,6 +196,7 @@
     WM.scatterDecos(m, R, seed);
     m.spawn = { x: caps[1].x + 2, y: caps[1].y + 2 };
     m.seed = seed;
+    WM.buildBorders(m);
     return m;
   };
 
