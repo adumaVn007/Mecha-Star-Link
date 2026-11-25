@@ -91,8 +91,8 @@ button:disabled{opacity:.4;cursor:default}button.pri{background:var(--red);color
 <aside class="card" id="log"></aside>
 </div>
 <div id="modal"></div>
-<script src="vg-github.js"></script>
-<script src="vg-core.js"></script>
+<script src="vg-github.js?v=20261125"></script>
+<script src="vg-core.js?v=20261125"></script>
 <script>
 const GM=VG.game;let SV,EV,PRACTICE=false;
 const $=s=>document.querySelector(s);
@@ -225,7 +225,7 @@ function tickUI(){
 $("#bBag").onclick=bag;$("#bSum").onclick=sumM;$("#bRun").onclick=run;$("#bEnd").onclick=endTurn;$("#bSet").onclick=setM;
 $("#bSpd").onclick=()=>{G.spdX=G.spdX%3+1;renderAll()};
 $("#bAuto").onclick=()=>{G.auto=!G.auto;renderAll();if(G.auto&&G.turn)setTimeout(autoAct,300)};
-GM.loadWorld().then(w=>GM.loadMonsters(w).catch(()=>w).then(()=>w)).then(w=>{const z=w.zones[0];SV=GM.load(z);const pd=SV.pending;let def,mon;
+GM.loadWorld().then(w=>(typeof GM.loadMonsters==='function'?Promise.resolve().then(()=>GM.loadMonsters(w)):Promise.resolve(w)).catch(()=>w).then(()=>w)).then(w=>{const z=w.zones[0];SV=GM.load(z);const pd=SV.pending;let def,mon;
  if(pd){def=w.events.find(v=>v.id===pd.id);mon=w.monsters.find(v=>v.id===pd.mon)}
  if(!def||!mon){PRACTICE=true;def=GM.rnd(w.events);mon=w.monsters.find(m=>m.id===GM.rnd(def.monsters))||w.monsters[0]}
  EV={def,mon,tier:w.tiers[def.tier]||{name:"?"},uid:pd&&pd.uid,from:pd&&pd.from,spawn:z.spawn};

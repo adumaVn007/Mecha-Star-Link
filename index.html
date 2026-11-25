@@ -99,11 +99,11 @@ html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none;backgrou
 <div class="hud" id="toast"></div>
 <div id="ov"><div class="box"><header><h2 id="oT"></h2><button class="x" id="oX" aria-label="Đóng">✕</button></header><div class="bd" id="oB"></div></div></div>
 
-<script src="vg-github.js"></script>
-<script src="vg-core.js"></script>
-<script src="vg-char.js"></script>
-<script src="vg-bag.js"></script>
-<script src="vg-mapart.js"></script>
+<script src="vg-github.js?v=20261125"></script>
+<script src="vg-core.js?v=20261125"></script>
+<script src="vg-char.js?v=20261125"></script>
+<script src="vg-bag.js?v=20261125"></script>
+<script src="vg-mapart.js?v=20261125"></script>
 <script>
 (function(){
 "use strict";
@@ -562,7 +562,7 @@ function boot(){
 buildTaskbar();resize();
 window.addEventListener('resize',resize);window.addEventListener('orientationchange',()=>setTimeout(resize,200));
 window.addEventListener('pageshow',e=>{if(e.persisted)location.reload()});
-loadJobs();GM.restore().catch(()=>0).then(()=>GM.loadWorld()).then(w=>GM.loadMonsters(w).catch(()=>w).then(()=>w)).then(w=>loadMap().then(()=>init(w))).catch(e=>fail(e.message||String(e)));
+loadJobs();GM.restore().catch(()=>0).then(()=>GM.loadWorld()).then(w=>(typeof GM.loadMonsters==='function'?Promise.resolve().then(()=>GM.loadMonsters(w)):Promise.resolve(w)).catch(()=>w).then(()=>w)).then(w=>loadMap().then(()=>init(w))).catch(e=>fail(e.message||String(e)));
 requestAnimationFrame(loop);
 window.__vg={get ST(){return ST},get zone(){return zone},hit,onTap,get mv(){return mv},get route(){return route},wx,wy,toSX,toSY,get zoom(){return zoom},get modal(){return modal}};
 })();
