@@ -44,7 +44,7 @@
    "name": "Thử thách tân tu",
    "type": "chain",
    "scope": "country",
-   "desc": "Hạ 3 dị thú quanh kinh đô rồi báo cáo với Tiếp dẫn sứ.",
+   "desc": "Hạ {n} {target} quanh kinh đô rồi báo cáo với {turnIn}.",
    "giver": "npc_tiepdan_1",
    "turnIn": "npc_tiepdan_1",
    "req": {
@@ -55,7 +55,7 @@
      "t": "kill",
      "target": "*",
      "n": 3,
-     "text": "Hạ dị thú"
+     "text": ""
     }
    ],
    "rewards": {
@@ -104,7 +104,7 @@
    "name": "Tuần tra biên ải",
    "type": "chain",
    "scope": "country",
-   "desc": "Đến Hàn Phong Trì và hạ thêm 5 dị thú.",
+   "desc": "Đến Hàn Phong Trì và hạ thêm {o2.n} {o2.target}.",
    "giver": "npc_tiepdan_1",
    "turnIn": "npc_tiepdan_1",
    "req": {
@@ -128,7 +128,7 @@
      "t": "kill",
      "target": "*",
      "n": 5,
-     "text": "Hạ dị thú"
+     "text": ""
     }
    ],
    "rewards": {
@@ -149,7 +149,7 @@
    "name": "Thử thách tân tu",
    "type": "chain",
    "scope": "country",
-   "desc": "Hạ 3 dị thú quanh kinh đô rồi báo cáo với Tiếp dẫn sứ.",
+   "desc": "Hạ {n} {target} quanh kinh đô rồi báo cáo với {turnIn}.",
    "giver": "npc_tiepdan_2",
    "turnIn": "npc_tiepdan_2",
    "req": {
@@ -160,7 +160,7 @@
      "t": "kill",
      "target": "*",
      "n": 3,
-     "text": "Hạ dị thú"
+     "text": ""
     }
    ],
    "rewards": {
@@ -209,7 +209,7 @@
    "name": "Tuần tra biên ải",
    "type": "chain",
    "scope": "country",
-   "desc": "Đến Kim Giáp Trì và hạ thêm 5 dị thú.",
+   "desc": "Đến Kim Giáp Trì và hạ thêm {o2.n} {o2.target}.",
    "giver": "npc_tiepdan_2",
    "turnIn": "npc_tiepdan_2",
    "req": {
@@ -233,7 +233,7 @@
      "t": "kill",
      "target": "*",
      "n": 5,
-     "text": "Hạ dị thú"
+     "text": ""
     }
    ],
    "rewards": {
@@ -254,7 +254,7 @@
    "name": "Thử thách tân tu",
    "type": "chain",
    "scope": "country",
-   "desc": "Hạ 3 dị thú quanh kinh đô rồi báo cáo với Tiếp dẫn sứ.",
+   "desc": "Hạ {n} {target} quanh kinh đô rồi báo cáo với {turnIn}.",
    "giver": "npc_tiepdan_3",
    "turnIn": "npc_tiepdan_3",
    "req": {
@@ -265,7 +265,7 @@
      "t": "kill",
      "target": "*",
      "n": 3,
-     "text": "Hạ dị thú"
+     "text": ""
     }
    ],
    "rewards": {
@@ -314,7 +314,7 @@
    "name": "Tuần tra biên ải",
    "type": "chain",
    "scope": "country",
-   "desc": "Đến Hồng Liên Trì và hạ thêm 5 dị thú.",
+   "desc": "Đến Hồng Liên Trì và hạ thêm {o2.n} {o2.target}.",
    "giver": "npc_tiepdan_3",
    "turnIn": "npc_tiepdan_3",
    "req": {
@@ -338,7 +338,7 @@
      "t": "kill",
      "target": "*",
      "n": 5,
-     "text": "Hạ dị thú"
+     "text": ""
     }
    ],
    "rewards": {
@@ -359,7 +359,7 @@
    "name": "Săn thú sơ khởi",
    "type": "system",
    "scope": "system",
-   "desc": "Hạ 10 dị thú bất kỳ. (Nhiệm vụ hệ thống — chỉnh bằng editmisson.html)",
+   "desc": "Hạ {n} {target}. (Nhiệm vụ hệ thống — chỉnh bằng editmisson.html)",
    "giver": "",
    "turnIn": "",
    "req": {},
@@ -368,7 +368,7 @@
      "t": "kill",
      "target": "*",
      "n": 10,
-     "text": "Hạ dị thú"
+     "text": ""
     }
    ],
    "rewards": {
@@ -387,7 +387,7 @@
    "name": "Du hành thiên hạ",
    "type": "system",
    "scope": "system",
-   "desc": "Ghé thăm 3 thành trì khác nhau.",
+   "desc": "Ghé thăm {n} {target} khác nhau.",
    "giver": "",
    "turnIn": "",
    "req": {
@@ -399,7 +399,7 @@
     {
      "t": "visit",
      "n": 3,
-     "text": "Ghé thăm thành trì"
+     "text": ""
     }
    ],
    "rewards": {
@@ -417,7 +417,7 @@
    "name": "Rèn luyện hằng ngày",
    "type": "daily",
    "scope": "system",
-   "desc": "Hạ 3 dị thú. Làm lại được mỗi ngày trong game.",
+   "desc": "Hạ {n} {target}. Làm lại được mỗi ngày trong game.",
    "giver": "",
    "turnIn": "",
    "req": {},
@@ -426,7 +426,7 @@
      "t": "kill",
      "target": "*",
      "n": 3,
-     "text": "Hạ dị thú"
+     "text": ""
     }
    ],
    "rewards": {
@@ -437,6 +437,39 @@
    },
    "repeat": {
     "days": 1
+   },
+   "choices": [],
+   "next": []
+  },
+  {
+   "id": "qc1_ship",
+   "name": "Vận chuyển linh thạch",
+   "type": "side",
+   "scope": "country",
+   "desc": "Mang {item} từ {from} giao tới {to}. Quãng đường qua vùng có dị thú, hãy cẩn thận.",
+   "giver": "",
+   "turnIn": "",
+   "req": {
+    "country": 1
+   },
+   "objectives": [
+    {
+     "t": "deliver",
+     "from": "pl_1",
+     "to": "pl_2",
+     "itemName": "Rương linh thạch",
+     "n": 1,
+     "text": ""
+    }
+   ],
+   "rewards": {
+    "xp": 50,
+    "stones": {
+     "thuong": 60
+    },
+    "rep": {
+     "Hi Thủ Quốc": 3
+    }
    },
    "choices": [],
    "next": []
