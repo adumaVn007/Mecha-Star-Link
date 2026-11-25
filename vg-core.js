@@ -21,7 +21,7 @@
       p: { lv: 12, xp: 0, hp: 400, max: 400, atk: 40, en: 100, enMax: 100, reg: 8, soul: 100, soulMax: 100, sh: 120, shMax: 120, gear: true, spd: 600 },
       items: { cell: 3, tonic: 3, nano: 3, shcell: 2 },
       stones: { thuong: 0, trung: 0, cao: 0, sieu: 0 },
-      auto: false, pos: { x: sp.x, y: sp.y }, zone: zone ? zone.id : '', events: [], day: 1, kills: 0, cleared: 0,
+      auto: true, pos: { x: sp.x, y: sp.y }, zone: zone ? zone.id : '', events: [], day: 1, kills: 0, cleared: 0,
       pending: null, result: null, log: [] };
   };
   function store() { try { var s = g.localStorage; s.setItem('__t', '1'); s.removeItem('__t'); return s; } catch (e) { try { return g.sessionStorage; } catch (e2) { return null; } } }
@@ -100,6 +100,16 @@
   GM.monRank = function (m) { var r = m && (m.rank != null ? m.rank : m.lv); r = +r; return isFinite(r) ? Math.max(0, Math.min(GM.MAXR, Math.round(r))) : 0; };
   GM.monFoot = function (m) { return GM.monRank(m) >= GM.MAXR ? 1 : 0; };            /* bán kính ô: Thần Giai chiếm 3×3 ô */
   GM.monScale = function (m) { var r = GM.monRank(m); return r >= GM.MAXR ? 4 : 0.8 + 0.025 * r; };  /* bậc càng cao càng to */
+  /* Angry 0-100: độ hung dữ (di chuyển nhiều hơn, truy đuổi nhanh hơn, tầm phát hiện rộng hơn). */
+  GM.monAngry = function (m) { var a = +(m && m.angry); return isFinite(a) ? Math.max(0, Math.min(100, a)) : 0; };
+  /* Phạm vi tấn công (ô): m.range nếu có, mặc định theo bậc: Hoàng-Thiên giai 1, Thánh giai 2, Thần giai 5-10 (theo Angry). */
+  GM.monRange = function (m) {
+    var v = +(m && m.range);
+    if (isFinite(v) && v > 0) return Math.max(1, Math.min(20, Math.round(v)));
+    var r = GM.monRank(m);
+    if (r >= GM.MAXR) return 5 + Math.round(GM.monAngry(m) / 20);
+    return r >= 12 ? 2 : 1;
+  };
   GM.loadMonsters = function (w) {
     return getJSON('database/monsters.json').catch(function () { return null; }).then(function (j) {
       if (!w) return w;
@@ -110,7 +120,7 @@
         if (!(+m.hp > 0) || !(+m.atk > 0) || !(+m.spd > 0)) return;           /* chưa nhập chỉ số cơ bản -> chưa vào game */
         var o = { id: String(m.id), name: String(m.name), shape: m.shape || 'wolf', rank: GM.monRank(m), hp: +m.hp, atk: +m.atk, spd: +m.spd, sh: +m.sh || 0,
           boss: m.kind === 'boss', weight: +m.weight > 0 ? +m.weight : 1, terrain: Array.isArray(m.terrain) ? m.terrain : [], roam: m.roam !== false,
-          img: typeof m.img === 'string' && m.img.indexOf('data:image') === 0 ? m.img : '', desc: m.desc || '', xp: +m.xp || 0, bossMap: m.bossMap || null };
+          img: typeof m.img === 'string' && m.img.indexOf('data:image') === 0 ? m.img : '', desc: m.desc || '', xp: +m.xp || 0, angry: GM.monAngry(m), range: +m.range > 0 ? +m.range : 0, bossMap: m.bossMap || null };
         var i = -1; w.monsters.forEach(function (v, k) { if (v.id === o.id) i = k; });
         if (i >= 0) w.monsters[i] = o; else w.monsters.push(o);
       });

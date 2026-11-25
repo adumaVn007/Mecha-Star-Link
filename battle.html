@@ -91,8 +91,8 @@ button:disabled{opacity:.4;cursor:default}button.pri{background:var(--red);color
 <aside class="card" id="log"></aside>
 </div>
 <div id="modal"></div>
-<script src="vg-github.js?v=20261125"></script>
-<script src="vg-core.js?v=20261125"></script>
+<script src="vg-github.js?v=202611252"></script>
+<script src="vg-core.js?v=202611252"></script>
 <script>
 const GM=VG.game;let SV,EV,PRACTICE=false;
 const $=s=>document.querySelector(s);
@@ -110,7 +110,7 @@ function SHP(m){const S=["wolf","turtle","tiger"];if(S.indexOf(m.shape)>=0)retur
 function newGame(){
  const p=SV.p,B=SV.eqB||{};
  G={b:{max:+B.max||0,atk:+B.atk||0,spd:+B.spd||0,sh:+B.sh||0},lv0:p.lv,lv:p.lv,xp:p.xp,hp:p.hp,max:p.max+(+B.max||0),atk:p.atk+(+B.atk||0),en:p.en,enMax:p.enMax,reg:p.reg,soul:p.soul,soulMax:p.soulMax,sh:p.gear?p.shMax+(+B.sh||0):0,shMax:p.gear?p.shMax+(+B.sh||0):0,gear:p.gear,spd:p.spd+(+B.spd||0),atb:650,
- items:Object.assign({},SV.items),drone:null,spdX:1,auto:!!SV.auto,turn:false,over:false,lock:false,modal:false,od:false,round:0,log:[]};
+ items:Object.assign({},SV.items),drone:null,spdX:5,auto:SV.autoSet?!!SV.auto:true,turn:false,over:false,lock:false,modal:false,od:false,round:0,log:[]};
  spawn();say(PRACTICE?"Chế độ luyện tập: kết quả không được lưu.":"Chiến đấu bắt đầu. Vân Giáp sẵn sàng.");}
 function spawn(){
  const d=EV.def,m=EV.mon,own=m.rank!=null,lv=own?Math.min(MAXR,Math.max(0,m.rank)):Math.min(MAXR,Math.max(0,G.lv+(d.lvDelta||0))),i=own?0:lv-12,f=k=>Math.max(.5,1+k*i),hm=own?1:(d.hpMul||1),am=own?1:(d.atkMul||1);
@@ -146,7 +146,7 @@ function win(){const e=G.e,d=EV.def,g=EV.mon.xp||d.xp||40;G.xp+=g;say(`${e.name}
 function finish(type,xp,st){
  if(PRACTICE)return;const p=SV.p;
  const n=G.lv-G.lv0,B=G.b;Object.assign(p,{lv:G.lv,xp:G.xp,hp:Math.max(1,Math.round(G.hp)),max:G.max-Math.round(B.max*Math.pow(1.1,n)),atk:G.atk-Math.round(B.atk*Math.pow(1.08,n)),en:Math.round(G.en),enMax:G.enMax,reg:G.reg,soul:Math.round(G.soul),soulMax:G.soulMax,spd:G.spd-B.spd,gear:G.gear});
- if(G.gear)p.shMax=G.shMax-B.sh;SV.items=Object.assign({},G.items);SV.auto=!!G.auto;
+ if(G.gear)p.shMax=G.shMax-B.sh;SV.items=Object.assign({},G.items);
  if(st)for(const k in st)SV.stones[k]=(SV.stones[k]||0)+st[k];
  if(type==="flee"&&EV.from)SV.pos={x:EV.from.x,y:EV.from.y};
  if(type==="lose"){p.hp=p.max;p.en=p.enMax;p.soul=p.soulMax;SV.pos={x:EV.spawn.x,y:EV.spawn.y}}
@@ -223,7 +223,7 @@ function tickUI(){
  w("pa",G.atb);t("pa",G.atb);w("opa",G.atb);w("ea",G.e.atb);t("ea",G.e.atb);w("oea",G.e.atb);
  if(G.drone){w("da",G.drone.atb);t("da",G.drone.atb);w("oda",G.drone.atb)}}
 $("#bBag").onclick=bag;$("#bSum").onclick=sumM;$("#bRun").onclick=run;$("#bEnd").onclick=endTurn;$("#bSet").onclick=setM;
-$("#bSpd").onclick=()=>{G.spdX=G.spdX%3+1;renderAll()};
+$("#bSpd").onclick=()=>{G.spdX=({5:1,1:2,2:3,3:5})[G.spdX]||5;renderAll()};
 $("#bAuto").onclick=()=>{G.auto=!G.auto;renderAll();if(G.auto&&G.turn)setTimeout(autoAct,300)};
 GM.loadWorld().then(w=>(typeof GM.loadMonsters==='function'?Promise.resolve().then(()=>GM.loadMonsters(w)):Promise.resolve(w)).catch(()=>w).then(()=>w)).then(w=>{const z=w.zones[0];SV=GM.load(z);const pd=SV.pending;let def,mon;
  if(pd){def=w.events.find(v=>v.id===pd.id);mon=w.monsters.find(v=>v.id===pd.mon)}

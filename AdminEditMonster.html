@@ -61,7 +61,7 @@ function draw(){
  var q=($('#q').value||'').toLowerCase(),L=all().filter(function(m){return(filt=='all'||(m.kind||'monster')==filt)&&(!q||String(m.name).toLowerCase().indexOf(q)>=0)});
  $('#list').innerHTML=L.length?L.map(function(m){var r=+m.rank||0;return'<div class="li'+(cur&&cur.id==m.id?' sel':'')+'" data-id="'+esc(m.id)+'"><div><b>'+esc(m.name)+'</b>'+(m.kind=='boss'?'<span class="tag b">Boss</span>':'')+(m._legacy?'<span class="tag">gốc</span>':'')+'<div class="mu">'+esc(RK[r]||'?')+(r>=48?' · 3×3 ô':'')+' · HP '+esc(m.hp||'—')+' · ATK '+esc(m.atk||'—')+' · SPD '+esc(m.spd||'—')+'</div></div><span class="mu">✎</span></div>'}).join(''):'<div class="mu">Chưa có quái nào. Bấm “＋ Thêm mới”.</div>';
  form()}
-function blank(){return{id:'mon_'+Date.now().toString(36),name:'',kind:'monster',shape:'wolf',rank:12,hp:'',atk:'',spd:'',sh:0,weight:1,terrain:[],roam:true,img:'',desc:'',bossMap:null,_new:1}}
+function blank(){return{id:'mon_'+Date.now().toString(36),name:'',kind:'monster',shape:'wolf',rank:12,hp:'',atk:'',spd:'',sh:0,weight:1,terrain:[],roam:true,angry:0,range:0,img:'',desc:'',bossMap:null,_new:1}}
 function form(){
  var m=cur;if(!m){$('#ed').innerHTML='<div class="mu">Chọn một quái để sửa hoặc bấm “＋ Thêm mới”.</div>';return}
  var r=+m.rank||0,b=m.bossMap||{x:'',y:'',roam:0,respawnDays:3,respawnKills:25,tier:'super'},boss=m.kind=='boss';
@@ -72,6 +72,7 @@ function form(){
  h+='<label>Chỉ số cơ bản (lấy từ database, chỉnh sau)</label><select id="f_imp"><option value="">— Nhập chỉ số từ quái trong database —</option>'+LEG.concat(DBM).map(function(d,i){return'<option value="'+i+'">'+esc(d.name)+' ('+esc(d._src)+') HP '+esc(d.hp)+'</option>'}).join('')+'</select>';
  h+='<div class="row"><div><label>HP</label><input id="f_hp" type="number" min="0" value="'+esc(m.hp)+'"></div><div><label>Tấn công</label><input id="f_atk" type="number" min="0" value="'+esc(m.atk)+'"></div><div><label>Tốc độ</label><input id="f_spd" type="number" min="0" value="'+esc(m.spd)+'"></div><div><label>Lá chắn</label><input id="f_sh" type="number" min="0" value="'+esc(m.sh||0)+'"></div></div>';
  h+='<div class="row"><div><label>Trọng số xuất hiện</label><input id="f_w" type="number" min="0.1" step="0.1" value="'+esc(m.weight||1)+'"></div><div><label>Thưởng EXP (trống = theo sự kiện)</label><input id="f_xp" type="number" min="0" value="'+esc(m.xp||'')+'"></div></div>';
+ h+='<div class="row"><div><label>Phạm vi tấn công (ô; 0 = tự động: Hoàng–Thiên 1, Thánh 2, Thần 5–10)</label><input id="f_range" type="number" min="0" max="20" step="1" value="'+esc(m.range||0)+'"></div><div><label>Angry 0–100 (độ hung dữ)</label><input id="f_angry" type="number" min="0" max="100" step="1" value="'+esc(m.angry||0)+'"></div></div>';
  h+='<label>Địa hình xuất hiện (không chọn = mọi nơi)</label><div class="ck" id="f_ter">'+TER.map(function(t){return'<label><input type="checkbox" value="'+t[0]+'"'+((m.terrain||[]).indexOf(t[0])>=0?' checked':'')+'>'+t[1]+'</label>'}).join('')+'</div>';
  h+='<div class="ck" style="margin-top:8px"><label><input type="checkbox" id="f_roam"'+(m.roam!==false?' checked':'')+'>Di chuyển trên bản đồ</label></div>';
  h+='<label>Mô tả</label><textarea id="f_desc" rows="2">'+esc(m.desc||'')+'</textarea>';
@@ -110,7 +111,7 @@ function read(){
  var m=Object.assign({},cur),n=function(id){var v=$('#'+id).value;return v===''?'':+v};
  m.name=$('#f_name').value.trim();m.id=$('#f_id').value.trim();m.kind=$('#f_kind').value;m.shape=$('#f_shape').value;m.rank=+$('#f_rank').value;
  m.hp=n('f_hp');m.atk=n('f_atk');m.spd=n('f_spd');m.sh=n('f_sh')||0;m.weight=+$('#f_w').value||1;var xp=n('f_xp');m.xp=xp===''?0:xp;
- m.terrain=[].slice.call(document.querySelectorAll('#f_ter input:checked')).map(function(i){return i.value});m.roam=$('#f_roam').checked;m.desc=$('#f_desc').value.trim();
+ m.terrain=[].slice.call(document.querySelectorAll('#f_ter input:checked')).map(function(i){return i.value});m.roam=$('#f_roam').checked;m.range=Math.max(0,Math.min(20,Math.round(+$('#f_range').value||0)));m.angry=Math.max(0,Math.min(100,Math.round(+$('#f_angry').value||0)));m.desc=$('#f_desc').value.trim();
  if(m.kind=='boss')m.bossMap={x:n('b_x'),y:n('b_y'),roam:n('b_roam')||0,respawnDays:n('b_d')||3,respawnKills:n('b_k')||25,tier:$('#b_t').value};else m.bossMap=null;
  return m}
 function save(){

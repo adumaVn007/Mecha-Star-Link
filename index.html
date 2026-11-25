@@ -99,11 +99,11 @@ html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none;backgrou
 <div class="hud" id="toast"></div>
 <div id="ov"><div class="box"><header><h2 id="oT"></h2><button class="x" id="oX" aria-label="Đóng">✕</button></header><div class="bd" id="oB"></div></div></div>
 
-<script src="vg-github.js?v=20261125"></script>
-<script src="vg-core.js?v=20261125"></script>
-<script src="vg-char.js?v=20261125"></script>
-<script src="vg-bag.js?v=20261125"></script>
-<script src="vg-mapart.js?v=20261125"></script>
+<script src="vg-github.js?v=202611252"></script>
+<script src="vg-core.js?v=202611252"></script>
+<script src="vg-char.js?v=202611252"></script>
+<script src="vg-bag.js?v=202611252"></script>
+<script src="vg-mapart.js?v=202611252"></script>
 <script>
 (function(){
 "use strict";
@@ -208,20 +208,55 @@ function ensureBosses(){
   const def=world.events.find(v=>v.tier===(b.tier||'super'))||world.events[world.events.length-1];
   ST.events=ST.events.filter(e=>!(e.x===b.x&&e.y===b.y));
   ST.events.push({uid,id:def.id,mon:m.id,x:b.x,y:b.y,home:{x:b.x,y:b.y},boss:1})}}
-/* Quái di chuyển trên bản đồ */
-function roamStep(now){
- if(!ST||modal||now<nextRoam)return;
- nextRoam=now+GM.ri(MCFG.roamMin,MCFG.roamMax);
- const D=[[1,0],[-1,0],[0,1],[0,-1]];let any=false;
+/* Quái di chuyển trên bản đồ: mỗi 5 phút 1 bước (tính theo đồng hồ thật, kể cả lúc offline -> bù khi mở lại game).
+   Angry càng cao càng có thêm bước. Quái trong phạm vi tấn công sẽ truy đuổi và giao chiến. */
+const ROAM_MS=300000,ROAM_CAP=144;
+const D4=[[1,0],[-1,0],[0,1],[0,-1]];
+function stepMon(e,m,dx,dy){
+ const r=GM.monFoot(m),nx=e.x+dx,ny=e.y+dy;
+ if(e.boss){const b=m.bossMap||{},R=+b.roam||0,h=e.home||{x:e.x,y:e.y};if(!R||Math.abs(nx-h.x)>R||Math.abs(ny-h.y)>R)return false}
+ if(mv&&(Math.abs(nx-mv.tx)<=r&&Math.abs(ny-mv.ty)<=r))return false;
+ if(!footOK(nx,ny,r,e))return false;
+ e.x=nx;e.y=ny;return true}
+function roamTick(){
+ let any=false;
  for(const e of ST.events){
-  const m=monOf(e);if(!m||m.roam===false||Math.random()>MCFG.roamChance)continue;
-  const r=GM.monFoot(m),d=D[GM.ri(0,3)],nx=e.x+d[0],ny=e.y+d[1];
-  if(e.boss){const b=m.bossMap||{},R=+b.roam||0,h=e.home||{x:e.x,y:e.y};if(!R||Math.abs(nx-h.x)>R||Math.abs(ny-h.y)>R)continue}
-  if(mv&&(Math.abs(nx-mv.tx)<=r&&Math.abs(ny-mv.ty)<=r))continue;
-  if(!footOK(nx,ny,r,e))continue;
-  e.x=nx;e.y=ny;any=true}
+  const m=monOf(e);if(!m||m.roam===false)continue;
+  const n=1+(Math.random()<GM.monAngry(m)/100?1:0);
+  for(let i=0;i<n;i++){const d=D4[GM.ri(0,3)];if(stepMon(e,m,d[0],d[1]))any=true}}
+ return any}
+function roamStep(now){
+ if(!ST||modal)return;
+ const t=Date.now();
+ if(!ST.roamT||ST.roamT>t)ST.roamT=t;
+ let n=0,any=false;
+ while(t-ST.roamT>=ROAM_MS&&n<ROAM_CAP){ST.roamT+=ROAM_MS;n++;if(roamTick())any=true}
+ if(n===ROAM_CAP)ST.roamT=t;
  if(any){rebuildEv();moved=true;if(sel)info(sel)}
- if(moved&&now-lastSaveT>MCFG.saveMs){lastSaveT=now;moved=false;persist()}}
+ if(n){persist();moved=false}
+ aggroStep(now)}
+/* Truy đuổi / tấn công người chơi theo phạm vi tấn công (GM.monRange) */
+let nextAggro=0;
+const cheb=(e,r)=>Math.max(0,Math.max(Math.abs(e.x-ST.pos.x),Math.abs(e.y-ST.pos.y))-r);
+function aggroStep(now){
+ if(now<nextAggro||mv||route.length||modal)return;
+ nextAggro=now+600;
+ if(!ST||(ST.aggroCd||0)>Date.now()||ST.pending)return;
+ if(placeAt(ST.pos.x,ST.pos.y))return;
+ let moved2=false;
+ for(const e of ST.events){
+  const m=monOf(e);if(!m||m.roam===false)continue;
+  const r=GM.monFoot(m),ang=GM.monAngry(m),R=Math.round(GM.monRange(m)*(1+ang/200)),d=cheb(e,r);
+  if(d>R)continue;
+  if(d<=1){return ambush(e,m)}
+  if(Math.random()>.5+.5*ang/100)continue;
+  const dx=Math.sign(ST.pos.x-e.x),dy=Math.sign(ST.pos.y-e.y),adx=Math.abs(ST.pos.x-e.x),ady=Math.abs(ST.pos.y-e.y);
+  const opts=adx>=ady?[[dx,0],[0,dy],[0,-dy]]:[[0,dy],[dx,0],[-dx,0]];
+  for(const o of opts){if((o[0]||o[1])&&stepMon(e,m,o[0],o[1])){moved2=true;break}}}
+ if(moved2){rebuildEv();if(sel)info(sel);for(const e of ST.events){const m=monOf(e);if(m&&m.roam!==false&&cheb(e,GM.monFoot(m))<=1){ambush(e,m);return}}}}
+function ambush(e,m){
+ route=[];ST.pending={uid:e.uid,id:e.id,mon:e.mon,x:e.x,y:e.y,from:{x:ST.pos.x,y:ST.pos.y}};ST.result=null;
+ toast((m.name||'Dị thú')+' tấn công bạn!');persist();setTimeout(()=>GM.nav('battle.html'),500)}
 
 const wx=(x,y)=>(x-y)*TW/2,wy=(x,y)=>(x+y)*TH/2;
 const toSX=v=>cw/2+(v-cam.x)*zoom,toSY=v=>ch/2+(v-cam.y)*zoom;
@@ -476,7 +511,7 @@ function buildTaskbar(){
  tb.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||modal||!ST)return;
   if(b.dataset.f)openPanel(b.dataset.f);
   else if(b.dataset.sk)skillTap(SKILLS.find(s=>s.id===b.dataset.sk));
-  else if(b.id==='bAuto'){ST.auto=!ST.auto;persist();renderHUD();toast('Auto chiến đấu: '+(ST.auto?'BẬT':'TẮT')+' (áp dụng khi giao chiến)')}
+  else if(b.id==='bAuto'){ST.auto=!ST.auto;ST.autoSet=1;persist();renderHUD();toast('Auto chiến đấu: '+(ST.auto?'BẬT':'TẮT')+' (ưu tiên, áp dụng mọi trận)')}
   else if(b.id==='bRest')rest(false)})}
 $('#tbhead').onclick=()=>{const w=$('#tbwrap');w.classList.toggle('off');$('#tbarrow').textContent=w.classList.contains('off')?'▸':'▾'};
 $('#idrow').onclick=()=>$('#stat').classList.toggle('mini');
@@ -516,7 +551,7 @@ function init(w){
  world=w;monById=new Map((w.monsters||[]).map(m=>[m.id,m]));zone=wmap?wmap.zone:w.zones[0];zone.eventCount=Math.round((zone.eventCount||0)*MCFG.mult);pmap={};zone.places.forEach(p=>{pmap[p.x*1000+p.y]=p});
  tiles=[];for(let x=0;x<zone.w;x++){tiles[x]=[];for(let y=0;y<zone.h;y++)tiles[x][y]=typ(x,y)}
  ST=GM.load(zone);
- if(ST.zone!==zone.id){const k=ST;ST=GM.defaults(zone);ST.char=k.char;ST.p=k.p;ST.items=k.items;ST.stones=k.stones;ST.auto=k.auto;ST.day=k.day;ST.kills=k.kills;ST.cleared=k.cleared;if(k.jobs)ST.jobs=k.jobs;['inv','eq','petBag','eqB'].forEach(x=>{if(k[x])ST[x]=k[x]})}
+ if(ST.zone!==zone.id){const k=ST;ST=GM.defaults(zone);ST.char=k.char;ST.p=k.p;ST.items=k.items;ST.stones=k.stones;ST.auto=k.auto;ST.autoSet=k.autoSet;ST.day=k.day;ST.kills=k.kills;ST.cleared=k.cleared;if(k.jobs)ST.jobs=k.jobs;['inv','eq','petBag','eqB'].forEach(x=>{if(k[x])ST[x]=k[x]})}
  if(!ST.char)return startCreate();
  boot()}
 function startCreate(){
@@ -551,7 +586,7 @@ function boot(){
   else if(r.type==='lose')say('Mecha bị hạ gục, hồi sinh tại điểm xuất phát.');
   ST.result=null}
  else if(ST.pending){ST.pos=ST.pending.from||ST.pos;say('Rời trận giữa chừng, quay lại bản đồ.')}
- ST.pending=null;
+ ST.pending=null;if(!ST.autoSet)ST.auto=true;ST.aggroCd=Date.now()+30000;
  if(!ST.log.length)say('Tiến vào '+zone.name+'.');else $('#tLog').textContent='✦ '+ST.log[0];
  ST.events=ST.events.filter(e=>world.events.some(v=>v.id===e.id)&&world.monsters.some(m=>m.id===e.mon)&&tiles[e.x]&&!blocked(tiles[e.x][e.y]));
  if(blocked(tiles[ST.pos.x]&&tiles[ST.pos.x][ST.pos.y]))ST.pos={x:zone.spawn.x,y:zone.spawn.y};
