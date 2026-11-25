@@ -71,3 +71,7 @@ Save: `ST.q = {st:{id:{s,p[],d,n,ch}}, flags, rep, ach, pin, track{kills,boss,vi
 ## `database/npc.json` (v:2) — trường mở rộng cho NPC (tương thích ngược với v:1)
 Giữ nguyên trường cũ. Thêm (tùy chọn): `functions[]` (quest | shop | rest | guide | job:<id nghề>), `shop[{id,price{thuong},q}]` (id = vật phẩm cũ cell/tonic/nano/shcell hoặc id trong mecha-studio.json), `restCost{}`, `guide`, `dialog {start,nodes{id:{text|[{if,text}],choices[{text,go,if,do[]}]}}}` (do: accept|flag|rep|give|shop|rest|openquests|end),
 `schedule {mode:'patrol', stepMin, path[{x,y}]}`, `showIf` (cùng cú pháp `req`). `zone:'the_gioi_van_giap'` = ô tuyệt đối trên bản đồ 300×600. Module: `vg-quest.js`.
+
+### Biến số trong mô tả nhiệm vụ (`desc`, `onGive`, `onDone`, `objectives[].text`)
+`{n}` `{target}` `{from}` `{to}` `{item}` `{x}` `{y}` `{fn}` (của mục tiêu 1; mục tiêu k dùng `{ok.n}`, `{ok.target}`…), `{giver}` `{turnIn}` `{reward}` `{name}`. Tên lấy từ database (quái, NPC, địa điểm). `text` trống = tự sinh theo loại mục tiêu.
+Mục tiêu mới `deliver`: `{t:'deliver', from:<id địa điểm hoặc NPC>, to:<id>, itemName}` — tới `from` để nhận, tới `to` để giao (2 bước, lưu trong save).

@@ -55,7 +55,16 @@ function F(o,l,p,t,ex){ex=ex||'';var ta=(t=='map'||t=='items'||t=='shop'||t=='js
  return '<div><label>'+l+'</label>'+(ta?'<textarea rows="'+(t=='json'?9:3)+'" ':'<input '+(t=='n'?'type="number" inputmode="numeric" ':'')+'value="'+esc(show(o,p,t))+'" ')+'data-p="'+p+'" data-t="'+(t||'')+'" '+ex+(ta?'>'+esc(show(o,p,t))+'</textarea>':'>')+'</div>'}
 function S(o,l,p,opts){var v=getp(o,p);return '<div><label>'+l+'</label><select data-p="'+p+'">'+opts.map(function(x){return '<option value="'+esc(x[0])+'"'+(String(v==null?'':v)===String(x[0])?' selected':'')+'>'+esc(x[1])+'</option>'}).join('')+'</select></div>'}
 var NPCO=function(){return [['','— không (nhận/trả trong bảng Nhiệm vụ)']].concat(N.npcs.map(function(n){return [n.id,n.name+' ('+n.id+')']}))};
-var TGT={talk:'NPC',kill:'Quái',collect:'Vật phẩm',use:'NPC',explore:'—',visit:'Thành trì (trống = bất kỳ)'};
+var TGT={talk:'NPC',kill:'Quái',collect:'Vật phẩm',use:'NPC',explore:'—',visit:'Thành trì (trống = bất kỳ)',deliver:'—'};
+var DEF={kill:'Tiêu diệt {n} {target}',collect:'Thu thập {n} {target}',talk:'Trò chuyện với {target}',use:'Dùng chức năng {fn} của {target}',explore:'Đến ô ({x}, {y})',visit:'Ghé thăm {n} thành trì',deliver:'Giao {item} từ {from} đến {to}'};
+var MN={},PN={},IN={};
+function nm(id){if(!id||id=='*')return '';if(id=='boss')return 'Boss';var n=N.npcs.filter(function(x){return x.id==id})[0];if(n)return n.name;return PN[id]||MN[id]||IN[id]||id}
+function vars(q){var V={name:q.name||'',giver:nm(q.giver)||'bảng nhiệm vụ',turnIn:nm(q.turnIn||q.giver)||'bảng nhiệm vụ',reward:'(phần thưởng)'};
+ (q.objectives||[]).forEach(function(o,i){var tg=o.t=='kill'&&(!o.target||o.target=='*')?'dị thú bất kỳ':(o.t=='visit'&&!o.target?'thành trì bất kỳ':nm(o.target)),m={n:o.t=='deliver'?1:(+o.n||1),target:tg,from:nm(o.from)||o.from||'?',to:nm(o.to)||o.to||'?',item:o.itemName||nm(o.item)||o.item||'vật phẩm',x:o.x,y:o.y,fn:o.fn||''};
+  for(var k in m){V['o'+(i+1)+'.'+k]=m[k];if(i==0)V[k]=m[k]}});return V}
+function fmt(t,V){return String(t==null?'':t).replace(/\{([A-Za-z0-9_.]+)\}/g,function(a,k){return V[k]!=null?V[k]:a})}
+function pv(q){var V=vars(q),h='<b>Xem trước mô tả:</b> '+esc(fmt(q.desc||'',V));(q.objectives||[]).forEach(function(o,i){var m={};['n','target','from','to','item','x','y','fn'].forEach(function(k){m[k]=V['o'+(i+1)+'.'+k]});h+='<br>◻ '+esc(fmt(o.text||DEF[o.t]||o.t,Object.assign({},V,m)))});return h}
+var PLN=function(){return [['','— chọn —']].concat(L.place.map(function(x){return [x[0],'🏯 '+x[1]]})).concat(N.npcs.map(function(n){return [n.id,'🧙 '+n.name]}))};
 function tgtOpts(t){if(t=='talk'||t=='use')return NPCO().slice(1);if(t=='kill')return [['*','Quái bất kỳ'],['boss','Boss bất kỳ']].concat(L.mon);if(t=='collect')return LEG.concat(L.item);if(t=='visit')return [['','Bất kỳ']].concat(L.place);return null}
 /* ---------- vẽ giao diện ---------- */
 function render(){
@@ -65,7 +74,7 @@ function rQ(){
  var h='<div class="card"><div class="row"><div><label>Chọn nhiệm vụ ('+Q.quests.length+')</label><select id="qsel">'+Q.quests.map(function(q,i){return '<option value="'+i+'"'+(i==cur?' selected':'')+'>['+esc(q.type)+'] '+esc(q.name||q.id)+'</option>'}).join('')+'</select></div><button class="btn fix" data-a="qnew">＋ Thêm</button></div></div>';
  var q=Q.quests[cur];if(!q)return h+'<div class="card mu">Chưa có nhiệm vụ. Bấm “＋ Thêm”.</div>';
  h+='<div class="card"><h2>Thông tin</h2><div class="row">'+F(q,'ID (không đổi sau khi tạo)','id','',' readonly')+F(q,'Tên','name')+'</div><div class="row">'+
- S(q,'Loại','type',[['system','Hệ thống'],['main','Chính tuyến'],['side','Phụ tuyến'],['chain','Chuỗi'],['daily','Lặp lại (ngày)'],['repeat','Lặp lại']])+S(q,'Tab hiển thị','scope',[['country','Quốc gia'],['sect','Tông môn'],['system','Hệ thống']])+'</div>'+F(q,'Mô tả','desc')+
+ S(q,'Loại','type',[['system','Hệ thống'],['main','Chính tuyến'],['side','Phụ tuyến'],['chain','Chuỗi'],['daily','Lặp lại (ngày)'],['repeat','Lặp lại']])+S(q,'Tab hiển thị','scope',[['country','Quốc gia'],['sect','Tông môn'],['system','Hệ thống']])+'</div>'+F(q,'Mô tả (dùng được biến số, xem khung bên dưới)','desc')+'<div class="sub mu" id="pvd">'+pv(q)+'</div><div class="mu">Biến số: <code>{n}</code> số lượng · <code>{target}</code> tên quái/NPC/vật phẩm · <code>{from}</code> <code>{to}</code> nơi nhận/giao · <code>{item}</code> tên vật phẩm · <code>{x}</code> <code>{y}</code> ô · <code>{giver}</code> <code>{turnIn}</code> NPC giao/trả · <code>{reward}</code> thưởng · <code>{name}</code> tên nhiệm vụ. Với mục tiêu thứ 2, 3…: <code>{o2.n}</code>, <code>{o2.target}</code>, <code>{o2.to}</code>… Tên được lấy từ database nên đổi tên quái/NPC/thành thì mô tả tự đổi theo.</div>'+
  '<div class="row">'+F(q,'Lời khi nhận','onGive')+F(q,'Lời khi trả','onDone')+'</div></div>';
  h+='<div class="card"><h2>Nơi nhận / trả</h2><div class="row">'+S(q,'NPC giao nhiệm vụ','giver',NPCO())+S(q,'NPC nhận trả (trống = NPC giao)','turnIn',NPCO())+'</div>'+
  '<div class="mu">Không chọn NPC: nhận/trả ngay trong bảng Nhiệm vụ. Có thể giới hạn theo vị trí (ô x, y, bán kính r; để trống = bất kỳ nơi nào).</div>'+
@@ -74,8 +83,9 @@ function rQ(){
  F(q,'Phải hoàn thành các nhiệm vụ (id, cách nhau dấu phẩy)','req.quest','list')+F(q,'Phải CÓ cờ nhân quả','req.flag','list')+F(q,'Phải KHÔNG có cờ','req.noFlag','list')+F(q,'Danh tiếng tối thiểu (mỗi dòng: tên phe=số)','req.rep','map')+'</div>';
  h+='<div class="card"><h2>Mục tiêu ('+q.objectives.length+')</h2>';
  q.objectives.forEach(function(o,i){var p='objectives.'+i+'.',op=tgtOpts(o.t);
-  h+='<div class="sub"><div class="row">'+S(q,'Kiểu',p+'t',[['kill','Tiêu diệt'],['collect','Thu thập'],['talk','Trò chuyện NPC'],['use','Dùng chức năng NPC'],['explore','Khám phá ô'],['visit','Ghé thành trì']])+
-  (op?S(q,TGT[o.t],p+'target',op):'')+F(q,'Số lượng',p+'n','n')+'<button class="btn r s fix" data-a="odel" data-i="'+i+'">✕</button></div>'+F(q,'Mô tả hiển thị',p+'text')+
+  h+='<div class="sub"><div class="row">'+S(q,'Kiểu',p+'t',[['deliver','Giao vật phẩm A → B'],['kill','Tiêu diệt'],['collect','Thu thập'],['talk','Trò chuyện NPC'],['use','Dùng chức năng NPC'],['explore','Khám phá ô'],['visit','Ghé thành trì']])+
+  (op?S(q,TGT[o.t],p+'target',op):'')+(o.t=='deliver'?'':F(q,'Số lượng',p+'n','n'))+'<button class="btn r s fix" data-a="odel" data-i="'+i+'">✕</button></div>'+F(q,'Mô tả hiển thị (trống = tự động: “'+(DEF[o.t]||'')+'”)',p+'text')+
+  (o.t=='deliver'?'<div class="row">'+S(q,'Nhận vật phẩm tại',p+'from',PLN())+S(q,'Giao tại',p+'to',PLN())+'</div>'+F(q,'Tên vật phẩm vận chuyển',p+'itemName'):'')+
   (o.t=='explore'?'<div class="row">'+F(q,'x',p+'x','n')+F(q,'y',p+'y','n')+F(q,'bán kính',p+'r','n')+'</div>':'')+
   (o.t=='use'?F(q,'Chức năng (shop/rest/guide/buy, trống = bất kỳ)',p+'fn'):'')+
   (o.t=='collect'?'<label><input type="checkbox" data-p="'+p+'consume" '+(o.consume?'checked':'')+'> Trừ vật phẩm khi trả nhiệm vụ</label>':'')+'</div>'});
@@ -113,7 +123,8 @@ document.addEventListener('change',function(e){var el=e.target;
  var p=el.dataset.p;if(!p)return;var root=tab=='q'?Q.quests[cur]:tab=='n'?N.npcs[ncur]:Q.achievements,v;
  try{v=conv(el)}catch(x){msg('JSON không hợp lệ ở ô vừa sửa.',0);return}
  if(v===''||v===undefined){/* ô trống = xóa trường */var a=p.split('.'),o=root;for(var i=0;i<a.length-1&&o;i++)o=o[a[i]];if(o&&typeof o=='object')delete o[a[a.length-1]]}else setp(root,p,v);
- if(tab=='q'){var q=root;if(el.dataset.p&&/\.t$/.test(p)&&/^objectives/.test(p)){var i2=+p.split('.')[1];q.objectives[i2].target=q.objectives[i2].t=='kill'?'*':'';render()}}
+ if(tab=='q'){var q=root;if(el.dataset.p&&/\.t$/.test(p)&&/^objectives/.test(p)){var i2=+p.split('.')[1];q.objectives[i2].target=q.objectives[i2].t=='kill'?'*':'';if(q.objectives[i2].t=='deliver'){q.objectives[i2].n=1;q.objectives[i2].itemName=q.objectives[i2].itemName||'Vật phẩm'}render()}}
+ if(tab=='q'&&$('pvd'))$('pvd').innerHTML=pv(Q.quests[cur]);
  draft();msg('Đã chỉnh (nháp trên máy). Bấm “Lưu LÊN GitHub” để đưa vào game.',1)});
 document.addEventListener('click',function(e){var b=e.target.closest('[data-a],[data-tab]');if(!b)return;
  if(b.dataset.tab){tab=b.dataset.tab;render();return}var a=b.dataset.a,i=+b.dataset.i,q=Q.quests[cur];
@@ -131,7 +142,7 @@ document.addEventListener('click',function(e){var b=e.target.closest('[data-a],[
 function check(){var bad=[],ids={},npc={};N.npcs.forEach(function(n){npc[n.id]=1});Q.quests.forEach(function(q){q.objectives.forEach(function(o){if(o.t=='kill'&&!o.target)o.target='*'});
  if(ids[q.id])bad.push('Trùng ID nhiệm vụ: '+q.id);ids[q.id]=1;if(!q.name)bad.push(q.id+': chưa có tên');
  if(!q.objectives.length)bad.push(q.name+': cần ít nhất 1 mục tiêu');if(q.giver&&!npc[q.giver])bad.push(q.name+': NPC giao không tồn tại');if(q.turnIn&&!npc[q.turnIn])bad.push(q.name+': NPC trả không tồn tại');
- q.objectives.forEach(function(o,i){if((o.t=='talk'||o.t=='use')&&!npc[o.target])bad.push(q.name+' mục tiêu '+(i+1)+': NPC không tồn tại');if(o.t=='explore'&&(o.x===''||o.x==null||o.y==null))bad.push(q.name+' mục tiêu '+(i+1)+': thiếu ô x,y');if(o.t=='collect'&&!o.target)bad.push(q.name+' mục tiêu '+(i+1)+': chưa chọn vật phẩm')});
+ q.objectives.forEach(function(o,i){if((o.t=='talk'||o.t=='use')&&!npc[o.target])bad.push(q.name+' mục tiêu '+(i+1)+': NPC không tồn tại');if(o.t=='explore'&&(o.x===''||o.x==null||o.y==null))bad.push(q.name+' mục tiêu '+(i+1)+': thiếu ô x,y');if(o.t=='deliver'&&(!o.from||!o.to||o.from==o.to))bad.push(q.name+' mục tiêu '+(i+1)+': cần chọn nơi nhận và nơi giao khác nhau');if(o.t=='collect'&&!o.target)bad.push(q.name+' mục tiêu '+(i+1)+': chưa chọn vật phẩm')});
  (q.next||[]).forEach(function(n){if(n==q.id)bad.push(q.name+': tự mở khóa chính nó')}); });
  Q.quests.forEach(function(q){(q.next||[]).concat((q.req&&q.req.quest)||[]).forEach(function(n){if(!ids[n])bad.push(q.name+': tham chiếu nhiệm vụ không tồn tại "'+n+'"')})});return bad}
 function load(){return Promise.all([get(QP),get(NP),get('database/world-events.json'),get('database/monsters.json'),get('database/mecha-studio.json'),get('database/jobs.json'),get('database/worldmap.json')]).then(function(a){
@@ -141,6 +152,7 @@ function load(){return Promise.all([get(QP),get(NP),get('database/world-events.j
  var mon={};((a[2]&&a[2].monsters)||[]).concat((a[3]&&a[3].monsters)||[]).forEach(function(m){mon[m.id]=m.name});L.mon=Object.keys(mon).map(function(k){return [k,mon[k]+' ('+k+')']});
  L.item=[];if(a[4])['items','materials','equips'].forEach(function(k){(a[4][k]||[]).forEach(function(x){L.item.push([x.id,(x.name||x.id)+' ('+x.id+')'])})});
  L.job=((a[5]&&a[5].jobs)||[]).map(function(j){return [j.id,j.name]});L.place=((a[6]&&a[6].places)||[]).filter(function(p){return p.kind!='realm'}).map(function(p){return [p.id,p.name]});
+ L.mon.forEach(function(x){MN[x[0]]=x[1].replace(/ \([^)]*\)$/,'')});L.item.forEach(function(x){IN[x[0]]=x[1].replace(/ \([^)]*\)$/,'')});LEG.forEach(function(x){IN[x[0]]=x[1]});L.place.forEach(function(x){PN[x[0]]=x[1]});
  $('src').textContent='Nguồn: '+from+' · '+Q.quests.length+' nhiệm vụ · '+N.npcs.length+' NPC · '+Q.achievements.length+' thành tựu.';render()})}
 $('bUp').onclick=function(){var bad=check();if(bad.length){msg('✘ Chưa lưu — cần sửa:\n• '+bad.join('\n• '),0);return}
  if(!confirm('Ghi '+Q.quests.length+' nhiệm vụ + '+N.npcs.length+' NPC lên GitHub?'))return;

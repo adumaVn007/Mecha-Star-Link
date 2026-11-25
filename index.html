@@ -427,6 +427,7 @@ function arrive(){
  const{x,y}=ST.pos,ev=evAt(x,y),pl=placeAt(x,y),nn=VG.quest.npcAt(x,y);
  if(nn)return VG.quest.openNpc(nn);
  if(ev)return openEvent(ev);
+ if(pl)VG.quest.reach(pl.id);
  if(isTown(pl)){VG.quest.visit(pl.id);return openCity(pl)}
  if(pl)return openRealm(pl)}
 function openEvent(ev){
@@ -622,7 +623,7 @@ function boot(){
 buildTaskbar();resize();
 window.addEventListener('resize',resize);window.addEventListener('orientationchange',()=>setTimeout(resize,200));
 window.addEventListener('pageshow',e=>{if(e.persisted)location.reload()});
-VG.quest.init({ST:()=>ST,GM,IT,openModal,closeModal,toast,say,persist,renderHUD,rest,jobName:id=>{const b=JOBS&&JOBS.jobs&&JOBS.jobs.find(j=>j.id===id);return b?b.name:''}});
+VG.quest.init({ST:()=>ST,GM,IT,monName:id=>{const m=world&&world.monsters.find(v=>v.id===id);return m?m.name:''},placeName:id=>{const p=zone&&zone.places.find(v=>v.id===id);return p?p.name:''},placeHere:()=>{const p=ST&&zone?placeAt(ST.pos.x,ST.pos.y):null;return p?p.id:''},openModal,closeModal,toast,say,persist,renderHUD,rest,jobName:id=>{const b=JOBS&&JOBS.jobs&&JOBS.jobs.find(j=>j.id===id);return b?b.name:''}});
 $('#qtrack').onclick=()=>{if(modal||!ST||!ST.q||!ST.q.pin)return;const d=VG.quest.detail(ST.q.pin);openModal(d[0],d[1])};
 loadJobs();GM.restore().catch(()=>0).then(()=>GM.loadWorld()).then(w=>(typeof GM.loadMonsters==='function'?Promise.resolve().then(()=>GM.loadMonsters(w)):Promise.resolve(w)).catch(()=>w).then(()=>w)).then(w=>loadMap().then(()=>VG.quest.load().catch(()=>0)).then(()=>init(w))).catch(e=>fail(e.message||String(e)));
 requestAnimationFrame(loop);

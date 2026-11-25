@@ -74,7 +74,7 @@
   };
 
   /* ===== Trạng thái nhiệm vụ ===== */
-  Q.objN = function (o) { return Math.max(1, +o.n || 1); };
+  Q.objN = function (o) { return o.t === 'deliver' ? 2 : Math.max(1, +o.n || 1); };
   Q.have = function (id) { var S = ST(); return (S.inv && S.inv[id] | 0) + (S.petBag && S.petBag[id] | 0) + (S.items && S.items[id] | 0); };
   Q.prog = function (q, i) {
     var o = q.objectives[i], st = Q.ensure(ST()).st[q.id], n = Q.objN(o);
@@ -106,20 +106,72 @@
     S.q.st[id] = { s: 'active', p: (q.objectives || []).map(function () { return 0; }), d: S.day, n: old ? old.n | 0 : 0, ch: -1 };
     if (!S.q.pin || !Q.def(S.q.pin) || Q.state(Q.def(S.q.pin)) === 'claimed') S.q.pin = id;
     Q.C.say('Nhận nhiệm vụ: ' + q.name + '.'); Q.C.persist(); Q.move(); Q.refresh();
+    if (Q.C.placeHere) Q.reach(Q.C.placeHere());
     return { ok: true, msg: 'Đã nhận nhiệm vụ: ' + q.name };
   };
 
+  /* ===== Biến số trong mô tả: {n} {target} {from} {to} {item} {x} {y} {fn} | {o2.n} … | {giver} {turnIn} {reward} {name} ===== */
+  Q.nameOf = function (id) {
+    if (id === '*' || id === '' || id == null) return '';
+    if (id === 'boss') return 'Boss';
+    var n = Q.npc(id); if (n) return n.name;
+    var C = Q.C, v = C.placeName && C.placeName(id); if (v) return v;
+    v = C.monName && C.monName(id); if (v) return v;
+    return (C.IT && C.IT[id] && C.IT[id][0]) || id;
+  };
+  Q.vars = function (q) {
+    var V = { name: q.name || '', giver: Q.nameOf(q.giver) || 'bảng nhiệm vụ', turnIn: Q.nameOf(q.turnIn || q.giver) || 'bảng nhiệm vụ', reward: Q.rewardText(q.rewards) };
+    (q.objectives || []).forEach(function (o, i) {
+      var tg = o.t === 'kill' && (!o.target || o.target === '*') ? 'dị thú bất kỳ' : (o.t === 'visit' && !o.target ? 'thành trì bất kỳ' : Q.nameOf(o.target)),
+        m = { n: Q.objN(o), target: tg, from: Q.nameOf(o.from) || o.from || '?', to: Q.nameOf(o.to) || o.to || '?', item: o.itemName || Q.nameOf(o.item) || o.item || 'vật phẩm', x: o.x, y: o.y, fn: o.fn || '' };
+      if (o.t === 'deliver') m.n = 1;
+      for (var k in m) { V['o' + (i + 1) + '.' + k] = m[k]; if (i === 0) V[k] = m[k]; }
+    });
+    return V;
+  };
+  Q.fmt = function (t, V) { return String(t == null ? '' : t).replace(/\{([A-Za-z0-9_.]+)\}/g, function (a, k) { return V && V[k] != null ? V[k] : a; }); };
+  var DEF = { kill: 'Tiêu diệt {n} {target}', collect: 'Thu thập {n} {target}', talk: 'Trò chuyện với {target}', use: 'Dùng chức năng {fn} của {target}', explore: 'Đến ô ({x}, {y})', visit: 'Ghé thăm {n} thành trì', deliver: 'Giao {item} từ {from} đến {to}' };
+  Q.objText = function (q, i) {
+    var o = q.objectives[i], V = Q.vars(q), m = {};
+    ['n', 'target', 'from', 'to', 'item', 'x', 'y', 'fn'].forEach(function (k) { m[k] = V['o' + (i + 1) + '.' + k]; });
+    return Q.fmt(o.text || DEF[o.t] || o.t, Object.assign({}, V, m));
+  };
+  Q.progText = function (q, i) {
+    var o = q.objectives[i], v = Q.prog(q, i);
+    if (o.t === 'deliver') return v >= 2 ? 'Đã giao' : v === 1 ? 'Đã nhận vật phẩm — đang đi giao' : 'Chưa nhận vật phẩm';
+    return v + '/' + Q.objN(o);
+  };
+  var nq = [], nt = 0;
+  Q.notify = function (m) { nq.push(m); clearTimeout(nt); nt = setTimeout(function () { var t = nq.join(' · '); nq = []; Q.C.toast(t); }, 80); };
+
   /* ===== Sự kiện tiến độ ===== */
-  function bump(test, note) {
+  function bump(test) {
     var S = ST(), q = Q.ensure(S), changed = false;
     Q.D.quests.forEach(function (d) {
       var st = q.st[d.id]; if (!st || st.s !== 'active') return;
-      var was = Q.complete(d);
-      (d.objectives || []).forEach(function (o, i) { if (o.t === 'collect') return; if (test(o, i, st) && (st.p[i] | 0) < Q.objN(o)) { st.p[i] = (st.p[i] | 0) + 1; changed = true; } });
-      if (changed && !was && Q.complete(d)) Q.C.toast('✔ Đủ mục tiêu: ' + d.name + ' — hãy nhận thưởng.');
+      var was = Q.complete(d), hit = -1;
+      (d.objectives || []).forEach(function (o, i) { if (o.t === 'collect' || o.t === 'deliver') return; if (test(o, i, st) && (st.p[i] | 0) < Q.objN(o)) { st.p[i] = (st.p[i] | 0) + 1; changed = true; hit = i; } });
+      if (hit >= 0) {
+        if (Q.complete(d)) Q.notify('✔ ' + d.name + ': ' + Q.objText(d, hit) + ' ' + Q.progText(d, hit) + ' — đủ mục tiêu, hãy nhận thưởng');
+        else Q.notify('📜 ' + d.name + ': ' + Q.objText(d, hit) + ' ' + Q.progText(d, hit));
+        Q.C.say(d.name + ': ' + Q.objText(d, hit) + ' ' + Q.progText(d, hit));
+      } else if (!was && Q.complete(d)) Q.notify('✔ Đủ mục tiêu: ' + d.name);
     });
     if (changed) { Q.C.persist(); Q.refresh(); }
   }
+  /* Giao vật phẩm: tới nơi nhận (from) → p=1; tới nơi giao (to) → p=2. id = id thành trì/địa điểm hoặc id NPC. */
+  Q.reach = function (id) {
+    if (!id) return; var S = ST(), q = Q.ensure(S), ch = false;
+    Q.D.quests.forEach(function (d) {
+      var st = q.st[d.id]; if (!st || st.s !== 'active') return;
+      (d.objectives || []).forEach(function (o, i) {
+        if (o.t !== 'deliver') return; var p = st.p[i] | 0;
+        if (p === 0 && o.from === id) { st.p[i] = 1; ch = true; Q.notify('📦 ' + d.name + ': đã nhận ' + (o.itemName || 'vật phẩm') + ' tại ' + Q.nameOf(id)); }
+        else if (p === 1 && o.to === id) { st.p[i] = 2; ch = true; Q.notify(Q.complete(d) ? '✔ ' + d.name + ': đã giao ' + (o.itemName || 'vật phẩm') + ' tại ' + Q.nameOf(id) + ' — hãy nhận thưởng' : '📦 ' + d.name + ': đã giao tại ' + Q.nameOf(id)); }
+      });
+    });
+    if (ch) { Q.C.persist(); Q.refresh(); }
+  };
   Q.kill = function (monId, isBoss, name) {
     var t = Q.ensure(ST()).track; if (monId) t.kills[monId] = (t.kills[monId] || 0) + 1; if (isBoss) t.boss++;
     t.names = t.names || {}; if (monId && name) t.names[monId] = name;
@@ -137,7 +189,7 @@
     Q.D.quests.forEach(function (d) {
       var st = q.st[d.id]; if (!st || st.s !== 'active') return;
       (d.objectives || []).forEach(function (o, i) {
-        if (o.t === 'explore' && !(st.p[i] | 0) && Math.max(Math.abs(p.x - +o.x), Math.abs(p.y - +o.y)) <= (+o.r || 0)) { st.p[i] = 1; changed = true; Q.C.toast('✔ Đã tới: ' + (o.text || 'điểm đến')); }
+        if (o.t === 'explore' && !(st.p[i] | 0) && Math.max(Math.abs(p.x - +o.x), Math.abs(p.y - +o.y)) <= (+o.r || 0)) { st.p[i] = 1; changed = true; Q.notify('✔ ' + d.name + ': đã tới ' + (o.text || 'điểm đến')); }
       });
     });
     if (changed) { Q.C.persist(); Q.refresh(); }
@@ -209,7 +261,7 @@
   };
   Q.achCheck = function () {
     var S = ST(), q = Q.ensure(S), ch = false;
-    (Q.D.achievements || []).forEach(function (a) { if (!q.track.seen[a.id] && Q.stat(a.stat) >= +a.goal) { q.track.seen[a.id] = 1; ch = true; Q.C.toast('🏆 Thành tựu: ' + a.name); } });
+    (Q.D.achievements || []).forEach(function (a) { if (!q.track.seen[a.id] && Q.stat(a.stat) >= +a.goal) { q.track.seen[a.id] = 1; ch = true; Q.notify('🏆 Thành tựu: ' + a.name); } });
     if (ch) Q.C.persist();
   };
   Q.achClaim = function (id) {
@@ -226,7 +278,7 @@
     var el = document.getElementById('qtrack'), S = ST(); if (!el || !S) return;
     var q = S.q && S.q.pin ? Q.def(S.q.pin) : null, s = q ? Q.state(q) : '';
     if (!q || (s !== 'active' && s !== 'done')) { el.style.display = 'none'; return; }
-    var t = s === 'done' ? '✔ Đủ mục tiêu — nhận thưởng' : (q.objectives || []).map(function (o, i) { return (o.text || o.t) + ' ' + Q.prog(q, i) + '/' + Q.objN(o); }).join(' · ');
+    var t = s === 'done' ? '✔ Đủ mục tiêu — nhận thưởng' : (q.objectives || []).map(function (o, i) { return Q.objText(q, i) + ' ' + Q.progText(q, i); }).join(' · ');
     el.innerHTML = '<b>' + esc(q.name) + '</b><span>' + esc(t) + '</span>'; el.style.display = 'block';
   };
   function where(id, at) { var n = id && Q.npc(id); if (n) return 'NPC ' + esc(n.name); if (at) return 'ô (' + at.x + ', ' + at.y + ')'; return null; }
@@ -234,7 +286,7 @@
     var by = { active: [], done: [], avail: [], claimed: [] };
     Q.D.quests.forEach(function (q) { if ((q.scope || 'system') !== scope) return; var s = Q.state(q); if (by[s]) by[s].push(q); });
     var one = function (q, s) {
-      var o = q.objectives || [], pr = o.length ? o.map(function (x, i) { return Q.prog(q, i) + '/' + Q.objN(x); }).join(' · ') : '';
+      var o = q.objectives || [], pr = o.length ? o.map(function (x, i) { return x.t === 'deliver' ? (Q.prog(q, i) >= 2 ? '2/2' : Q.prog(q, i) + '/2') : Q.prog(q, i) + '/' + Q.objN(x); }).join(' · ') : '';
       return '<button class="btn" data-a="q:d:' + esc(q.id) + '">' + (s === 'done' ? '✔ ' : s === 'avail' ? '❗ ' : s === 'claimed' ? '✓ ' : '📜 ') + esc(q.name) + '<small>' + Q.stateName(s) + (pr && (s === 'active' || s === 'done') ? ' · ' + pr : '') + '</small></button>';
     };
     var h = '', add = function (t, k) { if (by[k].length) h += '<h2 style="font-size:13px;margin:10px 0 2px;color:var(--gold)">' + t + ' (' + by[k].length + ')</h2>' + by[k].map(function (q) { return one(q, k); }).join(''); };
@@ -253,8 +305,8 @@
   Q.detail = function (id) {
     var q = Q.def(id); if (!q) return Q.panel(); var s = Q.state(q), S = ST(), h = '';
     h += '<p><span class="tag" style="background:#e4c27b">' + esc({ main: 'Chính tuyến', side: 'Phụ tuyến', chain: 'Chuỗi', system: 'Hệ thống', daily: 'Lặp lại', repeat: 'Lặp lại' }[q.type] || q.type || 'Nhiệm vụ') + '</span><b style="color:var(--gold)">' + esc(q.name) + '</b></p>';
-    h += '<p>' + esc(q.desc || '') + '</p>' + row('Trạng thái', Q.stateName(s));
-    (q.objectives || []).forEach(function (o, i) { var v = Q.prog(q, i), n = Q.objN(o); h += '<div class="jr" style="padding:6px 0;border-bottom:1px dotted #776644">' + (v >= n ? '✔ ' : '◻ ') + esc(o.text || o.t) + '<small style="display:block;color:var(--mut)">' + v + '/' + n + '</small>' + bar(v, n) + '</div>'; });
+    h += '<p>' + esc(Q.fmt(q.desc || '', Q.vars(q))) + '</p>' + row('Trạng thái', Q.stateName(s));
+    (q.objectives || []).forEach(function (o, i) { var v = Q.prog(q, i), n = Q.objN(o); h += '<div class="jr" style="padding:6px 0;border-bottom:1px dotted #776644">' + (v >= n ? '✔ ' : '◻ ') + esc(Q.objText(q, i)) + '<small style="display:block;color:var(--mut)">' + esc(Q.progText(q, i)) + '</small>' + bar(v, n) + '</div>'; });
     h += row('Thưởng', esc(Q.rewardText(q.rewards)));
     if (q.choices && q.choices.length) h += '<div class="note">Khi trả nhiệm vụ bạn sẽ chọn hướng giải quyết — lựa chọn ảnh hưởng danh tiếng và các nhiệm vụ/hội thoại sau này.</div>';
     var gv = where(q.giver, q.giveAt), tn = where(q.turnIn || (q.giver || ''), q.turnAt);
@@ -307,7 +359,7 @@
   var V = null; /* phiên hội thoại hiện tại {npc,node,msg,view} */
   function pick(t) { if (Array.isArray(t)) { var r = t.filter(function (x) { return Q.cond(x['if']); })[0]; return r ? r.text : ''; } return t || ''; }
   Q.openNpc = function (n, first) {
-    if (first !== false) { V = { npc: n.id, node: null, msg: '', view: 'main' }; Q.talk(n.id); }
+    if (first !== false) { V = { npc: n.id, node: null, msg: '', view: 'main' }; Q.talk(n.id); Q.reach(n.id); }
     Q.render();
   };
   Q.render = function () {
@@ -357,12 +409,12 @@
   function price(it, d) { var o = {}; SN.forEach(function (k) { if (it.price && it.price[k]) o[k] = Math.max(1, Math.round(+it.price[k] * (100 - (d || 0)) / 100)); }); return o; }
   function turnHtml(n, id) {
     var q = Q.def(id); if (!q) return '';
-    return '<p>' + esc(q.onDone || 'Ngươi đã hoàn thành rồi sao?') + '</p>' + claimBtns(q).replace(/data-a="q:claim:/g, 'data-a="n:claim:') + '<button class="btn" data-a="n:main">← Quay lại</button>';
+    return '<p>' + esc(Q.fmt(q.onDone || 'Ngươi đã hoàn thành rồi sao?', Q.vars(q))) + '</p>' + claimBtns(q).replace(/data-a="q:claim:/g, 'data-a="n:claim:') + '<button class="btn" data-a="n:main">← Quay lại</button>';
   }
   function doActs(n, acts) {
     var S = ST(), q = Q.ensure(S), end = false;
     (acts || []).forEach(function (a) {
-      if (a.a === 'accept') { var r = Q.accept(a.q); V.msg = r.msg; }
+      if (a.a === 'accept') { var r = Q.accept(a.q); V.msg = r.msg; Q.reach(n.id); }
       else if (a.a === 'flag') q.flags[a.k] = a.v === 0 ? 0 : 1;
       else if (a.a === 'rep') q.rep[a.f] = (q.rep[a.f] || 0) + (+a.n || 0);
       else if (a.a === 'give') { var r2 = Q.grant({ xp: a.xp, stones: a.stones, items: a.items }); V.msg = r2.ok ? 'Nhận: ' + r2.msg : r2.msg; }
@@ -408,7 +460,7 @@
     else if (p[1] === 'ch') {
       var node = n.dialog.nodes[V.node], c = node && (node.choices || [])[+p[2]]; if (c) { var end = doActs(n, c.do); if (end) { C.closeModal(); return true; } if (c.go) V.node = c.go; else if (!(c.do || []).some(function (z) { return z.a === 'openquests' || z.a === 'shop'; })) V.node = null; }
     }
-    else if (p[1] === 'acc') { r = Q.accept(p[2]); V.msg = r.msg; }
+    else if (p[1] === 'acc') { r = Q.accept(p[2]); V.msg = r.msg; Q.reach(n.id); }
     else if (p[1] === 'turn') { var q = Q.def(p[2]); if (q && q.choices && q.choices.length) { V.view = 'turn'; V.q = p[2]; } else { r = Q.claim(p[2], 0); V.msg = r.msg; } }
     else if (p[1] === 'claim') { r = Q.claim(p[2], +p[3] || 0); V.msg = r.msg; V.view = 'main'; if (r.ok && r.done && r.done.onDone) V.msg = r.done.onDone + ' — ' + r.msg; }
     else if (p[1] === 'fn') { var f = p.slice(2).join(':'); if (f === 'shop' || f === 'guide' || f === 'rest' || f.indexOf('job:') === 0) fn(n, f); }
