@@ -41,9 +41,9 @@
  "quests": [
   {
    "id": "qc1_1",
-   "name": "Thử thách tân tu",
-   "type": "chain",
-   "scope": "country",
+   "name": "Daily misson",
+   "type": "daily",
+   "scope": "system",
    "desc": "Hạ {n} {target} quanh kinh đô rồi báo cáo với {turnIn}.",
    "giver": "npc_tiepdan_1",
    "turnIn": "npc_tiepdan_1",
@@ -356,10 +356,10 @@
   },
   {
    "id": "sys_hunt",
-   "name": "Săn thú sơ khởi",
-   "type": "system",
+   "name": "Săn thú hằng ngày ",
+   "type": "daily",
    "scope": "system",
-   "desc": "Hạ {n} {target}. (Nhiệm vụ hệ thống — chỉnh bằng editmisson.html)",
+   "desc": "Hạ {20} {xíchlangcơ}. (Nhiệm vụ hệ thống — chỉnh bằng editmisson.html)",
    "giver": "",
    "turnIn": "",
    "req": {},
@@ -380,7 +380,9 @@
    "choices": [],
    "next": [
     "sys_roam"
-   ]
+   ],
+   "onGive": "Hung thú hoàng hành , hãy ra tay giúp đất nước ",
+   "onDone": "Công Lao của ngươi sẽ được ghi nhớ "
   },
   {
    "id": "sys_roam",
@@ -469,6 +471,32 @@
     },
     "rep": {
      "Hi Thủ Quốc": 3
+    }
+   },
+   "choices": [],
+   "next": []
+  },
+  {
+   "id": "q_lba51",
+   "name": "Nhiệm vụ mới",
+   "type": "side",
+   "scope": "system",
+   "desc": "",
+   "giver": "",
+   "turnIn": "",
+   "req": {},
+   "objectives": [
+    {
+     "t": "kill",
+     "target": "*",
+     "n": 1,
+     "text": "Hạ dị thú"
+    }
+   ],
+   "rewards": {
+    "xp": 10,
+    "stones": {
+     "thuong": 10
     }
    },
    "choices": [],
