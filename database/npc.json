@@ -1,1 +1,422 @@
-{"v":1,"npcs":[]}
+{
+ "v": 2,
+ "npcs": [
+  {
+   "id": "npc_tiepdan_1",
+   "name": "Tiếp dẫn sứ",
+   "title": "Sứ giả Hi Thủ Quốc",
+   "role": "nhiem_vu",
+   "faction": "Hi Thủ Quốc",
+   "rank": 0,
+   "level": 1,
+   "str": 10,
+   "agi": 10,
+   "int": 10,
+   "zone": "the_gioi_van_giap",
+   "x": 65,
+   "y": 136,
+   "attitude": "friendly",
+   "lines": [
+    "Lữ khách mới đến? Hãy nghỉ chân, ta có việc cần người."
+   ],
+   "bio": "Người dẫn đường cho tân tu sĩ của Hi Thủ Quốc.",
+   "img": "",
+   "functions": [
+    "quest",
+    "rest",
+    "guide"
+   ],
+   "restCost": {
+    "thuong": 0
+   },
+   "guide": "Chạm vào ô để di chuyển. Dị thú trên bản đồ là sự kiện chiến đấu. Nhận nhiệm vụ ở NPC có dấu ! vàng, trả nhiệm vụ ở dấu ? xanh.",
+   "dialog": {
+    "start": "n1",
+    "nodes": {
+     "n1": {
+      "text": [
+       {
+        "if": {
+         "flag": [
+          "c1_kind"
+         ]
+        },
+        "text": "Ngươi từng quyên góp cho nghĩa quân, Hi Thủ Quốc ghi nhớ điều đó."
+       },
+       {
+        "if": {
+         "flag": [
+          "c1_greedy"
+         ]
+        },
+        "text": "Lại là ngươi... người giữ lấy thưởng. Cũng chẳng sao."
+       },
+       {
+        "text": "Chào mừng đến Hi Thủ Quốc. Ngươi cần gì?"
+       }
+      ],
+      "choices": [
+       {
+        "text": "Ta muốn nhận việc.",
+        "do": [
+         {
+          "a": "openquests"
+         }
+        ]
+       },
+       {
+        "text": "Hướng dẫn cho ta.",
+        "go": "n2"
+       },
+       {
+        "text": "Tạm biệt.",
+        "do": [
+         {
+          "a": "end"
+         }
+        ]
+       }
+      ]
+     },
+     "n2": {
+      "text": "Hãy hạ vài dị thú để tăng kinh nghiệm, rồi quay lại báo cáo. Danh tiếng với Hi Thủ Quốc sẽ mở khóa thêm nhiệm vụ.",
+      "choices": [
+       {
+        "text": "Ta hiểu rồi.",
+        "go": "n1"
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "id": "npc_thuongnhan_1",
+   "name": "Thương nhân lưu động",
+   "title": "Buôn linh thạch",
+   "role": "thuong",
+   "faction": "Hi Thủ Quốc",
+   "rank": 0,
+   "level": 1,
+   "str": 10,
+   "agi": 10,
+   "int": 10,
+   "zone": "the_gioi_van_giap",
+   "x": 67,
+   "y": 136,
+   "attitude": "friendly",
+   "lines": [
+    "Linh thạch trao tay, hàng tốt trao liền."
+   ],
+   "bio": "Thương nhân bán vật phẩm chiến đấu cơ bản.",
+   "img": "",
+   "functions": [
+    "shop"
+   ],
+   "shop": [
+    {
+     "id": "cell",
+     "price": {
+      "thuong": 30
+     }
+    },
+    {
+     "id": "tonic",
+     "price": {
+      "thuong": 30
+     }
+    },
+    {
+     "id": "nano",
+     "price": {
+      "thuong": 45
+     }
+    },
+    {
+     "id": "shcell",
+     "price": {
+      "thuong": 40
+     }
+    }
+   ]
+  },
+  {
+   "id": "npc_tiepdan_2",
+   "name": "Tiếp dẫn sứ",
+   "title": "Sứ giả Thiên Đô Quốc",
+   "role": "nhiem_vu",
+   "faction": "Thiên Đô Quốc",
+   "rank": 0,
+   "level": 1,
+   "str": 10,
+   "agi": 10,
+   "int": 10,
+   "zone": "the_gioi_van_giap",
+   "x": 148,
+   "y": 300,
+   "attitude": "friendly",
+   "lines": [
+    "Lữ khách mới đến? Hãy nghỉ chân, ta có việc cần người."
+   ],
+   "bio": "Người dẫn đường cho tân tu sĩ của Thiên Đô Quốc.",
+   "img": "",
+   "functions": [
+    "quest",
+    "rest",
+    "guide"
+   ],
+   "restCost": {
+    "thuong": 0
+   },
+   "guide": "Chạm vào ô để di chuyển. Dị thú trên bản đồ là sự kiện chiến đấu. Nhận nhiệm vụ ở NPC có dấu ! vàng, trả nhiệm vụ ở dấu ? xanh.",
+   "dialog": {
+    "start": "n1",
+    "nodes": {
+     "n1": {
+      "text": [
+       {
+        "if": {
+         "flag": [
+          "c2_kind"
+         ]
+        },
+        "text": "Ngươi từng quyên góp cho nghĩa quân, Thiên Đô Quốc ghi nhớ điều đó."
+       },
+       {
+        "if": {
+         "flag": [
+          "c2_greedy"
+         ]
+        },
+        "text": "Lại là ngươi... người giữ lấy thưởng. Cũng chẳng sao."
+       },
+       {
+        "text": "Chào mừng đến Thiên Đô Quốc. Ngươi cần gì?"
+       }
+      ],
+      "choices": [
+       {
+        "text": "Ta muốn nhận việc.",
+        "do": [
+         {
+          "a": "openquests"
+         }
+        ]
+       },
+       {
+        "text": "Hướng dẫn cho ta.",
+        "go": "n2"
+       },
+       {
+        "text": "Tạm biệt.",
+        "do": [
+         {
+          "a": "end"
+         }
+        ]
+       }
+      ]
+     },
+     "n2": {
+      "text": "Hãy hạ vài dị thú để tăng kinh nghiệm, rồi quay lại báo cáo. Danh tiếng với Thiên Đô Quốc sẽ mở khóa thêm nhiệm vụ.",
+      "choices": [
+       {
+        "text": "Ta hiểu rồi.",
+        "go": "n1"
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "id": "npc_thuongnhan_2",
+   "name": "Thương nhân lưu động",
+   "title": "Buôn linh thạch",
+   "role": "thuong",
+   "faction": "Thiên Đô Quốc",
+   "rank": 0,
+   "level": 1,
+   "str": 10,
+   "agi": 10,
+   "int": 10,
+   "zone": "the_gioi_van_giap",
+   "x": 148,
+   "y": 302,
+   "attitude": "friendly",
+   "lines": [
+    "Linh thạch trao tay, hàng tốt trao liền."
+   ],
+   "bio": "Thương nhân bán vật phẩm chiến đấu cơ bản.",
+   "img": "",
+   "functions": [
+    "shop"
+   ],
+   "shop": [
+    {
+     "id": "cell",
+     "price": {
+      "thuong": 30
+     }
+    },
+    {
+     "id": "tonic",
+     "price": {
+      "thuong": 30
+     }
+    },
+    {
+     "id": "nano",
+     "price": {
+      "thuong": 45
+     }
+    },
+    {
+     "id": "shcell",
+     "price": {
+      "thuong": 40
+     }
+    }
+   ]
+  },
+  {
+   "id": "npc_tiepdan_3",
+   "name": "Tiếp dẫn sứ",
+   "title": "Sứ giả Di Luân Quốc",
+   "role": "nhiem_vu",
+   "faction": "Di Luân Quốc",
+   "rank": 0,
+   "level": 1,
+   "str": 10,
+   "agi": 10,
+   "int": 10,
+   "zone": "the_gioi_van_giap",
+   "x": 228,
+   "y": 468,
+   "attitude": "friendly",
+   "lines": [
+    "Lữ khách mới đến? Hãy nghỉ chân, ta có việc cần người."
+   ],
+   "bio": "Người dẫn đường cho tân tu sĩ của Di Luân Quốc.",
+   "img": "",
+   "functions": [
+    "quest",
+    "rest",
+    "guide"
+   ],
+   "restCost": {
+    "thuong": 0
+   },
+   "guide": "Chạm vào ô để di chuyển. Dị thú trên bản đồ là sự kiện chiến đấu. Nhận nhiệm vụ ở NPC có dấu ! vàng, trả nhiệm vụ ở dấu ? xanh.",
+   "dialog": {
+    "start": "n1",
+    "nodes": {
+     "n1": {
+      "text": [
+       {
+        "if": {
+         "flag": [
+          "c3_kind"
+         ]
+        },
+        "text": "Ngươi từng quyên góp cho nghĩa quân, Di Luân Quốc ghi nhớ điều đó."
+       },
+       {
+        "if": {
+         "flag": [
+          "c3_greedy"
+         ]
+        },
+        "text": "Lại là ngươi... người giữ lấy thưởng. Cũng chẳng sao."
+       },
+       {
+        "text": "Chào mừng đến Di Luân Quốc. Ngươi cần gì?"
+       }
+      ],
+      "choices": [
+       {
+        "text": "Ta muốn nhận việc.",
+        "do": [
+         {
+          "a": "openquests"
+         }
+        ]
+       },
+       {
+        "text": "Hướng dẫn cho ta.",
+        "go": "n2"
+       },
+       {
+        "text": "Tạm biệt.",
+        "do": [
+         {
+          "a": "end"
+         }
+        ]
+       }
+      ]
+     },
+     "n2": {
+      "text": "Hãy hạ vài dị thú để tăng kinh nghiệm, rồi quay lại báo cáo. Danh tiếng với Di Luân Quốc sẽ mở khóa thêm nhiệm vụ.",
+      "choices": [
+       {
+        "text": "Ta hiểu rồi.",
+        "go": "n1"
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "id": "npc_thuongnhan_3",
+   "name": "Thương nhân lưu động",
+   "title": "Buôn linh thạch",
+   "role": "thuong",
+   "faction": "Di Luân Quốc",
+   "rank": 0,
+   "level": 1,
+   "str": 10,
+   "agi": 10,
+   "int": 10,
+   "zone": "the_gioi_van_giap",
+   "x": 228,
+   "y": 469,
+   "attitude": "friendly",
+   "lines": [
+    "Linh thạch trao tay, hàng tốt trao liền."
+   ],
+   "bio": "Thương nhân bán vật phẩm chiến đấu cơ bản.",
+   "img": "",
+   "functions": [
+    "shop"
+   ],
+   "shop": [
+    {
+     "id": "cell",
+     "price": {
+      "thuong": 30
+     }
+    },
+    {
+     "id": "tonic",
+     "price": {
+      "thuong": 30
+     }
+    },
+    {
+     "id": "nano",
+     "price": {
+      "thuong": 45
+     }
+    },
+    {
+     "id": "shcell",
+     "price": {
+      "thuong": 40
+     }
+    }
+   ]
+  }
+ ]
+}

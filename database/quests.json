@@ -1,0 +1,555 @@
+{
+ "v": 1,
+ "note": "Định nghĩa nhiệm vụ/thành tựu/danh tiếng dùng chung. Tiến độ người chơi nằm trong save (ST.q), KHÔNG ghi vào đây. Sửa bằng editmisson.html.",
+ "factions": [
+  "Hi Thủ Quốc",
+  "Thiên Đô Quốc",
+  "Di Luân Quốc"
+ ],
+ "repLevels": [
+  {
+   "min": -1000,
+   "name": "Thù địch",
+   "discount": -20
+  },
+  {
+   "min": -30,
+   "name": "Lạnh nhạt",
+   "discount": -5
+  },
+  {
+   "min": 0,
+   "name": "Trung lập",
+   "discount": 0
+  },
+  {
+   "min": 25,
+   "name": "Thân thiện",
+   "discount": 5
+  },
+  {
+   "min": 75,
+   "name": "Kính trọng",
+   "discount": 10
+  },
+  {
+   "min": 200,
+   "name": "Tôn vinh",
+   "discount": 20
+  }
+ ],
+ "quests": [
+  {
+   "id": "qc1_1",
+   "name": "Thử thách tân tu",
+   "type": "chain",
+   "scope": "country",
+   "desc": "Hạ 3 dị thú quanh kinh đô rồi báo cáo với Tiếp dẫn sứ.",
+   "giver": "npc_tiepdan_1",
+   "turnIn": "npc_tiepdan_1",
+   "req": {
+    "country": 1
+   },
+   "objectives": [
+    {
+     "t": "kill",
+     "target": "*",
+     "n": 3,
+     "text": "Hạ dị thú"
+    }
+   ],
+   "rewards": {
+    "xp": 40,
+    "stones": {
+     "thuong": 30
+    },
+    "rep": {
+     "Hi Thủ Quốc": 5
+    }
+   },
+   "choices": [
+    {
+     "text": "Nhận linh thạch thưởng",
+     "rewards": {
+      "stones": {
+       "thuong": 30
+      }
+     },
+     "flags": [
+      "c1_greedy"
+     ],
+     "rep": {
+      "Hi Thủ Quốc": 0
+     }
+    },
+    {
+     "text": "Quyên góp cho nghĩa quân",
+     "rewards": {},
+     "flags": [
+      "c1_kind"
+     ],
+     "rep": {
+      "Hi Thủ Quốc": 10
+     }
+    }
+   ],
+   "next": [
+    "qc1_2"
+   ],
+   "onGive": "Hãy chứng tỏ bản thân.",
+   "onDone": "Làm tốt lắm."
+  },
+  {
+   "id": "qc1_2",
+   "name": "Tuần tra biên ải",
+   "type": "chain",
+   "scope": "country",
+   "desc": "Đến Hàn Phong Trì và hạ thêm 5 dị thú.",
+   "giver": "npc_tiepdan_1",
+   "turnIn": "npc_tiepdan_1",
+   "req": {
+    "country": 1,
+    "quest": [
+     "qc1_1"
+    ],
+    "rep": {
+     "Hi Thủ Quốc": 5
+    }
+   },
+   "objectives": [
+    {
+     "t": "explore",
+     "x": 70,
+     "y": 166,
+     "r": 3,
+     "text": "Đến Hàn Phong Trì"
+    },
+    {
+     "t": "kill",
+     "target": "*",
+     "n": 5,
+     "text": "Hạ dị thú"
+    }
+   ],
+   "rewards": {
+    "xp": 90,
+    "stones": {
+     "thuong": 80,
+     "trung": 1
+    },
+    "rep": {
+     "Hi Thủ Quốc": 10
+    }
+   },
+   "choices": [],
+   "next": []
+  },
+  {
+   "id": "qc2_1",
+   "name": "Thử thách tân tu",
+   "type": "chain",
+   "scope": "country",
+   "desc": "Hạ 3 dị thú quanh kinh đô rồi báo cáo với Tiếp dẫn sứ.",
+   "giver": "npc_tiepdan_2",
+   "turnIn": "npc_tiepdan_2",
+   "req": {
+    "country": 2
+   },
+   "objectives": [
+    {
+     "t": "kill",
+     "target": "*",
+     "n": 3,
+     "text": "Hạ dị thú"
+    }
+   ],
+   "rewards": {
+    "xp": 40,
+    "stones": {
+     "thuong": 30
+    },
+    "rep": {
+     "Thiên Đô Quốc": 5
+    }
+   },
+   "choices": [
+    {
+     "text": "Nhận linh thạch thưởng",
+     "rewards": {
+      "stones": {
+       "thuong": 30
+      }
+     },
+     "flags": [
+      "c2_greedy"
+     ],
+     "rep": {
+      "Thiên Đô Quốc": 0
+     }
+    },
+    {
+     "text": "Quyên góp cho nghĩa quân",
+     "rewards": {},
+     "flags": [
+      "c2_kind"
+     ],
+     "rep": {
+      "Thiên Đô Quốc": 10
+     }
+    }
+   ],
+   "next": [
+    "qc2_2"
+   ],
+   "onGive": "Hãy chứng tỏ bản thân.",
+   "onDone": "Làm tốt lắm."
+  },
+  {
+   "id": "qc2_2",
+   "name": "Tuần tra biên ải",
+   "type": "chain",
+   "scope": "country",
+   "desc": "Đến Kim Giáp Trì và hạ thêm 5 dị thú.",
+   "giver": "npc_tiepdan_2",
+   "turnIn": "npc_tiepdan_2",
+   "req": {
+    "country": 2,
+    "quest": [
+     "qc2_1"
+    ],
+    "rep": {
+     "Thiên Đô Quốc": 5
+    }
+   },
+   "objectives": [
+    {
+     "t": "explore",
+     "x": 184,
+     "y": 284,
+     "r": 3,
+     "text": "Đến Kim Giáp Trì"
+    },
+    {
+     "t": "kill",
+     "target": "*",
+     "n": 5,
+     "text": "Hạ dị thú"
+    }
+   ],
+   "rewards": {
+    "xp": 90,
+    "stones": {
+     "thuong": 80,
+     "trung": 1
+    },
+    "rep": {
+     "Thiên Đô Quốc": 10
+    }
+   },
+   "choices": [],
+   "next": []
+  },
+  {
+   "id": "qc3_1",
+   "name": "Thử thách tân tu",
+   "type": "chain",
+   "scope": "country",
+   "desc": "Hạ 3 dị thú quanh kinh đô rồi báo cáo với Tiếp dẫn sứ.",
+   "giver": "npc_tiepdan_3",
+   "turnIn": "npc_tiepdan_3",
+   "req": {
+    "country": 3
+   },
+   "objectives": [
+    {
+     "t": "kill",
+     "target": "*",
+     "n": 3,
+     "text": "Hạ dị thú"
+    }
+   ],
+   "rewards": {
+    "xp": 40,
+    "stones": {
+     "thuong": 30
+    },
+    "rep": {
+     "Di Luân Quốc": 5
+    }
+   },
+   "choices": [
+    {
+     "text": "Nhận linh thạch thưởng",
+     "rewards": {
+      "stones": {
+       "thuong": 30
+      }
+     },
+     "flags": [
+      "c3_greedy"
+     ],
+     "rep": {
+      "Di Luân Quốc": 0
+     }
+    },
+    {
+     "text": "Quyên góp cho nghĩa quân",
+     "rewards": {},
+     "flags": [
+      "c3_kind"
+     ],
+     "rep": {
+      "Di Luân Quốc": 10
+     }
+    }
+   ],
+   "next": [
+    "qc3_2"
+   ],
+   "onGive": "Hãy chứng tỏ bản thân.",
+   "onDone": "Làm tốt lắm."
+  },
+  {
+   "id": "qc3_2",
+   "name": "Tuần tra biên ải",
+   "type": "chain",
+   "scope": "country",
+   "desc": "Đến Hồng Liên Trì và hạ thêm 5 dị thú.",
+   "giver": "npc_tiepdan_3",
+   "turnIn": "npc_tiepdan_3",
+   "req": {
+    "country": 3,
+    "quest": [
+     "qc3_1"
+    ],
+    "rep": {
+     "Di Luân Quốc": 5
+    }
+   },
+   "objectives": [
+    {
+     "t": "explore",
+     "x": 198,
+     "y": 456,
+     "r": 3,
+     "text": "Đến Hồng Liên Trì"
+    },
+    {
+     "t": "kill",
+     "target": "*",
+     "n": 5,
+     "text": "Hạ dị thú"
+    }
+   ],
+   "rewards": {
+    "xp": 90,
+    "stones": {
+     "thuong": 80,
+     "trung": 1
+    },
+    "rep": {
+     "Di Luân Quốc": 10
+    }
+   },
+   "choices": [],
+   "next": []
+  },
+  {
+   "id": "sys_hunt",
+   "name": "Săn thú sơ khởi",
+   "type": "system",
+   "scope": "system",
+   "desc": "Hạ 10 dị thú bất kỳ. (Nhiệm vụ hệ thống — chỉnh bằng editmisson.html)",
+   "giver": "",
+   "turnIn": "",
+   "req": {},
+   "objectives": [
+    {
+     "t": "kill",
+     "target": "*",
+     "n": 10,
+     "text": "Hạ dị thú"
+    }
+   ],
+   "rewards": {
+    "xp": 60,
+    "stones": {
+     "thuong": 100
+    }
+   },
+   "choices": [],
+   "next": [
+    "sys_roam"
+   ]
+  },
+  {
+   "id": "sys_roam",
+   "name": "Du hành thiên hạ",
+   "type": "system",
+   "scope": "system",
+   "desc": "Ghé thăm 3 thành trì khác nhau.",
+   "giver": "",
+   "turnIn": "",
+   "req": {
+    "quest": [
+     "sys_hunt"
+    ]
+   },
+   "objectives": [
+    {
+     "t": "visit",
+     "n": 3,
+     "text": "Ghé thăm thành trì"
+    }
+   ],
+   "rewards": {
+    "xp": 80,
+    "stones": {
+     "thuong": 150,
+     "trung": 2
+    }
+   },
+   "choices": [],
+   "next": []
+  },
+  {
+   "id": "sys_daily",
+   "name": "Rèn luyện hằng ngày",
+   "type": "daily",
+   "scope": "system",
+   "desc": "Hạ 3 dị thú. Làm lại được mỗi ngày trong game.",
+   "giver": "",
+   "turnIn": "",
+   "req": {},
+   "objectives": [
+    {
+     "t": "kill",
+     "target": "*",
+     "n": 3,
+     "text": "Hạ dị thú"
+    }
+   ],
+   "rewards": {
+    "xp": 20,
+    "stones": {
+     "thuong": 20
+    }
+   },
+   "repeat": {
+    "days": 1
+   },
+   "choices": [],
+   "next": []
+  }
+ ],
+ "achievements": [
+  {
+   "id": "a_k1",
+   "branch": "combat",
+   "name": "Săn thú tập sự",
+   "stat": "kills",
+   "goal": 10,
+   "reward": {
+    "stones": {
+     "thuong": 50
+    }
+   }
+  },
+  {
+   "id": "a_k2",
+   "branch": "combat",
+   "name": "Thợ săn dị thú",
+   "stat": "kills",
+   "goal": 50,
+   "reward": {
+    "stones": {
+     "trung": 2
+    }
+   }
+  },
+  {
+   "id": "a_k3",
+   "branch": "combat",
+   "name": "Bá chủ dị thú",
+   "stat": "kills",
+   "goal": 200,
+   "reward": {
+    "stones": {
+     "cao": 1
+    }
+   }
+  },
+  {
+   "id": "a_b1",
+   "branch": "combat",
+   "name": "Diệt Boss",
+   "stat": "boss",
+   "goal": 1,
+   "reward": {
+    "stones": {
+     "trung": 3
+    }
+   }
+  },
+  {
+   "id": "a_e1",
+   "branch": "explore",
+   "name": "Người khai phá",
+   "stat": "cleared",
+   "goal": 20,
+   "reward": {
+    "stones": {
+     "thuong": 80
+    }
+   }
+  },
+  {
+   "id": "a_e2",
+   "branch": "explore",
+   "name": "Du khách Vân Giáp",
+   "stat": "visited",
+   "goal": 5,
+   "reward": {
+    "stones": {
+     "thuong": 100
+    }
+   }
+  },
+  {
+   "id": "a_q1",
+   "branch": "quest",
+   "name": "Tay làm hàm nhai",
+   "stat": "quests",
+   "goal": 3,
+   "reward": {
+    "stones": {
+     "thuong": 60
+    }
+   }
+  },
+  {
+   "id": "a_q2",
+   "branch": "quest",
+   "name": "Nhiệm vụ đại sư",
+   "stat": "quests",
+   "goal": 10,
+   "reward": {
+    "stones": {
+     "trung": 2
+    }
+   }
+  },
+  {
+   "id": "a_r1",
+   "branch": "rep",
+   "name": "Được kính trọng",
+   "stat": "repMax",
+   "goal": 50,
+   "reward": {
+    "stones": {
+     "thuong": 100
+    }
+   }
+  }
+ ]
+}
