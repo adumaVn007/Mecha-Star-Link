@@ -99,11 +99,11 @@ html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none;backgrou
 <div class="hud" id="toast"></div>
 <div id="ov"><div class="box"><header><h2 id="oT"></h2><button class="x" id="oX" aria-label="Đóng">✕</button></header><div class="bd" id="oB"></div></div></div>
 
-<script src="vg-github.js?v=202611252"></script>
-<script src="vg-core.js?v=202611252"></script>
-<script src="vg-char.js?v=202611252"></script>
-<script src="vg-bag.js?v=202611252"></script>
-<script src="vg-mapart.js?v=202611252"></script>
+<script src="vg-github.js?v=202611253"></script>
+<script src="vg-core.js?v=202611253"></script>
+<script src="vg-char.js?v=202611253"></script>
+<script src="vg-bag.js?v=202611253"></script>
+<script src="vg-mapart.js?v=202611253"></script>
 <script>
 (function(){
 "use strict";
@@ -235,28 +235,32 @@ function roamStep(now){
  if(any){rebuildEv();moved=true;if(sel)info(sel)}
  if(n){persist();moved=false}
  aggroStep(now)}
-/* Truy đuổi / tấn công người chơi theo phạm vi tấn công (GM.monRange) */
-let nextAggro=0;
+/* Quái tấn công: người chơi đứng trong phạm vi tấn công (GM.monRange) -> bị tấn công NGAY; ngoài phạm vi một chút -> quái truy đuổi. */
+let nextAggro=0,ambushing=false;
 const cheb=(e,r)=>Math.max(0,Math.max(Math.abs(e.x-ST.pos.x),Math.abs(e.y-ST.pos.y))-r);
 function aggroStep(now){
- if(now<nextAggro||mv||route.length||modal)return;
- nextAggro=now+600;
- if(!ST||(ST.aggroCd||0)>Date.now()||ST.pending)return;
- if(placeAt(ST.pos.x,ST.pos.y))return;
- let moved2=false;
+ if(ambushing||now<nextAggro||modal||!ST||ST.pending)return;
+ nextAggro=now+(mv?120:500);
+ if((ST.aggroCd||0)>Date.now()||placeAt(ST.pos.x,ST.pos.y))return;
+ let chase=false;
  for(const e of ST.events){
   const m=monOf(e);if(!m||m.roam===false)continue;
-  const r=GM.monFoot(m),ang=GM.monAngry(m),R=Math.round(GM.monRange(m)*(1+ang/200)),d=cheb(e,r);
-  if(d>R)continue;
-  if(d<=1){return ambush(e,m)}
-  if(Math.random()>.5+.5*ang/100)continue;
-  const dx=Math.sign(ST.pos.x-e.x),dy=Math.sign(ST.pos.y-e.y),adx=Math.abs(ST.pos.x-e.x),ady=Math.abs(ST.pos.y-e.y);
-  const opts=adx>=ady?[[dx,0],[0,dy],[0,-dy]]:[[0,dy],[dx,0],[-dx,0]];
-  for(const o of opts){if((o[0]||o[1])&&stepMon(e,m,o[0],o[1])){moved2=true;break}}}
- if(moved2){rebuildEv();if(sel)info(sel);for(const e of ST.events){const m=monOf(e);if(m&&m.roam!==false&&cheb(e,GM.monFoot(m))<=1){ambush(e,m);return}}}}
+  const r=GM.monFoot(m),ang=GM.monAngry(m),R=GM.monRange(m),d=cheb(e,r);
+  if(d<=R)return ambush(e,m);
+  if(mv||d>R+2+Math.round(ang/50)||Math.random()>.5+.5*ang/100)continue;
+  const ddx=ST.pos.x-e.x,ddy=ST.pos.y-e.y,dx=Math.sign(ddx),dy=Math.sign(ddy);
+  const opts=Math.abs(ddx)>=Math.abs(ddy)?[[dx,0],[0,dy],[0,-dy]]:[[0,dy],[dx,0],[-dx,0]];
+  for(const o of opts){if((o[0]||o[1])&&stepMon(e,m,o[0],o[1])){chase=true;break}}}
+ if(chase){rebuildEv();if(sel)info(sel);for(const e of ST.events){const m=monOf(e);if(m&&m.roam!==false&&cheb(e,GM.monFoot(m))<=GM.monRange(m))return ambush(e,m)}}}
 function ambush(e,m){
- route=[];ST.pending={uid:e.uid,id:e.id,mon:e.mon,x:e.x,y:e.y,from:{x:ST.pos.x,y:ST.pos.y}};ST.result=null;
- toast((m.name||'Dị thú')+' tấn công bạn!');persist();setTimeout(()=>GM.nav('battle.html'),500)}
+ ambushing=true;route=[];mv=null;pv={x:ST.pos.x,y:ST.pos.y};
+ ST.pending={uid:e.uid,id:e.id,mon:e.mon,x:e.x,y:e.y,from:{x:ST.pos.x,y:ST.pos.y}};ST.result=null;persist();
+ const T=tierOf(e);
+ openModal('⚠ Bị tấn công!',`<p style="text-align:center;font-size:1.15em"><b style="color:#ff9a8f">${esc(m.name||'Dị thú')}</b> tấn công bạn!</p>
+  <div class="row"><span>Cảnh giới</span><span>${esc(GM.rankName(GM.monRank(m)))}</span></div><div class="row"><span>Phạm vi tấn công</span><span>${GM.monRange(m)} ô</span></div>
+  <button class="btn pri" onclick="window.__vgGo()">⚔ Vào chiến đấu</button>`);
+ window.__vgGo=()=>{if(window.__vgGoed)return;window.__vgGoed=1;GM.nav('battle.html')};
+ setTimeout(window.__vgGo,1800)}
 
 const wx=(x,y)=>(x-y)*TW/2,wy=(x,y)=>(x+y)*TH/2;
 const toSX=v=>cw/2+(v-cam.x)*zoom,toSY=v=>ch/2+(v-cam.y)*zoom;
@@ -335,8 +339,8 @@ function draw(now){
    g.fillStyle=col+'55';g.beginPath();g.arc(cx,by,rad+3*pulse*z,0,7);g.fill();
    const im=m&&m.img?getImg(m.img):null;
    if(im){const w=Math.max(rad*2.2,12*z),h=w*im.naturalHeight/im.naturalWidth;g.drawImage(im,cx-w/2,cy-h+bob*.5,w,h)}
-   else{g.fillStyle=col;g.beginPath();g.arc(cx,by,rad,0,7);g.fill();g.fillStyle='#10181e';g.font='bold '+(Math.max(10,rad*1.3))+'px Georgia';g.textAlign='center';g.textBaseline='middle';g.fillText(boss?'☠':'!',cx,by+.5*z)}
-   if(m&&(boss||fr||GM.monRank(m)>=24)&&z>=.5){const fs=Math.max(10,11*Math.min(z,1.2)),ty=by-rad-5*z;g.font='bold '+fs+'px Georgia';g.textAlign='center';g.textBaseline='alphabetic';g.lineJoin='round';g.lineWidth=3;g.strokeStyle='#0a1117';g.strokeText(m.name,cx,ty);g.fillStyle=boss?'#ff9a8f':'#f2e2b0';g.fillText(m.name,cx,ty)}}}
+   else{g.fillStyle=col;g.beginPath();g.arc(cx,by,rad,0,7);g.fill();g.fillStyle='#10181e';g.font='bold '+(Math.max(10,rad*1.3))+'px Georgia';g.textAlign='center';g.textBaseline='middle';const GL={wolf:'🐺',turtle:'🐢',tiger:'🐯'}[m&&m.shape];g.fillText(boss?'☠':(GL||'!'),cx,by+.5*z)}
+   if(m&&z>=.55){const fs=Math.max(10,11*Math.min(z,1.2)),ty=by-rad-5*z;g.font='bold '+fs+'px Georgia';g.textAlign='center';g.textBaseline='alphabetic';g.lineJoin='round';g.lineWidth=3;g.strokeStyle='#0a1117';g.strokeText(m.name,cx,ty);g.fillStyle=boss?'#ff9a8f':'#f2e2b0';g.fillText(m.name,cx,ty)}}}
  /* nhãn tên nổi: để người chơi biết thành / tông môn / hang động ở đâu */
  if(WM&&A){const pr={capital:0,city:1,fortress:2,sect:3,realm:4,cave:5,village:6,other:7},minZ={capital:.3,city:.45,fortress:.55,sect:.5,realm:.5,cave:.55,village:.8,other:.8},zz=Math.max(z,.28),s=Math.max(.75,Math.min(1.25,z+.3)),L=[];
   for(const p of zone.places){const px=toSX(wx(p.x,p.y)),py=toSY(wy(p.x,p.y))+TH/2*z;if(px<-90||px>cw+90||py<-30||py>ch+130)continue;
@@ -383,7 +387,7 @@ function info(t){
  if(pl){n=pl.name;d=pl.desc||d}
  let st=blocked(ty)?'⛔ Bị chặn':'✔ Có thể di chuyển';
  if(wmap){const o=wmap.owner[t.y*zone.w+t.x];st+=' · '+(o?wmap.names[o]:'Vô chủ')}
- if(ev){const T=tierOf(ev),mm=monOf(ev);n+=' · Sự kiện '+T.name+(mm?' · '+mm.name+' ('+GM.rankShort(GM.monRank(mm))+(GM.monFoot(mm)?' · 3×3 ô':'')+')':'');st+=' · ⚔ '+T.name}
+ if(ev){const T=tierOf(ev),mm=monOf(ev);n+=' · Sự kiện '+T.name+(mm?' · '+mm.name+' ('+GM.rankShort(GM.monRank(mm))+(GM.monFoot(mm)?' · 3×3 ô':'')+' · tầm '+GM.monRange(mm)+' ô · Angry '+GM.monAngry(mm)+')':'');st+=' · ⚔ '+T.name}
  $('#tName').textContent=n;$('#tDesc').textContent=d;$('#tCo').textContent='Ô: '+t.x+', '+t.y+' · '+st}
 function select(t){sel=t;info(t)}
 function onTap(px,py){
@@ -586,7 +590,7 @@ function boot(){
   else if(r.type==='lose')say('Mecha bị hạ gục, hồi sinh tại điểm xuất phát.');
   ST.result=null}
  else if(ST.pending){ST.pos=ST.pending.from||ST.pos;say('Rời trận giữa chừng, quay lại bản đồ.')}
- ST.pending=null;if(!ST.autoSet)ST.auto=true;ST.aggroCd=Date.now()+30000;
+ ST.pending=null;if(!ST.autoSet)ST.auto=true;ST.aggroCd=Date.now()+8000;
  if(!ST.log.length)say('Tiến vào '+zone.name+'.');else $('#tLog').textContent='✦ '+ST.log[0];
  ST.events=ST.events.filter(e=>world.events.some(v=>v.id===e.id)&&world.monsters.some(m=>m.id===e.mon)&&tiles[e.x]&&!blocked(tiles[e.x][e.y]));
  if(blocked(tiles[ST.pos.x]&&tiles[ST.pos.x][ST.pos.y]))ST.pos={x:zone.spawn.x,y:zone.spawn.y};
