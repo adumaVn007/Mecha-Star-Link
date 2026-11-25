@@ -150,7 +150,7 @@ function finish(type,xp,st){
  if(st)for(const k in st)SV.stones[k]=(SV.stones[k]||0)+st[k];
  if(type==="flee"&&EV.from)SV.pos={x:EV.from.x,y:EV.from.y};
  if(type==="lose"){p.hp=p.max;p.en=p.enMax;p.soul=p.soulMax;SV.pos={x:EV.spawn.x,y:EV.spawn.y}}
- SV.result={type,uid:EV.uid,name:G.e.name,xp:xp||0,stone:st||{}};SV.pending=null;GM.save(SV)}
+ SV.result={type,uid:EV.uid,mon:(EV.mon&&EV.mon.id)||'',name:G.e.name,xp:xp||0,stone:st||{}};SV.pending=null;GM.save(SV)}
 function box(t,h,b){$("#modal").innerHTML=`<div class="ov"><div class="box"><h3>${t}</h3><div class="mut">${h}</div><button class="pri" onclick="toMap()">${b}</button></div></div>`}
 function toMap(){GM.nav("index.html")}
 function lvUp(){G.lv++;G.max=Math.round(G.max*1.1);G.hp=Math.min(G.max,G.hp+Math.round(G.max*.4));G.atk=Math.round(G.atk*1.08);G.enMax+=8;G.reg+=1;G.soulMax+=4;G.spd+=8;

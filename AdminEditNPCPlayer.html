@@ -248,7 +248,7 @@ function npcDo(a,i){var o,err,snap,idx;
 if(a=='new'){ned={orig:null,cur:blankNpc(),img:''};nm='';nview();var f=$('nf');if(f)f.scrollIntoView({block:'start'});return}
 if(a=='edit'){var n=NPC.npcs[+i];ned={orig:n,cur:clone(n),img:n.img||''};nm='';nview();var f2=$('nf');if(f2)f2.scrollIntoView({block:'start'});return}
 if(a=='cancel'){ned=null;nm='';nview();return}
-if(a=='save'){o=rdForm();err=nval(o);if(err){nm='<span class="er">❌ '+esc(err)+'</span>';ned.cur=o;nview();return}
+if(a=='save'){o=rdForm();if(ned.orig)Object.keys(ned.orig).forEach(function(k){if(!(k in o))o[k]=ned.orig[k]});err=nval(o);if(err){nm='<span class="er">❌ '+esc(err)+'</span>';ned.cur=o;nview();return}
 if(!confirm((ned.orig?'Cập nhật':'Thêm')+' NPC "'+o.name+'" tại '+zname(o.zone)+' ô ('+o.x+', '+o.y+')?'))return;
 snap=JSON.stringify(NPC);try{if(ned.orig){idx=NPC.npcs.indexOf(ned.orig);o.id=ned.orig.id;NPC.npcs[idx]=o}else{o.id='npc_'+nslug(o.name)+'_'+Date.now().toString(36);NPC.npcs.push(o)}npersist();nm='<span class="ok">✅ Đã '+(ned.orig?'cập nhật':'thêm')+' NPC "'+esc(o.name)+'" (đã lưu trên máy; bấm “Tải LÊN GitHub” để đưa vào database).</span>';ned=null}
 catch(e){NPC=JSON.parse(snap);nm='<span class="er">❌ Thất bại, không lưu được: '+esc(e.message)+'</span>';ned.cur=o}
@@ -264,7 +264,7 @@ if(!confirm('Ghi đè '+VG.cfg.paths.npc+' trên nhánh '+VG.cfg.branch+' bằng
 VG.save(VG.cfg.paths.npc,NPC,'Cập nhật dữ liệu NPC').then(function(j){nm='<span class="ok">✅ Đã tải lên GitHub'+(j&&j.commit?' (commit '+String(j.commit.sha).slice(0,7)+')':'')+'.</span>';nview2()}).catch(function(e){nm='<span class="er">'+esc(gerr2(e))+'</span>';nview2()})}}
 function nview2(){var m=$('v0').querySelector('.card');if(!m)return;var d=m.querySelector('div[data-nm]');if(!d){d=document.createElement('div');d.setAttribute('data-nm','1');d.style.marginTop='6px';m.appendChild(d)}d.innerHTML=nm}
 function gerr2(e){return '❌ '+e.message+' (trang demo trên claude.ai chặn kết nối ra ngoài; chạy trên Cloudflare/GitHub Pages thì dùng được)'}
-function loadZones(){fetch('database/world-events.json?t='+Date.now()).then(function(r){if(!r.ok)throw 0;return r.json()}).catch(function(){return VG.fetchJSON(VG.cfg.paths.world)}).then(function(w){if(w&&Array.isArray(w.zones)&&w.zones.length){ZN=w.zones;if(!ned)nview();else{ned.cur=rdForm();nview()}}}).catch(function(){})}
+function loadZones(){fetch('database/world-events.json?t='+Date.now()).then(function(r){if(!r.ok)throw 0;return r.json()}).catch(function(){return VG.fetchJSON(VG.cfg.paths.world)}).then(function(w){if(w&&Array.isArray(w.zones)&&w.zones.length){ZN=w.zones.slice();if(!ZN.some(function(q){return q.id=='the_gioi_van_giap'}))ZN.push({id:'the_gioi_van_giap',name:'Thế giới Vân Giáp',w:300,h:600});if(!ned)nview();else{ned.cur=rdForm();nview()}}}).catch(function(){})}
 function prep(){var o=rdForm(),el=$('n_pre');if(el)el.innerHTML=preHtml(o)}
 $('v0').addEventListener('click',function(ev){var b=ev.target.closest('[data-na]');if(b)npcDo(b.dataset.na,b.dataset.i)});
 $('v0').addEventListener('input',function(ev){if(ev.target.closest('#nf'))prep()});

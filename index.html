@@ -72,6 +72,7 @@ html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none;backgrou
 .jb .jc{padding:0 10px 10px}.jb h5{margin:8px 0 3px;color:var(--gold);font-size:12px}.jb .jr{padding:5px 0;border-bottom:1px dotted #776644;font-size:12px;color:var(--txt)}.jb .jr small{display:block;color:var(--mut);font-size:11px}.jb .lk{opacity:.55}
 .note{border:1px dashed var(--bronze);border-radius:8px;padding:8px 10px;color:var(--mut);font-size:12px;margin-top:8px}
 .sw{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px;border:1px solid #0006}
+#qtrack{left:calc(50px + var(--sal));top:calc(50px + var(--sat));max-width:min(180px,calc(100vw - clamp(158px,30vw,222px) - 62px));padding:5px 8px;font-size:10.5px;cursor:pointer;z-index:4;display:none}#qtrack b{display:block;color:var(--gold);font-size:11px}#qtrack span{color:var(--mut)}
 .tabs{display:flex;gap:6px;margin-bottom:8px}.tabs button{flex:1;padding:9px;min-height:40px;border-radius:7px;border:1px solid #8d754b;background:#1a2d36;color:var(--txt);font:inherit;cursor:pointer}.tabs button.on{background:linear-gradient(#b68d4d,#75542c)}
 @media(max-height:430px){.rt{width:clamp(150px,28vw,200px)}.stat{padding:5px 6px}.tb button{height:38px}.tb button small{display:none}.tb button em{font-size:18px}.bl p{display:none}}
 </style>
@@ -96,6 +97,7 @@ html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none;backgrou
   </section>
 </div>
 <div class="hud card bl" id="bl"><h4 id="tName">—</h4><p id="tDesc"></p><div class="co" id="tCo"></div><div class="lg" id="tLog"></div></div>
+<div class="hud card" id="qtrack"></div>
 <div class="hud" id="toast"></div>
 <div id="ov"><div class="box"><header><h2 id="oT"></h2><button class="x" id="oX" aria-label="Đóng">✕</button></header><div class="bd" id="oB"></div></div></div>
 
@@ -104,6 +106,7 @@ html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none;backgrou
 <script src="vg-char.js?v=202611254"></script>
 <script src="vg-bag.js?v=202611254"></script>
 <script src="vg-mapart.js?v=202611254"></script>
+<script src="vg-quest.js?v=202611255"></script>
 <script>
 (function(){
 "use strict";
@@ -120,7 +123,7 @@ const SKILLS=[
  {id:'pet',ic:'🐉',n:'Pet/Drone',d:'Triệu hồi drone',lv:12},
  {id:'item',ic:'🧪',n:'Vật phẩm',d:'Túi đồ nhanh',lv:0},
  {id:'ult',ic:'✦',n:'Tuyệt kỹ',d:'Pháo Hư Không',lv:16}];
-const FUNCS=[['tinhchu','🌟','Tinh Chủ'],['char','🧙','Nhân vật'],['bag','🎒','Túi đồ'],['sect','🏯','Tông môn'],['craft','⚒','Nghề'],['quest','📜','Nhiệm vụ'],['map','🧭','Bản đồ']];
+const FUNCS=[['tinhchu','🌟','Tinh Chủ'],['char','🧙','Nhân vật'],['bag','🎒','Túi đồ'],['sect','🏯','Tông môn'],['craft','⚒','Nghề'],['quest','📜','Nhiệm vụ'],['ach','🏆','Thành tựu'],['map','🧭','Bản đồ']];
 
 let world=null,zone=null,ST=null,tiles=[],wmap=null,pmap=null;
 const isTown=p=>p&&(p.kind==='city'||p.kind==='capital'||p.kind==='fortress'||p.kind==='village');
@@ -158,7 +161,7 @@ function nearTown(x,y,r){for(let dx=-r;dx<=r;dx++)for(let dy=-r;dy<=r;dy++)if(pm
 function footOK(x,y,r,self){
  for(let dx=-r;dx<=r;dx++)for(let dy=-r;dy<=r;dy++){const a=x+dx,b=y+dy;
   if(a<2||b<2||a>zone.w-3||b>zone.h-3)return false;
-  const t=typ(a,b);if(t===null||hard(t)||t==='city'||t==='portal'||t==='wall')return false;
+  const t=typ(a,b);if(t===null||hard(t)||t==='city'||t==='portal'||t==='wall'||VG.quest.res[a*1000+b])return false;
   const o=evMap.get(a*1000+b);if(o&&o!==self)return false;
   if(Math.abs(a-ST.pos.x)+Math.abs(b-ST.pos.y)<1)return false}
  return !nearTown(x,y,MCFG.townSafe+r)}
@@ -316,10 +319,12 @@ function draw(now){
  g.lineCap='round';g.lineJoin='round';
  for(const id in seg){const col=wmap.cols[id],lw=Math.max(z,.6);g.beginPath();seg[id].forEach(s=>{g.moveTo(s[0],s[1]);g.lineTo(s[2],s[3])});g.strokeStyle=col+'55';g.lineWidth=7*lw;g.stroke();g.strokeStyle=col;g.lineWidth=2.6*lw;g.stroke()}
  if(sel){const px=toSX(wx(sel.x,sel.y)),py=toSY(wy(sel.x,sel.y));dia(px,py,0);g.lineWidth=3;g.strokeStyle=blocked(tiles[sel.x][sel.y])?'#ff7d70':'#ffe08b';g.stroke()}
+for(const o of VG.quest.visibleNpcs()){const px=toSX(wx(o.x,o.y)),py=toSY(wy(o.x,o.y));if(px<-mx||px>cw+mx||py<-my||py>ch+TH*z+10)continue;objs.push({k:o.x+o.y+o.x*.001+.0003,npc:o.n,px,py})}
  objs.push({k:pv.x+pv.y+.0005,me:true});
  objs.sort((a,b)=>a.k-b.k);
  for(const o of objs){
   if(o.me){drawMe(now);continue}
+  if(o.npc){drawNpc(o,now);continue}
   const{px,py,t,ev}=o,cx=px,cy=py+TH/2*z;
   if(WM&&o.dc){if(!drawAsset('d_'+o.dc,cx,cy,z)&&A&&A.DRAW[o.dc])A.DRAW[o.dc](g,cx,cy,z)}
   else if(t==='forest'&&!WM){g.fillStyle='#21483d';g.beginPath();g.arc(cx,cy-9*z,10*z,0,7);g.fill();g.fillStyle='#2d6150';g.beginPath();g.arc(cx-2*z,cy-12*z,5*z,0,7);g.fill();g.fillStyle='#4a3a28';g.fillRect(cx-1.5*z,cy-3*z,3*z,6*z)}
@@ -360,7 +365,18 @@ function loadMap(){
   (j.countries||[]).forEach(c=>{cols[c.id]=c.color;names[c.id]=c.name});
   const dec={};(j.decos||[]).forEach(d=>{if(Array.isArray(d)&&d[1]>=0&&d[1]<W&&d[2]>=0&&d[2]<H)dec[d[1]*1000+d[2]]=d[0]});
   const places=(j.places||[]).filter(p=>p.x>=0&&p.y>=0&&p.x<W&&p.y<H);
+  VG.quest.legacy=j.legacyZone||null;
   wmap={ter,owner,cols,names,dec,assets:(a&&a.assets)||{},zone:{id:'the_gioi_van_giap',name:'Thế giới Vân Giáp',w:W,h:H,spawn:j.spawn||{x:W>>1,y:H>>1},places,eventCount:160}}})}
+const NPC_ICON={nhiem_vu:'📜',thuong:'🏪',dan:'🙂',dan_su:'📖',tho_ren:'⚒',thu_ve:'🛡',tong_mon:'🏯',khac:'🧑'};
+function drawNpc(o,now){
+ const n=o.npc,z=zoom,cx=o.px,cy=o.py+TH/2*z,r=8.5*z,by=cy-(r+4*z),mk=VG.quest.mark(n.id),pulse=(Math.sin(now/260)+1)/2;
+ g.fillStyle='#e4c27b33';g.beginPath();g.ellipse(cx,cy,12*z,5*z,0,0,7);g.fill();
+ g.fillStyle='#2f7d6f';g.beginPath();g.arc(cx,by,r,0,7);g.fill();g.lineWidth=2*z;g.strokeStyle='#e4c27b';g.stroke();
+ const im=n.img&&/^data:image\//.test(n.img)?getImg(n.img):null;
+ if(im){g.save();g.beginPath();g.arc(cx,by,r-1,0,7);g.clip();g.drawImage(im,cx-r,by-r,r*2,r*2);g.restore()}
+ else{g.font=Math.max(10,r*1.2)+'px Georgia';g.textAlign='center';g.textBaseline='middle';g.fillStyle='#fff';g.fillText(NPC_ICON[n.role]||'🧑',cx,by+.5*z)}
+ if(mk){g.font='bold '+Math.max(13,15*Math.min(z,1.3))+'px Georgia';g.textAlign='center';g.textBaseline='alphabetic';g.lineWidth=3;g.strokeStyle='#0a1117';const my2=by-r-4*z-2*pulse*z;g.strokeText(mk,cx,my2);g.fillStyle=mk==='!'?'#ffd34d':'#7fe0ff';g.fillText(mk,cx,my2)}
+ if(z>=.55){const fs=Math.max(10,11*Math.min(z,1.2));g.font='bold '+fs+'px Georgia';g.textAlign='center';g.textBaseline='alphabetic';g.lineJoin='round';g.lineWidth=3;g.strokeStyle='#0a1117';g.strokeText(n.name,cx,cy+11*z+fs*.6);g.fillStyle='#9fe6c8';g.fillText(n.name,cx,cy+11*z+fs*.6)}}
 function drawMe(now){
  const z=zoom,px=toSX(wx(pv.x,pv.y)),py=toSY(wy(pv.x,pv.y))+TH/2*z,b=mv?Math.abs(Math.sin(now/90))*2*z:0;
  g.fillStyle='#0006';g.beginPath();g.ellipse(px,py,10*z,4.5*z,0,0,7);g.fill();
@@ -381,9 +397,10 @@ function bfs(a,b){
  return out}
 
 function info(t){
- const ty=tiles[t.x][t.y],pl=placeAt(t.x,t.y),ev=evAt(t.x,t.y);
+ const ty=tiles[t.x][t.y],pl=placeAt(t.x,t.y),ev=evAt(t.x,t.y),np=VG.quest.npcAt(t.x,t.y);
  let n=TN[ty][0],d=TN[ty][1];
  if(pl){n=pl.name;d=pl.desc||d}
+ if(np){n=np.name+' · NPC';d=(np.title||'')+(np.faction?' · '+np.faction:'')}
  let st=blocked(ty)?'⛔ Bị chặn':'✔ Có thể di chuyển';
  if(wmap){const o=wmap.owner[t.y*zone.w+t.x];st+=' · '+(o?wmap.names[o]:'Vô chủ')}
  if(ev){const T=tierOf(ev),mm=monOf(ev);n+=' · Sự kiện '+T.name+(mm?' · '+mm.name+' ('+GM.rankShort(GM.monRank(mm))+(GM.monFoot(mm)?' · 3×3 ô':'')+' · tầm '+GM.monRange(mm)+' ô · Angry '+GM.monAngry(mm)+')':'');st+=' · ⚔ '+T.name}
@@ -393,6 +410,7 @@ function onTap(px,py){
  if(modal||!zone)return;
  const t=hit(px,py);if(!t)return;
  select(t);
+ {const nn=VG.quest.npcAt(t.x,t.y);if(nn&&!mv&&Math.max(Math.abs(t.x-ST.pos.x),Math.abs(t.y-ST.pos.y))<=1){route=[];VG.quest.openNpc(nn);return}}
  if(blocked(tiles[t.x][t.y])){toast('Địa hình hiểm trở, không thể đi qua.');return}
  const start=mv?{x:mv.tx,y:mv.ty}:ST.pos;
  if(!mv&&t.x===start.x&&t.y===start.y){route=[];arrive();return}
@@ -402,13 +420,14 @@ function stepUpdate(now){
  if(!ST)return;
  if(!mv&&route.length&&!modal){const n=route.shift();mv={fx:ST.pos.x,fy:ST.pos.y,tx:n.x,ty:n.y,t0:now}}
  if(mv){const k=Math.min(1,(now-mv.t0)/150);pv={x:mv.fx+(mv.tx-mv.fx)*k,y:mv.fy+(mv.ty-mv.fy)*k};
-  if(k>=1){ST.prev={x:mv.fx,y:mv.fy};ST.pos={x:mv.tx,y:mv.ty};pv={x:mv.tx,y:mv.ty};mv=null;persist();if(!route.length)arrive()}}
+  if(k>=1){ST.prev={x:mv.fx,y:mv.fy};ST.pos={x:mv.tx,y:mv.ty};pv={x:mv.tx,y:mv.ty};mv=null;persist();VG.quest.move();if(!route.length)arrive()}}
  else pv={x:ST.pos.x,y:ST.pos.y}}
 
 function arrive(){
- const{x,y}=ST.pos,ev=evAt(x,y),pl=placeAt(x,y);
+ const{x,y}=ST.pos,ev=evAt(x,y),pl=placeAt(x,y),nn=VG.quest.npcAt(x,y);
+ if(nn)return VG.quest.openNpc(nn);
  if(ev)return openEvent(ev);
- if(isTown(pl))return openCity(pl);
+ if(isTown(pl)){VG.quest.visit(pl.id);return openCity(pl)}
  if(pl)return openRealm(pl)}
 function openEvent(ev){
  /* mỗi lần giao chiến có xác suất gặp loại quái khác (cùng cỡ ô); boss thì cố định */
@@ -459,8 +478,9 @@ function panel(k){
  if(k==='tinhchu')return['Hệ thống Tinh Chủ',soon('Star General System: chỉ điểm yếu, dẫn đường, auto battle. Dành cho người ủng hộ (donate / nạp).')];
  if(k==='sect')return['Tông môn',soon('Gia nhập tông môn, nhiệm vụ tông môn, cống hiến.')];
  if(k==='craft')return['Nghề',jobPanel()];
- if(k==='quest')return['Nhiệm vụ',`<div class="tabs"><button class="on">Quốc gia</button><button data-a="qs">Tông môn</button></div>`+row('Dị thú đã hạ',ST.kills)+row('Sự kiện hoàn thành',ST.cleared)+row('Sự kiện còn lại trong khu',ST.events.length)+`<div class="note">Hệ thống nhiệm vụ chưa có dữ liệu thật; đây là thống kê thực từ tiến trình chơi.</div>`];
- if(k==='qs')return['Nhiệm vụ',`<div class="tabs"><button data-a="quest">Quốc gia</button><button class="on">Tông môn</button></div>`+soon('Nhiệm vụ tông môn.')];
+ if(k==='quest')return VG.quest.panel('country');
+ if(k==='ach')return VG.quest.achPanel('combat');
+ if(k==='qs')return VG.quest.panel('sect');
  if(k==='map'){const cnt={};ST.events.forEach(e=>{const t=(evDef(e)||{}).tier;cnt[t]=(cnt[t]||0)+1});
   const cn=wmap?wmap.names.slice(1).map((n,i)=>`<div class="row"><span><i class="sw" style="background:${wmap.cols[i+1]}"></i>${esc(n)}</span><span>Quốc gia</span></div>`).join(''):'';
   const lg=Object.keys(COL).map(t=>`<div class="row"><span><i class="sw" style="background:${COL[t]}"></i>${TN[t][0]}</span><span>${blocked(t)?'⛔ chặn':'✔ đi được'}</span></div>`).join('');
@@ -483,6 +503,7 @@ function skillTap(s){
 $('#ov').addEventListener('click',e=>{
  if(e.target.id==='ov'||e.target.id==='oX'){closeModal();return}
  const b=e.target.closest('[data-a]');if(!b||b.disabled)return;const a=b.dataset.a;
+ if(a.indexOf('q:')===0||a.indexOf('n:')===0){VG.quest.act(a);return}
  if(a==='close')closeModal();else if(a==='fight')fight();else if(a==='restfull'){rest(true);closeModal()}
  else if(a.indexOf('use:')===0)useItem(a.slice(4));
  else if(a==='savefile'){const n=VG.char.exportSave(ST);toast('Đã xuất file: '+n)}
@@ -554,7 +575,8 @@ function init(w){
  world=w;monById=new Map((w.monsters||[]).map(m=>[m.id,m]));zone=wmap?wmap.zone:w.zones[0];zone.eventCount=Math.round((zone.eventCount||0)*MCFG.mult);pmap={};zone.places.forEach(p=>{pmap[p.x*1000+p.y]=p});
  tiles=[];for(let x=0;x<zone.w;x++){tiles[x]=[];for(let y=0;y<zone.h;y++)tiles[x][y]=typ(x,y)}
  ST=GM.load(zone);
- if(ST.zone!==zone.id){const k=ST;ST=GM.defaults(zone);ST.char=k.char;ST.p=k.p;ST.items=k.items;ST.stones=k.stones;ST.auto=k.auto;ST.autoSet=k.autoSet;ST.day=k.day;ST.kills=k.kills;ST.cleared=k.cleared;if(k.jobs)ST.jobs=k.jobs;['inv','eq','petBag','eqB'].forEach(x=>{if(k[x])ST[x]=k[x]})}
+ if(ST.zone!==zone.id){const k=ST;ST=GM.defaults(zone);ST.char=k.char;ST.p=k.p;ST.items=k.items;ST.stones=k.stones;ST.auto=k.auto;ST.autoSet=k.autoSet;ST.day=k.day;ST.kills=k.kills;ST.cleared=k.cleared;if(k.jobs)ST.jobs=k.jobs;['inv','eq','petBag','eqB','q'].forEach(x=>{if(k[x])ST[x]=k[x]})}
+ VG.quest.ensure(ST);
  if(!ST.char)return startCreate();
  boot()}
 function startCreate(){
@@ -582,7 +604,7 @@ function startCreate(){
 function boot(){
  const r=ST.result;
  if(r){
-  if(r.type==='win'){ST.events=ST.events.filter(e=>e.uid!==r.uid);ST.kills++;ST.cleared++;if(String(r.uid||'').indexOf('boss_')===0){ST.bossDown=ST.bossDown||{};ST.bossDown[r.uid.slice(5)]={day:ST.day,kills:ST.kills}}
+  if(r.type==='win'){ST.events=ST.events.filter(e=>e.uid!==r.uid);ST.kills++;ST.cleared++;{const md=world.monsters.find(m=>m.id===r.mon)||world.monsters.find(m=>m.name===r.name)||{};VG.quest.kill(md.id||r.mon||'',!!md.boss||String(r.uid||'').indexOf('boss_')===0,r.name)}if(String(r.uid||'').indexOf('boss_')===0){ST.bossDown=ST.bossDown||{};ST.bossDown[r.uid.slice(5)]={day:ST.day,kills:ST.kills}}
    const s=r.stone||{},parts=[];['thuong','trung','cao','sieu'].forEach((k,i)=>{if(s[k])parts.push('+'+s[k]+' LT '+['Thường','Trung','Cao','Siêu'][i])});
    say('Hạ '+r.name+': +'+r.xp+' KN'+(parts.length?', '+parts.join(', '):'')+'.')}
   else if(r.type==='flee')say('Thoát khỏi giao tranh với '+r.name+'.');
@@ -595,12 +617,14 @@ function boot(){
  if(blocked(tiles[ST.pos.x]&&tiles[ST.pos.x][ST.pos.y]))ST.pos={x:zone.spawn.x,y:zone.spawn.y};
  ensureBosses();rebuildEv();spawnEvents();persist();
  pv={x:ST.pos.x,y:ST.pos.y};zoom=Math.min(cw,ch)<520?.85:1;focusPlayer();select({x:ST.pos.x,y:ST.pos.y});
- $('#pZone').textContent=zone.name;renderHUD();
+ $('#pZone').textContent=zone.name;renderHUD();VG.quest.refresh();VG.quest.achCheck();
  !ST.char&&GM.loadLib().then(l=>{const h=l&&l.humans&&l.humans[0];if(h&&typeof h.img==='string'&&h.img.indexOf('data:image')===0){const i=new Image();i.src=h.img;$('#av').textContent='';$('#av').appendChild(i)}}).catch(()=>{})}
 buildTaskbar();resize();
 window.addEventListener('resize',resize);window.addEventListener('orientationchange',()=>setTimeout(resize,200));
 window.addEventListener('pageshow',e=>{if(e.persisted)location.reload()});
-loadJobs();GM.restore().catch(()=>0).then(()=>GM.loadWorld()).then(w=>(typeof GM.loadMonsters==='function'?Promise.resolve().then(()=>GM.loadMonsters(w)):Promise.resolve(w)).catch(()=>w).then(()=>w)).then(w=>loadMap().then(()=>init(w))).catch(e=>fail(e.message||String(e)));
+VG.quest.init({ST:()=>ST,GM,IT,openModal,closeModal,toast,say,persist,renderHUD,rest,jobName:id=>{const b=JOBS&&JOBS.jobs&&JOBS.jobs.find(j=>j.id===id);return b?b.name:''}});
+$('#qtrack').onclick=()=>{if(modal||!ST||!ST.q||!ST.q.pin)return;const d=VG.quest.detail(ST.q.pin);openModal(d[0],d[1])};
+loadJobs();GM.restore().catch(()=>0).then(()=>GM.loadWorld()).then(w=>(typeof GM.loadMonsters==='function'?Promise.resolve().then(()=>GM.loadMonsters(w)):Promise.resolve(w)).catch(()=>w).then(()=>w)).then(w=>loadMap().then(()=>VG.quest.load().catch(()=>0)).then(()=>init(w))).catch(e=>fail(e.message||String(e)));
 requestAnimationFrame(loop);
 window.__vg={get ST(){return ST},get zone(){return zone},hit,onTap,get mv(){return mv},get route(){return route},wx,wy,toSX,toSY,get zoom(){return zoom},get modal(){return modal}};
 })();

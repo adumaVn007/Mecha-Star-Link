@@ -56,3 +56,18 @@ Tạo/sửa bằng `AdminEditMonster.html`. `{ v:1, monsters:[ … ] }`. Trộn 
 Mỗi quái: `id`, `name`, `kind` (`monster`|`boss`), `shape` (wolf|turtle|tiger), `rank` (0–48, cùng hệ cảnh giới người chơi), `hp`/`atk`/`spd`/`sh` (chỉ số cơ bản, lấy từ database), `weight` (trọng số xuất hiện), `xp` (tùy chọn, trống = theo sự kiện), `terrain[]` (trống = mọi nơi), `roam` (di chuyển trên bản đồ; 5 phút/bước theo đồng hồ thật), `range` (phạm vi tấn công, ô; 0 = tự động theo bậc), `angry` (0–100, độ hung dữ), `img` (data URL), `desc`.
 Boss: `bossMap {x, y, roam (bán kính đi lại), respawnDays, respawnKills, tier}`; hạ boss thì hồi sinh sau số ngày hoặc số trận (`ST.bossDown` trong save).
 Kích thước trên bản đồ: `0.8 + 0.025 × rank`; `rank 48` (Thần Giai) chiếm 3×3 ô. Số quái trên bản đồ = ×3 bản cũ; vùng ngoài lãnh thổ và xa thành dày hơn trong lãnh thổ. Quái chọn theo cảnh giới người chơi (±4 bậc, lệch theo cấp sự kiện), mỗi lần giao chiến có 35% đổi sang loại khác cùng cỡ ô.
+
+## `database/quests.json` (v:1) — Nhiệm vụ, thành tựu, danh tiếng (MỚI)
+Tạo/sửa bằng `editmisson.html`. Chỉ lưu ĐỊNH NGHĨA; tiến độ người chơi nằm trong save (`ST.q`), không ghi lên GitHub.
+`{ v, factions[], repLevels[{min,name,discount}], quests[], achievements[] }`
+Nhiệm vụ: `id`, `name`, `type` (system|main|side|chain|daily|repeat), `scope` (country|sect|system = tab hiển thị), `desc`, `giver` (id NPC, trống = nhận trong bảng), `giveAt {x,y,r}`, `turnIn` (id NPC trả), `turnAt {x,y,r}`,
+`req {rank, country, quest[], notQuest[], questActive[], flag[], noFlag[], rep{phe:số}, season[0-3], day[a,b]}`,
+`objectives[] {t: kill|collect|talk|use|explore|visit, target, n, text, x,y,r (explore), fn (use), consume (collect)}`,
+`rewards {xp, stones{thuong,trung,cao,sieu}, items[{id,q}], rep{phe:số}, flags[]}`,
+`choices[] {text, rewards, rep, flags}` (nhân quả: người chơi chọn khi trả; thưởng cộng vào thưởng gốc), `next[]` (id nhiệm vụ mở khóa), `repeat {days}`, `onGive`, `onDone`.
+Thành tựu: `{id, branch (combat|explore|quest|rep), name, stat (kills|boss|cleared|visited|quests|repMax), goal, reward}`.
+Save: `ST.q = {st:{id:{s,p[],d,n,ch}}, flags, rep, ach, pin, track{kills,boss,visited,talk,seen,names}}` — thiếu thì tự tạo mặc định (save cũ chạy bình thường).
+
+## `database/npc.json` (v:2) — trường mở rộng cho NPC (tương thích ngược với v:1)
+Giữ nguyên trường cũ. Thêm (tùy chọn): `functions[]` (quest | shop | rest | guide | job:<id nghề>), `shop[{id,price{thuong},q}]` (id = vật phẩm cũ cell/tonic/nano/shcell hoặc id trong mecha-studio.json), `restCost{}`, `guide`, `dialog {start,nodes{id:{text|[{if,text}],choices[{text,go,if,do[]}]}}}` (do: accept|flag|rep|give|shop|rest|openquests|end),
+`schedule {mode:'patrol', stepMin, path[{x,y}]}`, `showIf` (cùng cú pháp `req`). `zone:'the_gioi_van_giap'` = ô tuyệt đối trên bản đồ 300×600. Module: `vg-quest.js`.

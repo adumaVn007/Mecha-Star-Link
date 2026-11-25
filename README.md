@@ -13,3 +13,5 @@ https://adumavn007.github.io/Mecha-Star-Link/worldmap-editor.html Edit worlmap
 https://adumavn007.github.io/Mecha-Star-Link/EditJobMSL.html Edit nghề
 
 https://adumavn007.github.io/Mecha-Star-Link/AdminEditMonster.html Add/Edit quái & boss
+
+https://adumavn007.github.io/Mecha-Star-Link/editmisson.html Edit nhiệm vụ / NPC / thành tựu / danh tiếng
