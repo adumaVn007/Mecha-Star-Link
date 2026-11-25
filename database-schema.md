@@ -50,3 +50,9 @@ Số 1–6: 1 Phổ thông · 2 Tốt · 3 Hiếm · 4 Sử thi · 5 Truyền th
 Module `vg-bag.js`. Khóa tùy chọn trong save: `inv {id:số lượng}` (id = id trong `mecha-studio.json`), `eq {slot:id}` (slot: head, body, shoulder, arm, glove, leg, boot, weapon, backpack, wing, pet, drone), `petBag {id:số lượng}`, `eqB {max,atk,spd,sh}` (tổng chỉ số trang bị, tính lại từ database mỗi lần mặc/tháo/mở túi). Vật phẩm cũ `cell/tonic/nano/shcell` vẫn ở `ST.items`. Save cũ không có các khóa này vẫn chạy.
 Sức chứa túi chính 200 ô (10 ô/hàng), mỗi id là 1 ô (cộng dồn số lượng). Túi đầy → vào `petBag` (cần mặc Ba lô + Pet, tối đa 20 ô); không có Pet thì báo không nhặt được. Hàm nhặt đồ: `VG.bag.add(ST, id, qty)` → `{ok, where, msg}`.
 Pet/Drone: `hp` là HP riêng, không cộng vào chỉ số Mecha. Cánh/Drone/Pet cần mặc Ba lô trước.
+
+## `database/monsters.json` (v:1) — Quái & Boss (MỚI)
+Tạo/sửa bằng `AdminEditMonster.html`. `{ v:1, monsters:[ … ] }`. Trộn vào `world.monsters` theo `id` (trùng id = ghi đè quái gốc trong `world-events.json`); quái thiếu `hp`/`atk`/`spd` > 0 thì bị bỏ qua (chưa vào game).
+Mỗi quái: `id`, `name`, `kind` (`monster`|`boss`), `shape` (wolf|turtle|tiger), `rank` (0–48, cùng hệ cảnh giới người chơi), `hp`/`atk`/`spd`/`sh` (chỉ số cơ bản, lấy từ database), `weight` (trọng số xuất hiện), `xp` (tùy chọn, trống = theo sự kiện), `terrain[]` (trống = mọi nơi), `roam` (di chuyển trên bản đồ), `img` (data URL), `desc`.
+Boss: `bossMap {x, y, roam (bán kính đi lại), respawnDays, respawnKills, tier}`; hạ boss thì hồi sinh sau số ngày hoặc số trận (`ST.bossDown` trong save).
+Kích thước trên bản đồ: `0.8 + 0.025 × rank`; `rank 48` (Thần Giai) chiếm 3×3 ô. Số quái trên bản đồ = ×3 bản cũ; vùng ngoài lãnh thổ và xa thành dày hơn trong lãnh thổ. Quái chọn theo cảnh giới người chơi (±4 bậc, lệch theo cấp sự kiện), mỗi lần giao chiến có 35% đổi sang loại khác cùng cỡ ô.

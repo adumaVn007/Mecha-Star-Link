@@ -106,15 +106,16 @@ const GR=["Hoàng Giai","Huyền Giai","Địa Giai","Thiên Giai"],PH=["Sơ k�
 (()=>{GR.forEach((g,gi)=>PH.forEach((p,pi)=>{RK.push(g+" "+p);RS.push(g.split(" ")[0]+" "+p.split(" ")[0])}));for(let t=1;t<=12;t++)PH.forEach(p=>{RK.push("Thánh Giai Tầng "+t+" "+p);RS.push("Thánh T"+t+" "+p.split(" ")[0])});RK.push("Thần Giai");RS.push("Thần Giai")})();
 const rankName=i=>RK[i]||("Cảnh giới "+i),rankShort=i=>RS[i]||("Cảnh giới "+i);
 const need=()=>60+(G.lv-12)*30;
+function SHP(m){const S=["wolf","turtle","tiger"];if(S.indexOf(m.shape)>=0)return m.shape;let h=0;for(const c of String(m.id||m.name||""))h=(h*31+c.charCodeAt(0))>>>0;return S[h%3]}
 function newGame(){
  const p=SV.p,B=SV.eqB||{};
  G={b:{max:+B.max||0,atk:+B.atk||0,spd:+B.spd||0,sh:+B.sh||0},lv0:p.lv,lv:p.lv,xp:p.xp,hp:p.hp,max:p.max+(+B.max||0),atk:p.atk+(+B.atk||0),en:p.en,enMax:p.enMax,reg:p.reg,soul:p.soul,soulMax:p.soulMax,sh:p.gear?p.shMax+(+B.sh||0):0,shMax:p.gear?p.shMax+(+B.sh||0):0,gear:p.gear,spd:p.spd+(+B.spd||0),atb:650,
  items:Object.assign({},SV.items),drone:null,spdX:1,auto:!!SV.auto,turn:false,over:false,lock:false,modal:false,od:false,round:0,log:[]};
  spawn();say(PRACTICE?"Chế độ luyện tập: kết quả không được lưu.":"Chiến đấu bắt đầu. Vân Giáp sẵn sàng.");}
 function spawn(){
- const d=EV.def,m=EV.mon,lv=Math.min(MAXR,Math.max(0,G.lv+(d.lvDelta||0))),i=lv-12,f=k=>Math.max(.5,1+k*i);
- const hp=Math.round(m.hp*f(.15)*(d.hpMul||1)*(.95+Math.random()*.15)),sh=Math.round((m.sh||0)*f(.1));
- G.e={name:m.name,shape:m.shape||"wolf",tierName:"Sự kiện "+EV.tier.name,lv,hp,max:hp,sh,shMax:sh,atk:Math.round(m.atk*f(.13)*(d.atkMul||1)),en:40,enMax:60,spd:Math.round(m.spd+ri(-30,30)),atb:0,dead:false};
+ const d=EV.def,m=EV.mon,own=m.rank!=null,lv=own?Math.min(MAXR,Math.max(0,m.rank)):Math.min(MAXR,Math.max(0,G.lv+(d.lvDelta||0))),i=own?0:lv-12,f=k=>Math.max(.5,1+k*i),hm=own?1:(d.hpMul||1),am=own?1:(d.atkMul||1);
+ const hp=Math.round(m.hp*f(.15)*hm*(.95+Math.random()*.15)),sh=Math.round((m.sh||0)*f(.1));
+ G.e={name:m.name,shape:SHP(m),tierName:"Sự kiện "+EV.tier.name,lv,hp,max:hp,sh,shMax:sh,atk:Math.round(m.atk*f(.13)*am),en:40,enMax:60,spd:Math.round(m.spd+ri(-30,30)),atb:0,dead:false};
  G.round=0;say(`${G.e.name} (${rankName(lv)}) xuất hiện.`);}
 function say(t){G.log.push(t);if(G.log.length>60)G.log.shift();const l=$("#log");if(l){l.innerHTML="<h4>NHẬT KÝ</h4>"+G.log.map(x=>`<div>${x}</div>`).join("");l.scrollTop=l.scrollHeight}}
 function pop(t,side,g){const d=document.createElement("div");d.className="pop"+(g?" g":"");d.textContent=t;d.style[side==="p"?"left":"right"]="18%";$("#stage").appendChild(d);setTimeout(()=>d.remove(),900)}
@@ -136,7 +137,7 @@ const can=s=>G.turn&&!G.over&&!G.modal&&G.lv>=s.lv&&G.en>=s.en&&G.soul>=s.so;
 function use(i){const s=SK[i];if(!can(s))return;G.en-=s.en;G.soul-=s.so;const od=G.od;s.run();if(od&&s.n!=="Overdrive")G.od=false;endAct()}
 function endAct(){G.turn=false;G.atb-=1000;renderAll()}
 function endTurn(){if(!G.turn||G.modal)return;G.soul=Math.min(G.soulMax,G.soul+12);G.en=Math.min(G.enMax,G.en+10);say("Kết lượt: nghỉ ngơi, hồi 10 năng lượng và 12 hồn lực.");endAct()}
-function win(){const e=G.e,d=EV.def,g=d.xp||40;G.xp+=g;say(`${e.name} bị hạ. +${g} kinh nghiệm.`);
+function win(){const e=G.e,d=EV.def,g=EV.mon.xp||d.xp||40;G.xp+=g;say(`${e.name} bị hạ. +${g} kinh nghiệm.`);
  while(G.lv<MAXR&&G.xp>=need()){G.xp-=need();lvUp()}if(G.lv>=MAXR)G.xp=0;
  const st={};["thuong","trung","cao","sieu"].forEach(k=>{const r=d.stone&&d.stone[k];if(r)st[k]=ri(r[0],r[1])});
  finish("win",g,st);G.over=true;G.turn=false;renderAll();
@@ -224,7 +225,7 @@ function tickUI(){
 $("#bBag").onclick=bag;$("#bSum").onclick=sumM;$("#bRun").onclick=run;$("#bEnd").onclick=endTurn;$("#bSet").onclick=setM;
 $("#bSpd").onclick=()=>{G.spdX=G.spdX%3+1;renderAll()};
 $("#bAuto").onclick=()=>{G.auto=!G.auto;renderAll();if(G.auto&&G.turn)setTimeout(autoAct,300)};
-GM.loadWorld().then(w=>{const z=w.zones[0];SV=GM.load(z);const pd=SV.pending;let def,mon;
+GM.loadWorld().then(w=>GM.loadMonsters(w).catch(()=>w).then(()=>w)).then(w=>{const z=w.zones[0];SV=GM.load(z);const pd=SV.pending;let def,mon;
  if(pd){def=w.events.find(v=>v.id===pd.id);mon=w.monsters.find(v=>v.id===pd.mon)}
  if(!def||!mon){PRACTICE=true;def=GM.rnd(w.events);mon=w.monsters.find(m=>m.id===GM.rnd(def.monsters))||w.monsters[0]}
  EV={def,mon,tier:w.tiers[def.tier]||{name:"?"},uid:pd&&pd.uid,from:pd&&pd.from,spawn:z.spawn};

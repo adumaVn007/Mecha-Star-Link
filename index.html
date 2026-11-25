@@ -147,24 +147,81 @@ const FREE_MOVE=true;
 const hard=t=>t==='water'||t==='rock'||t==='wall';
 const blocked=t=>t===null||t===undefined||(!FREE_MOVE&&hard(t));
 const placeAt=(x,y)=>pmap?pmap[x*1000+y]:zone.places.find(p=>p.x===x&&p.y===y);
-const evAt=(x,y)=>ST.events.find(e=>e.x===x&&e.y===y);
+/* ===== Quái trên bản đồ: cấu hình, kích thước theo bậc, di chuyển, mật độ theo vùng (database/monsters.json) ===== */
+const MCFG={mult:3,reroll:.35,roamMin:1100,roamMax:2600,roamChance:.55,townSafe:2,saveMs:10000};
+let monById=new Map(),evMap=new Map(),nextRoam=0,lastSaveT=0,moved=false;
+const monOf=e=>monById.get(e.mon);
+function addEv(e){const m=monOf(e),r=m?GM.monFoot(m):0;for(let dx=-r;dx<=r;dx++)for(let dy=-r;dy<=r;dy++)evMap.set((e.x+dx)*1000+(e.y+dy),e)}
+function rebuildEv(){evMap=new Map();if(ST)ST.events.forEach(addEv)}
+const evAt=(x,y)=>evMap.get(x*1000+y);
+function nearTown(x,y,r){for(let dx=-r;dx<=r;dx++)for(let dy=-r;dy<=r;dy++)if(pmap&&pmap[(x+dx)*1000+(y+dy)])return true;return false}
+function footOK(x,y,r,self){
+ for(let dx=-r;dx<=r;dx++)for(let dy=-r;dy<=r;dy++){const a=x+dx,b=y+dy;
+  if(a<2||b<2||a>zone.w-3||b>zone.h-3)return false;
+  const t=typ(a,b);if(t===null||hard(t)||t==='city'||t==='portal'||t==='wall')return false;
+  const o=evMap.get(a*1000+b);if(o&&o!==self)return false;
+  if(Math.abs(a-ST.pos.x)+Math.abs(b-ST.pos.y)<1)return false}
+ return !nearTown(x,y,MCFG.townSafe+r)}
+/* Vùng xa sự quản lý của quốc gia (ngoài lãnh thổ, xa thành) -> quái xuất hiện dày hơn */
+function wildW(x,y){
+ if(!wmap)return 1;
+ const own=wmap.owner[y*zone.w+x];let d=1e9;for(const p of zone.places){const k=Math.abs(p.x-x)+Math.abs(p.y-y);if(k<d)d=k}
+ const far=Math.max(0,Math.min(1,(d-8)/40));
+ return own?.2+.2*far:.7+.3*far}
 const evDef=e=>world.events.find(v=>v.id===e.id);
 const tierOf=e=>world.tiers[(evDef(e)||{}).tier]||{name:'?',color:'#ffffff',icon:'✦'};
 
-function pickEvent(){
+function pickMon(tier,terr,exclFoot){
+ const sh={small:-3,medium:0,large:3,super:6}[tier]||0,c=Math.max(0,Math.min(GM.MAXR,ST.p.lv+sh));
+ let all=world.monsters.filter(m=>!m.boss&&(!m.terrain||!m.terrain.length||m.terrain.indexOf(terr)>=0)&&(exclFoot==null||GM.monFoot(m)===exclFoot));
+ if(!all.length)return null;
+ let pool=all.filter(m=>Math.abs(GM.monRank(m)-c)<=4);
+ if(!pool.length)pool=all.slice().sort((a,b)=>Math.abs(GM.monRank(a)-c)-Math.abs(GM.monRank(b)-c)).slice(0,3);
+ const tot=pool.reduce((a,m)=>a+(m.weight||1),0);let r=Math.random()*tot;
+ for(const m of pool){r-=(m.weight||1);if(r<=0)return m}
+ return pool[pool.length-1]}
+function pickEvent(terr){
  const w=TIERS_ORDER.filter(t=>world.tiers[t]&&world.events.some(e=>e.tier===t)),tot=w.reduce((a,t)=>a+(world.tiers[t].weight||1),0);
  let r=Math.random()*tot,tier=w[0];for(const t of w){r-=world.tiers[t].weight||1;if(r<=0){tier=t;break}}
- const d=GM.rnd(world.events.filter(e=>e.tier===tier));
- const mons=(d.monsters||[]).filter(id=>world.monsters.some(m=>m.id===id));
- return mons.length?{def:d,mon:GM.rnd(mons)}:null}
+ const d=GM.rnd(world.events.filter(e=>e.tier===tier)),m=pickMon(tier,terr);
+ return m?{def:d,mon:m.id}:null}
 function spawnEvents(){
- let guard=500;
+ let guard=9000;
  while(ST.events.length<zone.eventCount&&guard-->0){
   const x=GM.ri(2,zone.w-3),y=GM.ri(2,zone.h-3),t=typ(x,y);
   if(hard(t)||blocked(t)||t==='city'||t==='portal'||evAt(x,y))continue;
   if(Math.abs(x-ST.pos.x)+Math.abs(y-ST.pos.y)<3)continue;
-  const p=pickEvent();if(!p)break;
-  ST.events.push({uid:'e'+Date.now().toString(36)+GM.ri(0,9999),id:p.def.id,mon:p.mon,x,y})}}
+  if(Math.random()>wildW(x,y))continue;
+  const p=pickEvent(t);if(!p)break;
+  const m=monById.get(p.mon);if(m&&GM.monFoot(m)&&!footOK(x,y,GM.monFoot(m)))continue;
+  const e={uid:'e'+Date.now().toString(36)+GM.ri(0,9999),id:p.def.id,mon:p.mon,x,y};
+  ST.events.push(e);addEv(e)}}
+/* Boss cố định (bossmap): đặt tại tọa độ trong database/monsters.json, hồi sinh sau số ngày/số trận */
+function ensureBosses(){
+ ST.bossDown=ST.bossDown||{};
+ for(const m of world.monsters){
+  const b=m.boss&&m.bossMap;if(!b||!(b.x>=0&&b.y>=0&&b.x<zone.w&&b.y<zone.h))continue;
+  const uid='boss_'+m.id;if(ST.events.some(e=>e.uid===uid))continue;
+  const dn=ST.bossDown[m.id];
+  if(dn&&(ST.day-dn.day<(b.respawnDays||3))&&(ST.kills-dn.kills<(b.respawnKills||25)))continue;
+  delete ST.bossDown[m.id];
+  const def=world.events.find(v=>v.tier===(b.tier||'super'))||world.events[world.events.length-1];
+  ST.events=ST.events.filter(e=>!(e.x===b.x&&e.y===b.y));
+  ST.events.push({uid,id:def.id,mon:m.id,x:b.x,y:b.y,home:{x:b.x,y:b.y},boss:1})}}
+/* Quái di chuyển trên bản đồ */
+function roamStep(now){
+ if(!ST||modal||now<nextRoam)return;
+ nextRoam=now+GM.ri(MCFG.roamMin,MCFG.roamMax);
+ const D=[[1,0],[-1,0],[0,1],[0,-1]];let any=false;
+ for(const e of ST.events){
+  const m=monOf(e);if(!m||m.roam===false||Math.random()>MCFG.roamChance)continue;
+  const r=GM.monFoot(m),d=D[GM.ri(0,3)],nx=e.x+d[0],ny=e.y+d[1];
+  if(e.boss){const b=m.bossMap||{},R=+b.roam||0,h=e.home||{x:e.x,y:e.y};if(!R||Math.abs(nx-h.x)>R||Math.abs(ny-h.y)>R)continue}
+  if(mv&&(Math.abs(nx-mv.tx)<=r&&Math.abs(ny-mv.ty)<=r))continue;
+  if(!footOK(nx,ny,r,e))continue;
+  e.x=nx;e.y=ny;any=true}
+ if(any){rebuildEv();moved=true;if(sel)info(sel)}
+ if(moved&&now-lastSaveT>MCFG.saveMs){lastSaveT=now;moved=false;persist()}}
 
 const wx=(x,y)=>(x-y)*TW/2,wy=(x,y)=>(x+y)*TH/2;
 const toSX=v=>cw/2+(v-cam.x)*zoom,toSY=v=>ch/2+(v-cam.y)*zoom;
@@ -215,7 +272,7 @@ function draw(now){
     if(x===0||wmap.owner[y*zone.w+x-1]!==own)L.push([px-w,py+h,px,py])}}
   dia(px,py,0);g.strokeStyle=WM?'#d6c18a22':'#d6c18a55';g.lineWidth=1;g.stroke();
   if(r2.has(x+','+y)){dia(px,py,0);g.fillStyle='#ffe08b44';g.fill()}
-  const ev=evAt(x,y),dc=WM?wmap.dec[x*1000+y]:null;
+  const ev0=evAt(x,y),ev=ev0&&ev0.x===x&&ev0.y===y?ev0:null,dc=WM?wmap.dec[x*1000+y]:null;
   if(WM?(t==='city'||t==='portal'||t==='ruin'||t==='herb'||t==='wall'||ev||dc):(t!=='grass'||ev))objs.push({k:x+y+x*.001,px,py,t,ev,x,y,dc})}
  /* viền 3 màu phạm vi quốc gia */
  g.lineCap='round';g.lineJoin='round';
@@ -237,10 +294,14 @@ function draw(now){
    if(pl){const zz=Math.max(z,.28);if(!drawAsset('k_'+pl.kind,cx,cy,zz,pl.img)&&A&&A.KDRAW[pl.kind])A.KDRAW[pl.kind](g,cx,cy,zz,pl.country?wmap.cols[pl.country]:null)}
    else if(t==='city'){block(px,py,5,COL.city);g.fillStyle='#7a5a34';g.fillRect(cx-9*z,cy-14*z,18*z,12*z);g.fillStyle='#2f7d6f';g.beginPath();g.moveTo(cx-14*z,cy-13*z);g.lineTo(cx,cy-24*z);g.lineTo(cx+14*z,cy-13*z);g.closePath();g.fill();g.fillStyle='#e4c27b';g.fillRect(cx-1.5*z,cy-27*z,3*z,5*z)}
    else{const r=(11+3*pulse)*z;g.strokeStyle='#8fe3cf';g.lineWidth=2.5*z;g.beginPath();g.ellipse(cx,cy-8*z,r*.7,r,0,0,7);g.stroke();g.fillStyle='#8fe3cf33';g.fill()}}
-  if(ev){const T=tierOf(ev),bob=Math.sin(now/300+o.x)*2.5*z;
-   dia(px,py,0);g.lineWidth=2*z;g.strokeStyle=T.color;g.globalAlpha=.55+.45*pulse;g.stroke();g.globalAlpha=1;g.fillStyle=T.color+'33';g.fill();
-   const by=cy-17*z+bob;g.fillStyle=T.color+'55';g.beginPath();g.arc(cx,by,(10+3*pulse)*z,0,7);g.fill();
-   g.fillStyle=T.color;g.beginPath();g.arc(cx,by,7.5*z,0,7);g.fill();g.fillStyle='#10181e';g.font='bold '+(10*z)+'px Georgia';g.textAlign='center';g.textBaseline='middle';g.fillText('!',cx,by+.5*z)}}
+  if(ev){const T=tierOf(ev),m=monOf(ev),sc=m?GM.monScale(m):1,fr=m?GM.monFoot(m):0,boss=!!(m&&m.boss),col=boss?'#e0453a':T.color,bob=Math.sin(now/300+o.x)*2.5*z;
+   for(let dx=-fr;dx<=fr;dx++)for(let dy=-fr;dy<=fr;dy++){const qx=px+(dx-dy)*TW/2*z,qy=py+(dx+dy)*TH/2*z;dia(qx,qy,0);g.lineWidth=2*z;g.strokeStyle=col;g.globalAlpha=.55+.45*pulse;g.stroke();g.globalAlpha=1;g.fillStyle=col+'33';g.fill()}
+   const rad=7.5*z*sc,by=cy-(9*z+rad)+bob;
+   g.fillStyle=col+'55';g.beginPath();g.arc(cx,by,rad+3*pulse*z,0,7);g.fill();
+   const im=m&&m.img?getImg(m.img):null;
+   if(im){const w=Math.max(rad*2.2,12*z),h=w*im.naturalHeight/im.naturalWidth;g.drawImage(im,cx-w/2,cy-h+bob*.5,w,h)}
+   else{g.fillStyle=col;g.beginPath();g.arc(cx,by,rad,0,7);g.fill();g.fillStyle='#10181e';g.font='bold '+(Math.max(10,rad*1.3))+'px Georgia';g.textAlign='center';g.textBaseline='middle';g.fillText(boss?'☠':'!',cx,by+.5*z)}
+   if(m&&(boss||fr||GM.monRank(m)>=24)&&z>=.5){const fs=Math.max(10,11*Math.min(z,1.2)),ty=by-rad-5*z;g.font='bold '+fs+'px Georgia';g.textAlign='center';g.textBaseline='alphabetic';g.lineJoin='round';g.lineWidth=3;g.strokeStyle='#0a1117';g.strokeText(m.name,cx,ty);g.fillStyle=boss?'#ff9a8f':'#f2e2b0';g.fillText(m.name,cx,ty)}}}
  /* nhãn tên nổi: để người chơi biết thành / tông môn / hang động ở đâu */
  if(WM&&A){const pr={capital:0,city:1,fortress:2,sect:3,realm:4,cave:5,village:6,other:7},minZ={capital:.3,city:.45,fortress:.55,sect:.5,realm:.5,cave:.55,village:.8,other:.8},zz=Math.max(z,.28),s=Math.max(.75,Math.min(1.25,z+.3)),L=[];
   for(const p of zone.places){const px=toSX(wx(p.x,p.y)),py=toSY(wy(p.x,p.y))+TH/2*z;if(px<-90||px>cw+90||py<-30||py>ch+130)continue;
@@ -287,7 +348,7 @@ function info(t){
  if(pl){n=pl.name;d=pl.desc||d}
  let st=blocked(ty)?'⛔ Bị chặn':'✔ Có thể di chuyển';
  if(wmap){const o=wmap.owner[t.y*zone.w+t.x];st+=' · '+(o?wmap.names[o]:'Vô chủ')}
- if(ev){const T=tierOf(ev);n+=' · Sự kiện '+T.name;st+=' · ⚔ '+T.name}
+ if(ev){const T=tierOf(ev),mm=monOf(ev);n+=' · Sự kiện '+T.name+(mm?' · '+mm.name+' ('+GM.rankShort(GM.monRank(mm))+(GM.monFoot(mm)?' · 3×3 ô':'')+')':'');st+=' · ⚔ '+T.name}
  $('#tName').textContent=n;$('#tDesc').textContent=d;$('#tCo').textContent='Ô: '+t.x+', '+t.y+' · '+st}
 function select(t){sel=t;info(t)}
 function onTap(px,py){
@@ -312,7 +373,10 @@ function arrive(){
  if(isTown(pl))return openCity(pl);
  if(pl)return openRealm(pl)}
 function openEvent(ev){
- const d=evDef(ev),T=tierOf(ev),m=world.monsters.find(v=>v.id===ev.mon),lv=Math.max(0,Math.min(GM.MAXR,ST.p.lv+(d.lvDelta||0)));
+ /* mỗi lần giao chiến có xác suất gặp loại quái khác (cùng cỡ ô); boss thì cố định */
+ if(!ev.rolled&&!ev.boss){ev.rolled=1;const cur=monOf(ev);
+  if(cur&&Math.random()<MCFG.reroll){const alt=pickMon((evDef(ev)||{}).tier,typ(ev.x,ev.y),GM.monFoot(cur));if(alt&&alt.id!==cur.id){ev.mon=alt.id;rebuildEv();persist()}}}
+ const d=evDef(ev),T=tierOf(ev),m=monOf(ev),lv=m&&m.rank!=null?GM.monRank(m):Math.max(0,Math.min(GM.MAXR,ST.p.lv+(d.lvDelta||0)));
  openModal('Sự kiện '+T.name,`<p><span class="tag" style="background:${T.color}">${T.icon} ${T.name}</span><b style="color:var(--gold)">${esc(d.name)}</b></p><p>${esc(d.desc||'')}</p>
  <div class="row"><span>Dị thú</span><span>${esc(m?m.name:'?')}</span></div><div class="row"><span>Cảnh giới địch</span><span>${esc(GM.rankName(lv))}</span></div>
  <div class="row"><span>Thưởng kinh nghiệm</span><span>+${d.xp||0}</span></div>
@@ -443,13 +507,13 @@ function loop(now){
  requestAnimationFrame(loop);
  if(document.hidden||!zone||!ST)return;
  const dt=Math.min(.1,(now-(lastT||now))/1000);lastT=now;
- stepUpdate(now);
+ stepUpdate(now);roamStep(now);
  if(follow){const k=1-Math.pow(.0008,dt);cam.x+=(wx(pv.x,pv.y)-cam.x)*k;cam.y+=(wy(pv.x,pv.y)+TH/2-cam.y)*k}
  if(now-lastDraw<30)return;lastDraw=now;draw(now)}
 
 function fail(msg){$('#pZone').textContent='Lỗi dữ liệu';openModal('Không tải được dữ liệu',`<p>${esc(msg)}</p><div class="note">Cần file <b>database/world-events.json</b> cùng thư mục với index.html (hoặc đã up lên GitHub). Nếu mở file trực tiếp từ bộ nhớ điện thoại, trình duyệt sẽ chặn đọc file: hãy mở qua link Cloudflare/GitHub Pages.</div><button class="btn pri" onclick="location.reload()">Thử lại</button>`)}
 function init(w){
- world=w;zone=wmap?wmap.zone:w.zones[0];pmap={};zone.places.forEach(p=>{pmap[p.x*1000+p.y]=p});
+ world=w;monById=new Map((w.monsters||[]).map(m=>[m.id,m]));zone=wmap?wmap.zone:w.zones[0];zone.eventCount=Math.round((zone.eventCount||0)*MCFG.mult);pmap={};zone.places.forEach(p=>{pmap[p.x*1000+p.y]=p});
  tiles=[];for(let x=0;x<zone.w;x++){tiles[x]=[];for(let y=0;y<zone.h;y++)tiles[x][y]=typ(x,y)}
  ST=GM.load(zone);
  if(ST.zone!==zone.id){const k=ST;ST=GM.defaults(zone);ST.char=k.char;ST.p=k.p;ST.items=k.items;ST.stones=k.stones;ST.auto=k.auto;ST.day=k.day;ST.kills=k.kills;ST.cleared=k.cleared;if(k.jobs)ST.jobs=k.jobs;['inv','eq','petBag','eqB'].forEach(x=>{if(k[x])ST[x]=k[x]})}
@@ -480,7 +544,7 @@ function startCreate(){
 function boot(){
  const r=ST.result;
  if(r){
-  if(r.type==='win'){ST.events=ST.events.filter(e=>e.uid!==r.uid);ST.kills++;ST.cleared++;
+  if(r.type==='win'){ST.events=ST.events.filter(e=>e.uid!==r.uid);ST.kills++;ST.cleared++;if(String(r.uid||'').indexOf('boss_')===0){ST.bossDown=ST.bossDown||{};ST.bossDown[r.uid.slice(5)]={day:ST.day,kills:ST.kills}}
    const s=r.stone||{},parts=[];['thuong','trung','cao','sieu'].forEach((k,i)=>{if(s[k])parts.push('+'+s[k]+' LT '+['Thường','Trung','Cao','Siêu'][i])});
    say('Hạ '+r.name+': +'+r.xp+' KN'+(parts.length?', '+parts.join(', '):'')+'.')}
   else if(r.type==='flee')say('Thoát khỏi giao tranh với '+r.name+'.');
@@ -491,14 +555,14 @@ function boot(){
  if(!ST.log.length)say('Tiến vào '+zone.name+'.');else $('#tLog').textContent='✦ '+ST.log[0];
  ST.events=ST.events.filter(e=>world.events.some(v=>v.id===e.id)&&world.monsters.some(m=>m.id===e.mon)&&tiles[e.x]&&!blocked(tiles[e.x][e.y]));
  if(blocked(tiles[ST.pos.x]&&tiles[ST.pos.x][ST.pos.y]))ST.pos={x:zone.spawn.x,y:zone.spawn.y};
- spawnEvents();persist();
+ ensureBosses();rebuildEv();spawnEvents();persist();
  pv={x:ST.pos.x,y:ST.pos.y};zoom=Math.min(cw,ch)<520?.85:1;focusPlayer();select({x:ST.pos.x,y:ST.pos.y});
  $('#pZone').textContent=zone.name;renderHUD();
  !ST.char&&GM.loadLib().then(l=>{const h=l&&l.humans&&l.humans[0];if(h&&typeof h.img==='string'&&h.img.indexOf('data:image')===0){const i=new Image();i.src=h.img;$('#av').textContent='';$('#av').appendChild(i)}}).catch(()=>{})}
 buildTaskbar();resize();
 window.addEventListener('resize',resize);window.addEventListener('orientationchange',()=>setTimeout(resize,200));
 window.addEventListener('pageshow',e=>{if(e.persisted)location.reload()});
-loadJobs();GM.restore().catch(()=>0).then(()=>GM.loadWorld()).then(w=>loadMap().then(()=>init(w))).catch(e=>fail(e.message||String(e)));
+loadJobs();GM.restore().catch(()=>0).then(()=>GM.loadWorld()).then(w=>GM.loadMonsters(w).catch(()=>w).then(()=>w)).then(w=>loadMap().then(()=>init(w))).catch(e=>fail(e.message||String(e)));
 requestAnimationFrame(loop);
 window.__vg={get ST(){return ST},get zone(){return zone},hit,onTap,get mv(){return mv},get route(){return route},wx,wy,toSX,toSY,get zoom(){return zoom},get modal(){return modal}};
 })();

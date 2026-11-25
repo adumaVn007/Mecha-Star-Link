@@ -1,0 +1,145 @@
+<!doctype html><html lang="vi"><head><title>Vân Giáp – Admin: Thêm / Sửa Quái &amp; Boss</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><style>
+:root{--bg:#f4f6fb;--card:#fff;--tx:#1b2333;--mu:#6b7488;--ac:#2563eb;--bd:#dde2ee;--ok:#16a34a;--er:#dc2626;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0f1420;--card:#192032;--tx:#e8ecf5;--mu:#98a2b8;--ac:#5b8def;--bd:#2a3550;--ok:#4ade80;--er:#f87171;color-scheme:dark}}
+*{box-sizing:border-box}body{margin:0 auto;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;padding:12px;max-width:720px}
+h1{font-size:18px;margin:4px 0 10px}h2{font-size:15px;margin:0 0 8px}.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:10px}
+input,select,textarea{width:100%;padding:9px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font-size:15px}
+label{display:block;font-size:13px;color:var(--mu);margin:8px 0 3px}
+.btn{padding:11px 12px;border:0;border-radius:10px;background:var(--ac);color:#fff;font-size:14px;min-height:44px}.btn.g{background:var(--bd);color:var(--tx)}.btn.r{background:var(--er)}
+.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1;min-width:92px}.mu{color:var(--mu);font-size:13px}.ok{color:var(--ok)}.er{color:var(--er)}
+.chips{display:flex;gap:6px;margin-bottom:8px;overflow-x:auto}.chips button{padding:8px 14px;border-radius:20px;border:1px solid var(--bd);background:var(--card);color:var(--tx);white-space:nowrap;min-height:40px}.chips .on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.li{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:9px 4px;border-bottom:1px dashed var(--bd);cursor:pointer}.li b{font-size:14px}.li.sel{background:var(--bg)}
+.tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:10px;background:var(--bd);margin-left:4px}.tag.b{background:var(--er);color:#fff}
+.ck{display:flex;flex-wrap:wrap;gap:6px}.ck label{display:flex;align-items:center;gap:5px;margin:0;color:var(--tx);border:1px solid var(--bd);padding:6px 9px;border-radius:8px;width:auto}.ck input{width:auto}
+canvas{width:100%;image-rendering:pixelated;border:1px solid var(--bd);border-radius:8px;touch-action:manipulation;display:block}
+.mapbox{max-height:340px;overflow:auto;border-radius:8px}#msg{margin-top:8px;font-size:14px}
+</style></head><body>
+<h1>👾 Vân Giáp – Admin: Quái &amp; Boss</h1>
+<div class="card mu" id="src">Đang tải dữ liệu…</div>
+<div class="chips" id="fl"></div>
+<input id="q" placeholder="Tìm theo tên…" style="margin-bottom:8px">
+<div class="card" id="list"></div>
+<div class="card" id="ed"></div>
+<div class="card">
+<h2>Đồng bộ</h2>
+<label>Token GitHub (chỉ lưu tạm trong phiên, không ghi vào code)</label><input id="tk" type="password" placeholder="github_pat_…" autocomplete="off">
+<div class="row" style="margin-top:8px"><button class="btn" id="bUp">⬆ Tải LÊN GitHub</button><button class="btn g" id="bDn">⬇ Lấy TỪ GitHub</button></div>
+<div class="row" style="margin-top:8px"><button class="btn g" id="bEx">Tải JSON xuống</button><button class="btn g" id="bIm">Dán JSON</button></div>
+<textarea id="io" rows="5" style="display:none;margin-top:8px" placeholder="Dán nội dung monsters.json rồi bấm Dán JSON lần nữa"></textarea>
+<div id="msg"></div>
+<div class="mu" style="margin-top:8px">Ghi vào <code>database/monsters.json</code>. Quái gốc trong <code>world-events.json</code> / <code>mecha-studio.json</code> không bị sửa; sửa quái gốc sẽ tạo bản ghi đè cùng id. Quái chưa có HP/Tấn công/Tốc độ thì chưa vào game.</div>
+</div>
+<script src="vg-github.js"></script>
+<script>
+(function(){
+"use strict";
+var $=function(s){return document.querySelector(s)};
+var GR=['Hoàng Giai','Huyền Giai','Địa Giai','Thiên Giai'],PH=['Sơ kỳ','Trung kỳ','Hậu kỳ'],RK=[];
+GR.forEach(function(g){PH.forEach(function(p){RK.push(g+' '+p)})});
+for(var t=1;t<=12;t++)PH.forEach(function(p){RK.push('Thánh Giai Tầng '+t+' '+p)});RK.push('Thần Giai');
+var SHAPES=['wolf','turtle','tiger'],TER=[['grass','Cỏ'],['forest','Rừng'],['rock','Đá'],['sand','Cát'],['snow','Tuyết'],['swamp','Đầm lầy'],['road','Đường'],['ruin','Di tích'],['herb','Dược thảo'],['water','Nước']];
+var TCODE={'.':'grass',f:'forest',w:'water',r:'rock',s:'sand',n:'snow',m:'swamp',d:'road',u:'ruin',h:'herb',x:'wall'};
+var TCOL={grass:'#527e68',forest:'#315c4c',rock:'#777c78',ruin:'#9a825e',herb:'#6b9777',water:'#315f76',sand:'#a99a6a',snow:'#c9d8dc',swamp:'#46604a',road:'#9a8660',wall:'#8a7f62'};
+var MON=[],LEG=[],DBM=[],WM=null,cur=null,filt='all',srcTxt='',msgH='';
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function msg(h){$('#msg').innerHTML=h}
+function ok(t){msg('<span class="ok">✅ '+esc(t)+'</span>')}function bad(t){msg('<span class="er">❌ '+esc(t)+'</span>')}
+function get(p){return fetch(p+'?t='+Date.now()).then(function(r){if(!r.ok)throw 0;return r.json()}).catch(function(){return VG.fetchJSON(p).catch(function(){return null})})}
+function scale(r){return r>=48?4:0.8+0.025*r}
+function load(){
+ return Promise.all([get('database/monsters.json'),get('database/world-events.json'),get('database/mecha-studio.json'),get('database/worldmap.json')]).then(function(a){
+  MON=a[0]&&Array.isArray(a[0].monsters)?a[0].monsters:[];
+  LEG=(a[1]&&a[1].monsters||[]).map(function(m){return{id:m.id,name:m.name,shape:m.shape,rank:m.lv,hp:m.hp,atk:m.atk,spd:m.spd,sh:m.sh,_src:'world-events'}});
+  DBM=(a[2]&&a[2].monsters||[]).map(function(m){return{id:m.id||('db_'+m.name),name:m.name,rank:m.lv,hp:m.hp,atk:m.atk,spd:m.spd,sh:m.sh,_src:'mecha-studio'}});
+  WM=a[3]&&a[3].tiles?a[3]:null;
+  srcTxt='Quái trong monsters.json: '+MON.length+' · quái gốc world-events: '+LEG.length+' · quái trong mecha-studio: '+DBM.length+(WM?' · bản đồ '+WM.w+'×'+WM.h:' · chưa đọc được worldmap.json (không chọn được vị trí boss)');
+  $('#src').textContent=srcTxt;draw()})}
+function all(){var ids={},o=[];MON.forEach(function(m){ids[m.id]=1;o.push(m)});LEG.forEach(function(m){if(!ids[m.id])o.push(Object.assign({kind:'monster',_legacy:1},m))});return o}
+function draw(){
+ var f=[['all','Tất cả'],['monster','Quái'],['boss','Boss']];
+ $('#fl').innerHTML=f.map(function(x){return'<button data-f="'+x[0]+'" class="'+(filt==x[0]?'on':'')+'">'+x[1]+'</button>'}).join('')+'<button data-n="1" class="g">＋ Thêm mới</button>';
+ var q=($('#q').value||'').toLowerCase(),L=all().filter(function(m){return(filt=='all'||(m.kind||'monster')==filt)&&(!q||String(m.name).toLowerCase().indexOf(q)>=0)});
+ $('#list').innerHTML=L.length?L.map(function(m){var r=+m.rank||0;return'<div class="li'+(cur&&cur.id==m.id?' sel':'')+'" data-id="'+esc(m.id)+'"><div><b>'+esc(m.name)+'</b>'+(m.kind=='boss'?'<span class="tag b">Boss</span>':'')+(m._legacy?'<span class="tag">gốc</span>':'')+'<div class="mu">'+esc(RK[r]||'?')+(r>=48?' · 3×3 ô':'')+' · HP '+esc(m.hp||'—')+' · ATK '+esc(m.atk||'—')+' · SPD '+esc(m.spd||'—')+'</div></div><span class="mu">✎</span></div>'}).join(''):'<div class="mu">Chưa có quái nào. Bấm “＋ Thêm mới”.</div>';
+ form()}
+function blank(){return{id:'mon_'+Date.now().toString(36),name:'',kind:'monster',shape:'wolf',rank:12,hp:'',atk:'',spd:'',sh:0,weight:1,terrain:[],roam:true,img:'',desc:'',bossMap:null,_new:1}}
+function form(){
+ var m=cur;if(!m){$('#ed').innerHTML='<div class="mu">Chọn một quái để sửa hoặc bấm “＋ Thêm mới”.</div>';return}
+ var r=+m.rank||0,b=m.bossMap||{x:'',y:'',roam:0,respawnDays:3,respawnKills:25,tier:'super'},boss=m.kind=='boss';
+ var h='<h2>'+(m._new?'Thêm quái mới':'Sửa: '+esc(m.name))+'</h2>';
+ h+='<div class="row"><div><label>Tên</label><input id="f_name" value="'+esc(m.name)+'"></div><div><label>ID (không đổi sau khi tạo)</label><input id="f_id" value="'+esc(m.id)+'" '+(m._new?'':'readonly')+'></div></div>';
+ h+='<div class="row"><div><label>Loại</label><select id="f_kind"><option value="monster"'+(!boss?' selected':'')+'>Quái (ngẫu nhiên, di chuyển)</option><option value="boss"'+(boss?' selected':'')+'>Boss (bossmap cố định)</option></select></div><div><label>Hình dạng chiến đấu</label><select id="f_shape">'+SHAPES.map(function(s){return'<option'+(m.shape==s?' selected':'')+'>'+s+'</option>'}).join('')+'</select></div></div>';
+ h+='<label>Cấp bậc (49 bậc, giống người chơi)</label><select id="f_rank">'+RK.map(function(n,i){return'<option value="'+i+'"'+(i==r?' selected':'')+'>'+i+' · '+n+'</option>'}).join('')+'</select><div class="mu" id="f_sz"></div>';
+ h+='<label>Chỉ số cơ bản (lấy từ database, chỉnh sau)</label><select id="f_imp"><option value="">— Nhập chỉ số từ quái trong database —</option>'+LEG.concat(DBM).map(function(d,i){return'<option value="'+i+'">'+esc(d.name)+' ('+esc(d._src)+') HP '+esc(d.hp)+'</option>'}).join('')+'</select>';
+ h+='<div class="row"><div><label>HP</label><input id="f_hp" type="number" min="0" value="'+esc(m.hp)+'"></div><div><label>Tấn công</label><input id="f_atk" type="number" min="0" value="'+esc(m.atk)+'"></div><div><label>Tốc độ</label><input id="f_spd" type="number" min="0" value="'+esc(m.spd)+'"></div><div><label>Lá chắn</label><input id="f_sh" type="number" min="0" value="'+esc(m.sh||0)+'"></div></div>';
+ h+='<div class="row"><div><label>Trọng số xuất hiện</label><input id="f_w" type="number" min="0.1" step="0.1" value="'+esc(m.weight||1)+'"></div><div><label>Thưởng EXP (trống = theo sự kiện)</label><input id="f_xp" type="number" min="0" value="'+esc(m.xp||'')+'"></div></div>';
+ h+='<label>Địa hình xuất hiện (không chọn = mọi nơi)</label><div class="ck" id="f_ter">'+TER.map(function(t){return'<label><input type="checkbox" value="'+t[0]+'"'+((m.terrain||[]).indexOf(t[0])>=0?' checked':'')+'>'+t[1]+'</label>'}).join('')+'</div>';
+ h+='<div class="ck" style="margin-top:8px"><label><input type="checkbox" id="f_roam"'+(m.roam!==false?' checked':'')+'>Di chuyển trên bản đồ</label></div>';
+ h+='<label>Mô tả</label><textarea id="f_desc" rows="2">'+esc(m.desc||'')+'</textarea>';
+ h+='<label>Ảnh trên bản đồ (tùy chọn, tự thu nhỏ)</label><input id="f_img" type="file" accept="image/*">'+(m.img?'<img src="'+m.img+'" style="height:64px;margin-top:6px"> <button class="btn g" id="f_noimg" style="min-height:32px">Bỏ ảnh</button>':'');
+ h+='<div id="f_boss" style="display:'+(boss?'block':'none')+'"><h2 style="margin-top:14px">Bossmap</h2><div class="mu">Chạm vào bản đồ để chọn ô đặt boss.</div>';
+ h+='<div class="row"><div><label>Ô X</label><input id="b_x" type="number" value="'+esc(b.x)+'"></div><div><label>Ô Y</label><input id="b_y" type="number" value="'+esc(b.y)+'"></div><div><label>Bán kính đi lại</label><input id="b_roam" type="number" min="0" value="'+esc(b.roam||0)+'"></div></div>';
+ h+='<div class="row"><div><label>Hồi sinh sau (ngày)</label><input id="b_d" type="number" min="1" value="'+esc(b.respawnDays||3)+'"></div><div><label>hoặc sau (trận hạ quái)</label><input id="b_k" type="number" min="1" value="'+esc(b.respawnKills||25)+'"></div><div><label>Cấp sự kiện thưởng</label><select id="b_t">'+['small','medium','large','super'].map(function(t){return'<option'+((b.tier||'super')==t?' selected':'')+'>'+t+'</option>'}).join('')+'</select></div></div>';
+ h+='<div class="mu" id="b_info"></div><div class="mapbox"><canvas id="mm"></canvas></div></div>';
+ h+='<div class="row" style="margin-top:12px"><button class="btn" id="f_save">'+(m._new?'＋ Thêm':'💾 Lưu thay đổi')+'</button>'+(m._new?'':'<button class="btn r" id="f_del">🗑 Xóa'+(m._legacy||isOver(m)?' bản ghi đè':'')+'</button>')+'<button class="btn g" id="f_x">Đóng</button></div>';
+ $('#ed').innerHTML=h;sz();if(boss)mini();bind()}
+function isOver(m){return LEG.some(function(l){return l.id==m.id})}
+function sz(){var r=+$('#f_rank').value;$('#f_sz').textContent=r>=48?'Thần Giai: chiếm 3×3 ô trên bản đồ thế giới.':'Chiếm 1 ô · kích thước hiển thị ×'+scale(r).toFixed(2)+' (bậc càng cao càng to).'}
+function tile(x,y){if(!WM||x<0||y<0||x>=WM.w||y>=WM.h)return null;return TCODE[WM.tiles[y][x]]||'grass'}
+function binfo(){var x=+$('#b_x').value,y=+$('#b_y').value,t=tile(x,y);var pl=WM&&(WM.places||[]).some(function(p){return p.x==x&&p.y==y});
+ $('#b_info').innerHTML=t?'Ô '+x+','+y+' · địa hình: '+t+(t=='water'||t=='rock'||t=='wall'?' <span class="er">⚠ ô khó đi, hãy chọn ô khác</span>':'')+(pl?' <span class="er">⚠ trùng thành/địa điểm</span>':''):(WM?'Ô ngoài bản đồ.':'')}
+function mini(){
+ var c=$('#mm');if(!WM){c.style.display='none';return}
+ c.width=WM.w;c.height=WM.h;var g=c.getContext('2d'),im=g.createImageData(WM.w,WM.h);
+ for(var y=0;y<WM.h;y++){var row=WM.tiles[y]||'';for(var x=0;x<WM.w;x++){var hx=TCOL[TCODE[row[x]]||'grass'],n=parseInt(hx.slice(1),16),i=(y*WM.w+x)*4;im.data[i]=n>>16;im.data[i+1]=(n>>8)&255;im.data[i+2]=n&255;im.data[i+3]=255}}
+ g.putImageData(im,0,0);
+ (WM.places||[]).forEach(function(p){g.fillStyle='#fff';g.fillRect(p.x-1,p.y-1,3,3)});
+ all().forEach(function(m){if(m.kind=='boss'&&m.bossMap&&m.id!=cur.id){g.fillStyle='#e0453a';g.fillRect(m.bossMap.x-2,m.bossMap.y-2,5,5)}});
+ var x=+$('#b_x').value,y=+$('#b_y').value;if(x>=0&&y>=0){g.strokeStyle='#ffe08b';g.lineWidth=2;g.strokeRect(x-4,y-4,9,9);g.fillStyle='#ff2d2d';g.fillRect(x-1,y-1,3,3)}
+ c.style.width=Math.min(WM.w*2,Math.max(300,c.parentNode.clientWidth-2))+'px';binfo()}
+function bind(){
+ $('#f_rank').onchange=sz;
+ $('#f_kind').onchange=function(){cur.kind=this.value;$('#f_boss').style.display=this.value=='boss'?'block':'none';if(this.value=='boss')mini()};
+ $('#f_imp').onchange=function(){var d=LEG.concat(DBM)[+this.value];if(!d)return;$('#f_hp').value=d.hp||'';$('#f_atk').value=d.atk||'';$('#f_spd').value=d.spd||'';$('#f_sh').value=d.sh||0};
+ $('#f_img').onchange=function(){var f=this.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(){var im=new Image();im.onload=function(){var k=Math.min(1,160/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);cur=read();cur.img=c.toDataURL('image/webp',.8);form()};im.src=rd.result};rd.readAsDataURL(f)};
+ var ni=$('#f_noimg');if(ni)ni.onclick=function(){cur=read();cur.img='';form()};
+ ['b_x','b_y'].forEach(function(id){var e=$('#'+id);if(e)e.oninput=mini});
+ var c=$('#mm');if(c)c.onclick=function(e){var rc=c.getBoundingClientRect();$('#b_x').value=Math.floor((e.clientX-rc.left)/rc.width*WM.w);$('#b_y').value=Math.floor((e.clientY-rc.top)/rc.height*WM.h);mini()};
+ $('#f_x').onclick=function(){cur=null;draw()};
+ $('#f_save').onclick=save;var d=$('#f_del');if(d)d.onclick=del}
+function read(){
+ var m=Object.assign({},cur),n=function(id){var v=$('#'+id).value;return v===''?'':+v};
+ m.name=$('#f_name').value.trim();m.id=$('#f_id').value.trim();m.kind=$('#f_kind').value;m.shape=$('#f_shape').value;m.rank=+$('#f_rank').value;
+ m.hp=n('f_hp');m.atk=n('f_atk');m.spd=n('f_spd');m.sh=n('f_sh')||0;m.weight=+$('#f_w').value||1;var xp=n('f_xp');m.xp=xp===''?0:xp;
+ m.terrain=[].slice.call(document.querySelectorAll('#f_ter input:checked')).map(function(i){return i.value});m.roam=$('#f_roam').checked;m.desc=$('#f_desc').value.trim();
+ if(m.kind=='boss')m.bossMap={x:n('b_x'),y:n('b_y'),roam:n('b_roam')||0,respawnDays:n('b_d')||3,respawnKills:n('b_k')||25,tier:$('#b_t').value};else m.bossMap=null;
+ return m}
+function save(){
+ var m=read(),e=[];
+ if(!m.name)e.push('Thiếu tên');if(!/^[A-Za-z0-9_\-]+$/.test(m.id))e.push('ID chỉ gồm chữ không dấu, số, _ và -');
+ if(m._new&&all().some(function(x){return x.id==m.id}))e.push('ID đã tồn tại');
+ ['hp','atk','spd'].forEach(function(k){if(m[k]!==''&&!(m[k]>0))e.push(k.toUpperCase()+' phải > 0')});
+ if(m.kind=='boss'){var b=m.bossMap,t=tile(b.x,b.y);if(b.x===''||b.y==='')e.push('Boss cần ô trên bản đồ');else if(WM&&!t)e.push('Ô boss nằm ngoài bản đồ');else if(t=='water'||t=='rock'||t=='wall')e.push('Ô boss là địa hình không đi được')}
+ if(e.length)return bad(e.join('; '));
+ var miss=(m.hp===''||m.atk===''||m.spd==='')?' (chưa đủ HP/ATK/SPD → quái chưa vào game cho tới khi nhập)':'';
+ if(!confirm((m._new?'Thêm':'Lưu')+' quái “'+m.name+'”'+miss+'?'))return;
+ delete m._new;delete m._legacy;delete m._src;
+ var i=-1;MON.forEach(function(x,k){if(x.id==m.id)i=k});
+ try{if(i>=0)MON[i]=m;else MON.push(m);cur=m;draw();ok('Đã '+(i>=0?'lưu':'thêm')+' “'+m.name+'” vào danh sách. Bấm “Tải LÊN GitHub” để đưa vào game.')}catch(x){bad('Thất bại: '+x.message)}}
+function del(){
+ if(!confirm('Xóa “'+cur.name+'”'+(isOver(cur)?' (chỉ xóa bản ghi đè, quái gốc giữ nguyên)':'')+'?'))return;
+ MON=MON.filter(function(x){return x.id!=cur.id});cur=null;draw();ok('Đã xóa khỏi danh sách. Bấm “Tải LÊN GitHub” để áp dụng.')}
+function doc(){return{v:1,monsters:MON.map(function(m){var o=Object.assign({},m);delete o._new;delete o._legacy;delete o._src;return o})}}
+function tok(){var t=VG.getToken();if(!t){t=prompt('Dán token GitHub (fine-grained, quyền Contents: Read and write). Chỉ lưu trong tab này.');if(!t)return '';t=t.trim();VG.setToken(t)}return t}
+document.addEventListener('click',function(e){
+ var t=e.target.closest('[data-f],[data-n],[data-id]');if(!t)return;
+ if(t.dataset.f){filt=t.dataset.f;draw()}else if(t.dataset.n){cur=blank();draw();$('#ed').scrollIntoView({behavior:'smooth'})}
+ else{var m=all().filter(function(x){return x.id==t.dataset.id})[0];cur=Object.assign({},m);draw();$('#ed').scrollIntoView({behavior:'smooth'})}});
+$('#q').oninput=draw;
+$('#bUp').onclick=function(){if(!tok())return bad('Chưa có token GitHub.');if(!confirm('Tải monsters.json LÊN GitHub (ghi đè bản trên GitHub)?'))return;
+ VG.save('database/monsters.json',doc(),'Cập nhật quái vật & boss').then(function(j){ok('Đã tải lên GitHub'+(j&&j.commit?' (commit '+String(j.commit.sha).slice(0,7)+')':''))}).catch(function(e){bad('Tải lên thất bại: '+e.message)})};
+$('#bDn').onclick=function(){if(!confirm('Lấy monsters.json TỪ GitHub? Thay đổi chưa tải lên sẽ mất.'))return;VG.fetchJSON('database/monsters.json').then(function(j){if(!j)throw Error('Chưa có file trên GitHub');MON=j.monsters||[];cur=null;draw();ok('Đã lấy '+MON.length+' quái từ GitHub.')}).catch(function(e){bad('Thất bại: '+e.message)})};
+$('#bEx').onclick=function(){var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(doc(),null,1)],{type:'application/json'}));a.download='monsters.json';a.click();ok('Đã tạo file monsters.json.')};
+$('#bIm').onclick=function(){var t=$('#io');if(t.style.display=='none'){t.style.display='block';return}try{var j=JSON.parse(t.value);if(!Array.isArray(j.monsters))throw Error('Thiếu mảng monsters');MON=j.monsters;t.value='';t.style.display='none';cur=null;draw();ok('Đã nhập '+MON.length+' quái.')}catch(e){bad('JSON lỗi: '+e.message)}};
+load().catch(function(e){$('#src').textContent='Lỗi tải dữ liệu: '+e.message});
+})();
+</script></body></html>

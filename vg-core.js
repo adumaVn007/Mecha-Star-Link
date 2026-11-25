@@ -95,5 +95,27 @@
     });
   };
   GM.loadLib = function () { return getJSON('database/mecha-studio.json').catch(function () { return null; }); };
+  /* ===== Quái vật mở rộng (MỚI): database/monsters.json, trộn vào w.monsters theo id (trùng id = ghi đè). =====
+     Quái cũ trong world-events.json giữ nguyên. Trường mới: rank 0-48, kind 'monster'|'boss', terrain[], weight, roam, img, bossMap{x,y,roam,respawnDays,respawnKills,tier}. */
+  GM.monRank = function (m) { var r = m && (m.rank != null ? m.rank : m.lv); r = +r; return isFinite(r) ? Math.max(0, Math.min(GM.MAXR, Math.round(r))) : 0; };
+  GM.monFoot = function (m) { return GM.monRank(m) >= GM.MAXR ? 1 : 0; };            /* bán kính ô: Thần Giai chiếm 3×3 ô */
+  GM.monScale = function (m) { var r = GM.monRank(m); return r >= GM.MAXR ? 4 : 0.8 + 0.025 * r; };  /* bậc càng cao càng to */
+  GM.loadMonsters = function (w) {
+    return getJSON('database/monsters.json').catch(function () { return null; }).then(function (j) {
+      if (!w) return w;
+      w.monsters = w.monsters || [];
+      var list = j && Array.isArray(j.monsters) ? j.monsters : [];
+      list.forEach(function (m) {
+        if (!m || !m.id || !m.name) return;
+        if (!(+m.hp > 0) || !(+m.atk > 0) || !(+m.spd > 0)) return;           /* chưa nhập chỉ số cơ bản -> chưa vào game */
+        var o = { id: String(m.id), name: String(m.name), shape: m.shape || 'wolf', rank: GM.monRank(m), hp: +m.hp, atk: +m.atk, spd: +m.spd, sh: +m.sh || 0,
+          boss: m.kind === 'boss', weight: +m.weight > 0 ? +m.weight : 1, terrain: Array.isArray(m.terrain) ? m.terrain : [], roam: m.roam !== false,
+          img: typeof m.img === 'string' && m.img.indexOf('data:image') === 0 ? m.img : '', desc: m.desc || '', xp: +m.xp || 0, bossMap: m.bossMap || null };
+        var i = -1; w.monsters.forEach(function (v, k) { if (v.id === o.id) i = k; });
+        if (i >= 0) w.monsters[i] = o; else w.monsters.push(o);
+      });
+      return w;
+    });
+  };
   GM.nav = function (page) { if (g.__VG_EMBED) g.parent.postMessage({ vggo: page }, '*'); else g.location.href = page; };
 })(typeof window != 'undefined' ? window : globalThis);
