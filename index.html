@@ -17,7 +17,10 @@ html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none;backgrou
 .card::after{right:3px;bottom:3px;border-left:0;border-top:0;border-bottom-right-radius:4px}
 .card.hud,.hud{position:fixed;z-index:5}
 .pill{background:#101d22e6;border:1px solid var(--bronze);border-radius:20px;padding:4px 10px;font-size:12px;white-space:nowrap;box-shadow:0 1px 6px #0008}
-.tl{top:calc(6px + var(--sat));left:calc(6px + var(--sal));display:flex;gap:6px;flex-wrap:wrap;max-width:calc(100% - clamp(160px,30vw,222px) - 24px);pointer-events:none}
+#lcol{position:fixed;z-index:5;top:calc(6px + var(--sat));left:calc(6px + var(--sal));width:calc(100% - clamp(158px,30vw,222px) - 24px);max-width:260px;display:flex;flex-direction:column;align-items:flex-start;gap:6px;pointer-events:none}
+#lcol .hud{position:static}
+#lcol #qtrack{pointer-events:auto}
+.tl{display:flex;gap:6px;flex-wrap:wrap;pointer-events:none}
 .rt{top:calc(6px + var(--sat));right:calc(6px + var(--sar));width:clamp(158px,30vw,222px);display:flex;flex-direction:column;gap:5px;max-height:calc(100dvh - 12px - var(--sat) - var(--sab));overflow:auto;scrollbar-width:none}
 .rt::-webkit-scrollbar{display:none}
 .stat{padding:7px 8px 6px}
@@ -47,7 +50,7 @@ html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none;backgrou
 .bl{left:calc(6px + var(--sal));bottom:calc(6px + var(--sab));width:min(250px,44vw);padding:7px 9px;pointer-events:none}
 .bl h4{margin:0 0 2px;color:var(--gold);font-size:12px}.bl p{margin:0;color:var(--mut);font-size:11px}.bl .co{color:var(--gold);font-size:11px;margin-top:2px}
 .bl .lg{margin-top:4px;border-top:1px dotted #776644;padding-top:3px;font-size:10.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.zm{left:calc(6px + var(--sal));top:calc(50px + var(--sat));display:flex;flex-direction:column;gap:4px}
+.zm{display:flex;flex-direction:column;gap:4px;margin-top:8px;pointer-events:auto}
 .zm button{width:38px;height:38px;border-radius:8px;border:1px solid #8d754b;background:#101d22e6;color:var(--gold);font:bold 18px Georgia;cursor:pointer}
 #toast{left:50%;bottom:calc(14px + var(--sab));transform:translateX(-50%);max-width:min(440px,70vw);background:#101d22f2;border:1px solid var(--gold);border-radius:10px;padding:8px 14px;text-align:center;opacity:0;pointer-events:none;transition:opacity .2s;z-index:9}
 #toast.show{opacity:1}
@@ -72,15 +75,24 @@ html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none;backgrou
 .jb .jc{padding:0 10px 10px}.jb h5{margin:8px 0 3px;color:var(--gold);font-size:12px}.jb .jr{padding:5px 0;border-bottom:1px dotted #776644;font-size:12px;color:var(--txt)}.jb .jr small{display:block;color:var(--mut);font-size:11px}.jb .lk{opacity:.55}
 .note{border:1px dashed var(--bronze);border-radius:8px;padding:8px 10px;color:var(--mut);font-size:12px;margin-top:8px}
 .sw{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px;border:1px solid #0006}
-#qtrack{left:calc(50px + var(--sal));top:calc(50px + var(--sat));max-width:min(180px,calc(100vw - clamp(158px,30vw,222px) - 62px));padding:5px 8px;font-size:10.5px;cursor:pointer;z-index:4;display:none}#qtrack b{display:block;color:var(--gold);font-size:11px}#qtrack span{color:var(--mut)}
+#qtrack{max-width:100%;padding:5px 8px;font-size:10.5px;cursor:pointer;z-index:4;display:none}#qtrack b{display:block;color:var(--gold);font-size:11px}#qtrack span{color:var(--mut)}
 .tabs{display:flex;gap:6px;margin-bottom:8px}.tabs button{flex:1;padding:9px;min-height:40px;border-radius:7px;border:1px solid #8d754b;background:#1a2d36;color:var(--txt);font:inherit;cursor:pointer}.tabs button.on{background:linear-gradient(#b68d4d,#75542c)}
-@media(max-height:430px){.rt{width:clamp(150px,28vw,200px)}.stat{padding:5px 6px}.tb button{height:38px}.tb button small{display:none}.tb button em{font-size:18px}.bl p{display:none}}
+.tb .fsb{display:none}@media(orientation:landscape){.tb .fsb{display:flex}}
+.tb button{height:calc(42px + (var(--ic,1) - 1)*24px)}.tb button em{font-size:calc(17px*var(--ic,1))}
+.box{zoom:var(--fs,1)}
+.seg{display:flex;gap:6px;flex:1;justify-content:flex-end}.seg button{min-height:40px;padding:6px 10px;border-radius:7px;border:1px solid #8d754b;background:#1a2d36;color:var(--txt);font:inherit;font-size:13px;cursor:pointer}.seg button.on{background:linear-gradient(#b68d4d,#75542c);font-weight:bold}
+.cr{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px dotted #776644}.cr>span:first-child{color:var(--txt)}
+.cr input[type=range]{flex:1;min-width:0;accent-color:#c9a45e;height:32px}.cr .vv{width:36px;text-align:right;color:var(--gold)}
+.cs{margin:12px 0 2px;color:var(--gold);font-size:12px;letter-spacing:.06em}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:7px}.g2 .btn{margin-top:0;text-align:center;font-size:13px}
+@media(max-height:430px){.zm{flex-direction:row;margin-top:4px}.zm button{width:34px;height:34px}.rt{width:clamp(150px,28vw,200px)}.stat{padding:5px 6px}.tb button{height:38px}.tb button small{display:none}.tb button em{font-size:18px}.bl p{display:none}}
 </style>
 </head>
 <body>
 <canvas id="map"></canvas>
-<div class="hud tl"><span class="pill" id="pZone">Đang tải…</span><span class="pill" id="pDay"></span></div>
-<div class="hud zm"><button id="zIn" aria-label="Phóng to">+</button><button id="zOut" aria-label="Thu nhỏ">−</button><button id="zMe" aria-label="Về nhân vật">◎</button></div>
+<div id="lcol"><div class="hud tl"><span class="pill" id="pZone">Đang tải…</span><span class="pill" id="pDay"></span></div>
+<div class="hud card" id="qtrack"></div>
+<div class="hud zm"><button id="zIn" aria-label="Phóng to">+</button><button id="zOut" aria-label="Thu nhỏ">−</button><button id="zMe" aria-label="Về nhân vật">◎</button></div></div>
 <div class="hud rt">
   <section class="card stat" id="stat">
     <div class="id" id="idrow"><div class="av" id="av">⚔</div><div class="nm"><b id="sName">Vân Giáp</b><small id="sRealm"></small></div></div>
@@ -97,7 +109,6 @@ html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none;backgrou
   </section>
 </div>
 <div class="hud card bl" id="bl"><h4 id="tName">—</h4><p id="tDesc"></p><div class="co" id="tCo"></div><div class="lg" id="tLog"></div></div>
-<div class="hud card" id="qtrack"></div>
 <div class="hud" id="toast"></div>
 <div id="ov"><div class="box"><header><h2 id="oT"></h2><button class="x" id="oX" aria-label="Đóng">✕</button></header><div class="bd" id="oB"></div></div></div>
 
@@ -123,11 +134,18 @@ const SKILLS=[
  {id:'pet',ic:'🐉',n:'Pet/Drone',d:'Triệu hồi drone',lv:12},
  {id:'item',ic:'🧪',n:'Vật phẩm',d:'Túi đồ nhanh',lv:0},
  {id:'ult',ic:'✦',n:'Tuyệt kỹ',d:'Pháo Hư Không',lv:16}];
-const FUNCS=[['tinhchu','🌟','Tinh Chủ'],['char','🧙','Nhân vật'],['bag','🎒','Túi đồ'],['sect','🏯','Tông môn'],['craft','⚒','Nghề'],['quest','📜','Nhiệm vụ'],['ach','🏆','Thành tựu'],['map','🧭','Bản đồ']];
+const FUNCS=[['tinhchu','🌟','Tinh Chủ'],['char','🧙','Nhân vật'],['bag','🎒','Túi đồ'],['sect','🏯','Tông môn'],['craft','⚒','Nghề'],['quest','📜','Nhiệm vụ'],['ach','🏆','Thành tựu'],['map','🧭','Bản đồ'],['setting','⚙','Cấu hình']];
 
 let world=null,zone=null,ST=null,tiles=[],wmap=null,pmap=null;
 const isTown=p=>p&&(p.kind==='city'||p.kind==='capital'||p.kind==='fortress'||p.kind==='village');
 const cv=$('#map'),g=cv.getContext('2d');
+const CFGK='vg_cfg_v1',MSK='vg_manual_save';
+const CFG=(()=>{const d={gfx:'high',orient:'auto',fs:1,ic:1,vol:{master:80,music:70,sfx:80}};try{const o=JSON.parse(localStorage.getItem(CFGK)||'null');if(o&&typeof o==='object'){Object.assign(d,o);d.vol=Object.assign({master:80,music:70,sfx:80},o.vol||{})}}catch(e){}return d})();
+const GFX={low:{cap:1,fr:50,n:'Thấp'},mid:{cap:1.5,fr:33,n:'Vừa'},high:{cap:2.5,fr:30,n:'Cao'}};
+const gfx=()=>GFX[CFG.gfx]||GFX.high;
+function saveCfg(){try{localStorage.setItem(CFGK,JSON.stringify(CFG))}catch(e){}}
+function applyCfg(){const r=document.documentElement.style;r.setProperty('--fs',CFG.fs);r.setProperty('--ic',CFG.ic)}
+applyCfg();
 let cw=0,ch=0,dpr=1,zoom=1,cam={x:0,y:0},follow=true;
 let sel=null,route=[],mv=null,pv={x:0,y:0},modal=false,lastT=0,lastDraw=0;
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -275,7 +293,7 @@ function zoomAt(px,py,f){
  zoom=Math.max(.5,Math.min(2.6,zoom*f));cam.x=ax-(px-cw/2)/zoom;cam.y=ay-(py-ch/2)/zoom;follow=false}
 function focusPlayer(){cam.x=wx(pv.x,pv.y);cam.y=wy(pv.x,pv.y)+TH/2}
 function resize(){
- dpr=Math.min(window.devicePixelRatio||1,2.5);cw=cv.clientWidth;ch=cv.clientHeight;
+ dpr=Math.min(window.devicePixelRatio||1,gfx().cap);cw=cv.clientWidth;ch=cv.clientHeight;
  cv.width=Math.round(cw*dpr);cv.height=Math.round(ch*dpr);g.setTransform(dpr,0,0,dpr,0,0)}
 
 function dia(px,py,lift){const w=TW/2*zoom,h=TH/2*zoom;g.beginPath();g.moveTo(px,py-lift);g.lineTo(px+w,py+h-lift);g.lineTo(px,py+2*h-lift);g.lineTo(px-w,py+h-lift);g.closePath()}
@@ -491,7 +509,68 @@ function panel(k){
 const EM=()=>VG.bag.eff(ST).max;
 VG.bag.setLegacy(IT);
 function openBag(tab){modal=true;VG.bag.open({get:()=>ST,persist,toast,IT,loadLib:()=>GM.loadLib(),useLegacy:useItem,after:renderHUD,onClose:()=>{modal=false;renderHUD()}},tab)}
-function openPanel(k){if(k==='bag'||k==='equip'){$('#ov').classList.remove('show');openBag(k);return}const[t,h]=panel(k);openModal(t,h)}
+const fsEl=()=>document.fullscreenElement||document.webkitFullscreenElement;
+const fsOK=()=>!!(document.fullscreenEnabled||document.webkitFullscreenEnabled);
+function toggleFS(){const d=document,e=d.documentElement;
+ if(!fsOK())return toast('Thiết bị/trình duyệt này không hỗ trợ toàn màn hình (iPhone: dùng Chia sẻ → Thêm vào Màn hình chính).');
+ try{if(fsEl()){(d.exitFullscreen||d.webkitExitFullscreen).call(d)}else{const p=(e.requestFullscreen||e.webkitRequestFullscreen).call(e);p&&p.catch&&p.catch(()=>toast('Không bật được toàn màn hình.'))}}catch(x){toast('Không bật được toàn màn hình.')}}
+function lockOrient(user){const m=CFG.orient,so=screen.orientation;
+ if(m==='auto'){try{so&&so.unlock&&so.unlock()}catch(e){}return}
+ if(!so||!so.lock){if(user)toast('Thiết bị không hỗ trợ khóa hướng màn hình.');return}
+ const t=m==='portrait'?'portrait':'landscape',fail=()=>{if(user)toast('Trình duyệt chỉ cho khóa hướng khi đang ở chế độ Toàn màn hình, hoặc thiết bị không hỗ trợ.')};
+ const go=()=>{try{so.lock(t).catch(fail)}catch(e){fail()}};
+ if(!fsEl()&&fsOK()){try{const p=(document.documentElement.requestFullscreen||document.documentElement.webkitRequestFullscreen).call(document.documentElement);p&&p.then?p.then(go).catch(fail):go()}catch(e){fail()}}else go()}
+['fullscreenchange','webkitfullscreenchange'].forEach(ev=>document.addEventListener(ev,()=>{const b=$('#bFs');if(b)b.querySelector('em').textContent=fsEl()?'🗗':'⛶';if(fsEl()&&CFG.orient!=='auto')lockOrient(false);setTimeout(resize,200)}));
+let cfgTab='gen';
+function ago(ts){const d=new Date(ts);return d.toLocaleString('vi-VN')}
+function seg(k,opts,cur){return`<div class="seg">`+opts.map(o=>`<button data-a="cfg:${k}:${o[0]}" class="${String(cur)===String(o[0])?'on':''}">${o[1]}</button>`).join('')+`</div>`}
+function openCfg(tab){cfgTab=tab||cfgTab;const keep=$('#oB').scrollTop;
+ let ms=null;try{ms=JSON.parse(localStorage.getItem(MSK)||'null')}catch(e){}
+ const tabs=`<div class="tabs"><button data-a="cfg:tab:gen" class="${cfgTab==='gen'?'on':''}">Chung</button><button data-a="cfg:tab:dis" class="${cfgTab==='dis'?'on':''}">Hiển thị &amp; âm thanh</button></div>`;
+ let h;
+ if(cfgTab==='gen'){
+  h=tabs+`<div class="cs">TIẾN TRÌNH</div>
+  <div class="g2"><button class="btn" data-a="cfg:save">💾 Lưu game<small>${ms?'Lần cuối: '+esc(ago(ms.t)):'Chưa có bản lưu thủ công'}</small></button><button class="btn" data-a="cfg:load" ${ms?'':'disabled'}>📂 Tải lại bản lưu<small>Quay về bản đã lưu</small></button>
+  <button class="btn" data-a="savefile">⬇ Xuất file save<small>Tải về máy</small></button><button class="btn" data-a="loadfile">⬆ Nạp file save<small>Từ file đã xuất</small></button></div>
+  <p style="margin-top:6px;font-size:11px">Game vẫn tự lưu liên tục. Bản "Lưu game" là điểm lưu riêng để bạn quay lại khi cần.</p>
+  <div class="cs">MÀN HÌNH</div>
+  <div class="cr"><span>Hướng màn hình</span>${seg('orient',[['auto','Tự do'],['portrait','Dọc'],['landscape','Ngang']],CFG.orient)}</div>
+  <div class="cr"><span>Toàn màn hình</span><div class="seg"><button data-a="cfg:fs" class="${fsEl()?'on':''}">${fsEl()?'Đang bật':'Bật / Tắt'}</button></div></div>
+  <div class="cs">ỨNG DỤNG</div>
+  <div class="g2"><button class="btn" data-a="cfg:refresh">🔄 Làm mới game<small>Tải lại, giữ tiến trình</small></button><button class="btn" data-a="cfg:howto">❓ Cách chơi</button>
+  <button class="btn" data-a="cfg:log">📜 Nhật ký</button><button class="btn" data-a="cfg:feedback">🐞 Góp ý · Báo lỗi</button></div>
+  <button class="btn" style="margin-top:10px" data-a="reset">🗑 Xóa nhân vật &amp; làm lại từ đầu<small>Nên xuất file save trước.</small></button>
+  <p style="text-align:center;margin-top:10px;font-size:11px">Mecha Star Link · Vân Giáp<br>HTML5 Canvas · JavaScript</p>`}
+ else{
+  h=tabs+`<div class="cs">ĐỒ HỌA</div>
+  <div class="cr"><span>Chất lượng</span>${seg('gfx',[['low','Thấp'],['mid','Vừa'],['high','Cao']],CFG.gfx)}</div>
+  <p style="font-size:11px">Thấp = tiết kiệm pin, mượt trên máy yếu. Cao = nét nhất.</p>
+  <div class="cr"><span>Cỡ chữ (bảng)</span>${seg('fs',[[1,'Vừa'],[1.15,'Lớn'],[1.3,'Rất lớn']],CFG.fs)}</div>
+  <div class="cr"><span>Cỡ icon (thanh chức năng)</span>${seg('ic',[[1,'Vừa'],[1.2,'Lớn'],[1.4,'Rất lớn']],CFG.ic)}</div>
+  <div class="cs">ÂM LƯỢNG</div>`+
+  [['master','Tổng'],['music','Nhạc nền'],['sfx','Hiệu ứng']].map(v=>`<div class="cr"><span style="width:74px">${v[1]}</span><input type="range" min="0" max="100" step="1" value="${CFG.vol[v[0]]}" data-vol="${v[0]}"><span class="vv" id="vv_${v[0]}">${CFG.vol[v[0]]}</span></div>`).join('')+
+  `<div class="note">Game hiện chưa có file nhạc/âm thanh nên chưa nghe thấy khác biệt (kéo xong sẽ có tiếng thử). Mức âm lượng đã được lưu sẵn để âm thanh sau này dùng chung.</div>`}
+ openModal('⚙ Cấu hình',h);$('#oB').scrollTop=keep}
+let ac=null;
+function beep(){try{const v=CFG.vol.master*CFG.vol.sfx/10000;if(v<=0)return;ac=ac||new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),gn=ac.createGain();o.type='sine';o.frequency.value=660;gn.gain.value=.25*v;o.connect(gn);gn.connect(ac.destination);o.start();gn.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+.18);o.stop(ac.currentTime+.2)}catch(e){}}
+function cfgAct(a){const p=a.split(':'),k=p[1],v=p[2];
+ if(k==='tab')return openCfg(v);
+ if(k==='gfx'){CFG.gfx=v;saveCfg();resize();return openCfg()}
+ if(k==='fs'){CFG.fs=+v;saveCfg();applyCfg();return openCfg()}
+ if(k==='ic'){CFG.ic=+v;saveCfg();applyCfg();return openCfg()}
+ if(k==='orient'){CFG.orient=v;saveCfg();lockOrient(true);return openCfg()}
+ if(k==='save'){persist();try{localStorage.setItem(MSK,JSON.stringify({t:Date.now(),st:ST}));toast('Đã lưu game.')}catch(e){toast('Không lưu được (bộ nhớ trình duyệt bị chặn hoặc đầy). Hãy dùng Xuất file save.')}return openCfg()}
+ if(k==='load'){let ms=null;try{ms=JSON.parse(localStorage.getItem(MSK)||'null')}catch(e){}
+  if(!ms||!ms.st||!ms.st.p)return toast('Chưa có bản lưu hợp lệ.');
+  if(!confirm('Quay về bản lưu lúc '+ago(ms.t)+'? Tiến trình hiện tại sẽ bị thay thế (có bản dự phòng tự động).'))return;
+  GM.setSave(ms.st);location.reload();return}
+ if(k==='refresh'){persist();location.reload();return}
+ if(k==='howto')return openModal('Cách chơi',`<div class="row"><span>Di chuyển</span><span>Chạm một ô trên bản đồ</span></div><div class="row"><span>Xem bản đồ</span><span>Kéo để di chuyển camera</span></div><div class="row"><span>Phóng to / thu nhỏ</span><span>Chụm hai ngón hoặc nút + −</span></div><div class="row"><span>Về nhân vật</span><span>Nút ◎</span></div><div class="row"><span>Gặp sự kiện / dị thú</span><span>Đi vào ô có biểu tượng</span></div><div class="row"><span>Thanh chức năng</span><span>Bấm tiêu đề để thu gọn</span></div><div class="row"><span>Khung nhân vật</span><span>Chạm avatar để thu gọn</span></div><button class="btn" data-a="cfg:tab:gen">← Quay lại Cấu hình</button>`);
+ if(k==='log')return openModal('Nhật ký hành trình',(ST.log.slice(0,30).map(l=>`<div class="row"><span style="color:var(--txt)">${esc(l)}</span></div>`).join('')||'<p>Chưa có.</p>')+`<button class="btn" data-a="cfg:tab:gen">← Quay lại Cấu hình</button>`);
+ if(k==='feedback'){window.open('https://github.com/adumaVn007/Mecha-Star-Link/issues','_blank','noopener');return}}
+$('#ov').addEventListener('input',e=>{const r=e.target.closest&&e.target.closest('[data-vol]');if(!r)return;const k=r.dataset.vol;CFG.vol[k]=+r.value;const l=$('#vv_'+k);if(l)l.textContent=r.value;saveCfg()});
+$('#ov').addEventListener('change',e=>{if(e.target.closest&&e.target.closest('[data-vol]'))beep()});
+function openPanel(k){if(k==='setting'){openCfg('gen');return}if(k==='bag'||k==='equip'){$('#ov').classList.remove('show');openBag(k);return}const[t,h]=panel(k);openModal(t,h)}
 function useItem(i){
  const p=ST.p;if(ST.items[i]<1||i==='shcell')return;ST.items[i]--;
  if(i==='cell')p.en=Math.min(p.enMax,p.en+60);if(i==='tonic')p.soul=Math.min(p.soulMax,p.soul+40);if(i==='nano')p.hp=Math.min(EM(),p.hp+Math.round(EM()*.3));
@@ -504,7 +583,8 @@ function skillTap(s){
 $('#ov').addEventListener('click',e=>{
  if(e.target.id==='ov'||e.target.id==='oX'){closeModal();return}
  const b=e.target.closest('[data-a]');if(!b||b.disabled)return;const a=b.dataset.a;
- if(a.indexOf('q:')===0||a.indexOf('n:')===0){VG.quest.act(a);return}
+ if(a.indexOf('cfg:')===0){if(a==='cfg:fs'){toggleFS();setTimeout(()=>openCfg(),400);return}cfgAct(a);return}
+  if(a.indexOf('q:')===0||a.indexOf('n:')===0){VG.quest.act(a);return}
  if(a==='close')closeModal();else if(a==='fight')fight();else if(a==='restfull'){rest(true);closeModal()}
  else if(a.indexOf('use:')===0)useItem(a.slice(4));
  else if(a==='savefile'){const n=VG.char.exportSave(ST);toast('Đã xuất file: '+n)}
@@ -532,12 +612,13 @@ function buildTaskbar(){
  const tb=$('#tb');
  tb.innerHTML=FUNCS.map(f=>`<button data-f="${f[0]}" title="${f[2]}"><em>${f[1]}</em><small>${f[2]}</small></button>`).join('')+
   SKILLS.map(s=>`<button class="sk" data-sk="${s.id}" title="${s.n} · ${s.d}"><em>${s.ic}</em><small>${s.n}</small></button>`).join('')+
-  `<button id="bAuto" title="Tự động chiến đấu (áp dụng khi giao chiến)"><em>○</em><small>AUTO</small></button><button class="pri" id="bRest" title="Nghỉ ngơi"><em>🏕</em><small>Nghỉ ngơi</small></button>`;
+  `<button id="bAuto" title="Tự động chiến đấu (áp dụng khi giao chiến)"><em>○</em><small>AUTO</small></button><button class="pri" id="bRest" title="Nghỉ ngơi"><em>🏕</em><small>Nghỉ ngơi</small></button><button class="fsb" id="bFs" title="Toàn màn hình"><em>⛶</em><small>Toàn màn hình</small></button>`;
  tb.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||modal||!ST)return;
   if(b.dataset.f)openPanel(b.dataset.f);
   else if(b.dataset.sk)skillTap(SKILLS.find(s=>s.id===b.dataset.sk));
   else if(b.id==='bAuto'){ST.auto=!ST.auto;ST.autoSet=1;persist();renderHUD();toast('Auto chiến đấu: '+(ST.auto?'BẬT':'TẮT')+' (ưu tiên, áp dụng mọi trận)')}
-  else if(b.id==='bRest')rest(false)})}
+  else if(b.id==='bRest')rest(false);
+   else if(b.id==='bFs')toggleFS()})}
 $('#tbhead').onclick=()=>{const w=$('#tbwrap');w.classList.toggle('off');$('#tbarrow').textContent=w.classList.contains('off')?'▸':'▾'};
 $('#idrow').onclick=()=>$('#stat').classList.toggle('mini');
 $('#zIn').onclick=()=>zoomAt(cw/2,ch/2,1.2);$('#zOut').onclick=()=>zoomAt(cw/2,ch/2,1/1.2);
@@ -569,7 +650,7 @@ function loop(now){
  const dt=Math.min(.1,(now-(lastT||now))/1000);lastT=now;
  stepUpdate(now);roamStep(now);
  if(follow){const k=1-Math.pow(.0008,dt);cam.x+=(wx(pv.x,pv.y)-cam.x)*k;cam.y+=(wy(pv.x,pv.y)+TH/2-cam.y)*k}
- if(now-lastDraw<30)return;lastDraw=now;draw(now)}
+ if(now-lastDraw<gfx().fr)return;lastDraw=now;draw(now)}
 
 function fail(msg){$('#pZone').textContent='Lỗi dữ liệu';openModal('Không tải được dữ liệu',`<p>${esc(msg)}</p><div class="note">Cần file <b>database/world-events.json</b> cùng thư mục với index.html (hoặc đã up lên GitHub). Nếu mở file trực tiếp từ bộ nhớ điện thoại, trình duyệt sẽ chặn đọc file: hãy mở qua link Cloudflare/GitHub Pages.</div><button class="btn pri" onclick="location.reload()">Thử lại</button>`)}
 function init(w){
