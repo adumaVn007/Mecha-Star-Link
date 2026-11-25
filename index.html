@@ -99,11 +99,11 @@ html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none;backgrou
 <div class="hud" id="toast"></div>
 <div id="ov"><div class="box"><header><h2 id="oT"></h2><button class="x" id="oX" aria-label="Đóng">✕</button></header><div class="bd" id="oB"></div></div></div>
 
-<script src="vg-github.js?v=202611253"></script>
-<script src="vg-core.js?v=202611253"></script>
-<script src="vg-char.js?v=202611253"></script>
-<script src="vg-bag.js?v=202611253"></script>
-<script src="vg-mapart.js?v=202611253"></script>
+<script src="vg-github.js?v=202611254"></script>
+<script src="vg-core.js?v=202611254"></script>
+<script src="vg-char.js?v=202611254"></script>
+<script src="vg-bag.js?v=202611254"></script>
+<script src="vg-mapart.js?v=202611254"></script>
 <script>
 (function(){
 "use strict";
@@ -259,8 +259,7 @@ function ambush(e,m){
  openModal('⚠ Bị tấn công!',`<p style="text-align:center;font-size:1.15em"><b style="color:#ff9a8f">${esc(m.name||'Dị thú')}</b> tấn công bạn!</p>
   <div class="row"><span>Cảnh giới</span><span>${esc(GM.rankName(GM.monRank(m)))}</span></div><div class="row"><span>Phạm vi tấn công</span><span>${GM.monRange(m)} ô</span></div>
   <button class="btn pri" onclick="window.__vgGo()">⚔ Vào chiến đấu</button>`);
- window.__vgGo=()=>{if(window.__vgGoed)return;window.__vgGoed=1;GM.nav('battle.html')};
- setTimeout(window.__vgGo,1800)}
+ window.__vgGo=()=>{if(window.__vgGoed)return;window.__vgGoed=1;GM.nav('battle.html')}}
 
 const wx=(x,y)=>(x-y)*TW/2,wy=(x,y)=>(x+y)*TH/2;
 const toSX=v=>cw/2+(v-cam.x)*zoom,toSY=v=>ch/2+(v-cam.y)*zoom;
@@ -433,7 +432,7 @@ function openCity(pl){
 function openRealm(pl){openModal(pl.name,`<p>${esc(pl.desc||'')}</p><div class="note">${pl.kind==='realm'?'Bí cảnh chưa mở: chưa có dữ liệu bản đồ bí cảnh trong database.':'Nơi này chưa mở: chưa có dữ liệu nội dung (tông môn / hang động) trong database.'}</div><button class="btn" data-a="close">Quay lại</button>`)}
 
 function openModal(t,h){modal=true;$('#oT').textContent=t;$('#oB').innerHTML=h;$('#ov').classList.add('show');$('#oB').scrollTop=0}
-function closeModal(){modal=false;$('#ov').classList.remove('show');renderHUD()}
+function closeModal(){if(ambushing&&!window.__vgGoed){ambushing=false;if(ST){ST.pending=null;ST.aggroCd=Date.now()+15000;persist()}}modal=false;$('#ov').classList.remove('show');renderHUD()}
 const row=(a,b)=>`<div class="row"><span>${a}</span><span>${b}</span></div>`;
 const soon=d=>`<p>${d}</p><div class="note">⚠ Chưa kết nối hệ thống thật: mục này chưa có dữ liệu trong database nên chưa hoạt động. Không dùng số liệu giả.</div>`;
 function idRows(){const c=ST.char;if(!c)return'';const G=VG.char.GENDERS[c.gender];
