@@ -376,7 +376,8 @@ const ACT = {
 function open(c) { cfg = Object.assign({name:'Thành', type:'city'}, c || {}); if (root) root.remove(); css();
   root = document.createElement('div'); root.className = 'cu-ov';
   root.innerHTML = '<div class="cu-box"><div class="cu-hd"><button class="cu-back" data-a="back">‹</button><h2></h2><button class="cu-x" data-a="close">✕</button></div><div class="cu-wal"></div><div class="cu-nt"></div><div class="cu-bd"></div></div>';
-  root.addEventListener('click', e => { const t = e.target.closest('[data-a]'); if (!t || t.disabled) return; const f = ACT[t.dataset.a]; f && f(t.dataset); });
+  const openedAt = Date.now(); /* chạm ô thành mở bảng ngay lúc nhấc tay; cú click theo sau sẽ rơi trúng nút bên dưới ngón tay (vd. Đấu giá) → bỏ qua click trong 600ms đầu */
+  root.addEventListener('click', e => { if (Date.now() - openedAt < 600) { e.preventDefault(); e.stopPropagation(); return; } const t = e.target.closest('[data-a]'); if (!t || t.disabled) return; const f = ACT[t.dataset.a]; f && f(t.dataset); });
   root.addEventListener('input', e => { const t = e.target, k = t.dataset.i; if (k === 'au') AU.input = +t.value; else if (k === 'bet') CS.bet = Math.max(0, Math.min(MAXBET, Math.floor(+t.value || 0))); else if (k === 'lib') { LB.q = t.value; root.querySelector('#cu-lib').innerHTML = libList(); } });
   if (AU) AU.consigning = false; document.body.appendChild(root); note = ''; noteT = 'info'; stack = [{title:cfg.name, html:menuHtml}]; render(); }
 
