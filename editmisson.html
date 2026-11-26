@@ -1,16 +1,5 @@
-<!doctype html><html lang="vi"><head><title>Vân Giáp – Admin: editmisson</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><style>
-:root{--bg:#f4f6fb;--card:#fff;--tx:#1b2333;--mu:#6b7488;--ac:#2563eb;--bd:#dde2ee;--ok:#16a34a;--er:#dc2626;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0f1420;--card:#192032;--tx:#e8ecf5;--mu:#98a2b8;--ac:#5b8def;--bd:#2a3550;--ok:#4ade80;--er:#f87171;color-scheme:dark}}
-*{box-sizing:border-box}body{margin:0 auto;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;padding:12px;max-width:720px}
-h1{font-size:18px;margin:4px 0 10px}h2{font-size:15px;margin:0 0 8px}h3{font-size:13px;margin:10px 0 4px}.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:10px}
-input,select,textarea{width:100%;padding:8px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font:inherit}input[type=checkbox]{width:auto}
-.btn{padding:10px 12px;border:0;border-radius:10px;background:var(--ac);color:#fff;font-size:14px;min-height:42px}.btn.g{background:var(--bd);color:var(--tx)}.btn.r{background:var(--er)}.btn.s{padding:6px 10px;min-height:34px;font-size:13px}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:6px}.row>*{flex:1;min-width:90px}.row>.fix{flex:none;min-width:0}
-label{display:block;font-size:12px;color:var(--mu);margin-bottom:2px}.mu{color:var(--mu);font-size:13px}
-.chips{display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;padding-bottom:4px}.chips button{flex:none;padding:8px 14px;border-radius:20px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font:inherit}.chips button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
-.sub{border:1px solid var(--bd);border-radius:10px;padding:10px;margin-bottom:8px;background:var(--bg)}
-#msg{margin-top:8px;padding:8px 10px;border-radius:8px;display:none;font-size:14px;white-space:pre-wrap}#msg.ok{display:block;background:#16a34a22;color:var(--ok)}#msg.er{display:block;background:#dc262622;color:var(--er)}
-</style></head><body>
+<!doctype html><html lang="vi"><head><title>Vân Giáp – Admin: editmisson</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><link rel="stylesheet" href="vg-admin.css?v=202611261">
+<script src="vg-admin.js?v=202611261" defer></script></head><body class="ed">
 <h1>📜 editmisson – Nhiệm vụ · NPC · Thành tựu</h1>
 <div class="card mu" id="src">Đang tải dữ liệu…</div>
 <div class="chips" id="tabs"></div>
@@ -33,7 +22,7 @@ function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return
 function msg(t,ok){var m=$('msg');m.textContent=t;m.className=ok?'ok':'er'}
 function get(p){return fetch(p+'?t='+Date.now()).then(function(r){if(!r.ok)throw 0;return r.json()}).catch(function(){return VG.fetchJSON(p).catch(function(){return null})})}
 function normQ(j){j=j||{};j.v=1;['factions','repLevels','quests','achievements'].forEach(function(k){if(!Array.isArray(j[k]))j[k]=[]});
- j.quests.forEach(function(q){q.objectives=q.objectives||[];q.choices=q.choices||[];q.next=q.next||[];q.req=q.req||{};q.rewards=q.rewards||{};q.type=q.type||'side';q.scope=q.scope||'system'});return j}
+ j.quests.forEach(function(q){q.objectives=q.objectives||[];q.choices=q.choices||[];q.next=q.next||[];q.req=q.req||{};q.rewards=q.rewards||{};q.type=q.type||'side';q.scope=q.scope||'system';q.grade=Math.min(5,Math.max(1,Math.round(+q.grade)||1))});return j}
 function normN(j){j=j||{};if(!Array.isArray(j.npcs))j.npcs=[];j.v=Math.max(2,j.v|0);return j}
 function draft(){try{localStorage.setItem(DK,JSON.stringify({Q:Q,N:N}))}catch(e){}}
 /* ---------- gán giá trị theo đường dẫn ---------- */
@@ -54,6 +43,7 @@ function show(o,p,t){var v=getp(o,p);if(t=='list')return (v||[]).join(', ');if(t
 function F(o,l,p,t,ex){ex=ex||'';var ta=(t=='map'||t=='items'||t=='shop'||t=='json'||t=='lines');
  return '<div><label>'+l+'</label>'+(ta?'<textarea rows="'+(t=='json'?9:3)+'" ':'<input '+(t=='n'?'type="number" inputmode="numeric" ':'')+'value="'+esc(show(o,p,t))+'" ')+'data-p="'+p+'" data-t="'+(t||'')+'" '+ex+(ta?'>'+esc(show(o,p,t))+'</textarea>':'>')+'</div>'}
 function S(o,l,p,opts){var v=getp(o,p);return '<div><label>'+l+'</label><select data-p="'+p+'">'+opts.map(function(x){return '<option value="'+esc(x[0])+'"'+(String(v==null?'':v)===String(x[0])?' selected':'')+'>'+esc(x[1])+'</option>'}).join('')+'</select></div>'}
+var GRD=[[1,'1 · Phổ thông'],[2,'2 · Tốt'],[3,'3 · Hiếm'],[4,'4 · Sử thi'],[5,'5 · Truyền thuyết']],GN=['','Phổ thông','Tốt','Hiếm','Sử thi','Truyền thuyết'];
 var NPCO=function(){return [['','— không (nhận/trả trong bảng Nhiệm vụ)']].concat(N.npcs.map(function(n){return [n.id,n.name+' ('+n.id+')']}))};
 var TGT={talk:'NPC',kill:'Quái',collect:'Vật phẩm',use:'NPC',explore:'—',visit:'Thành trì (trống = bất kỳ)',deliver:'—'};
 var DEF={kill:'Tiêu diệt {n} {target}',collect:'Thu thập {n} {target}',talk:'Trò chuyện với {target}',use:'Dùng chức năng {fn} của {target}',explore:'Đến ô ({x}, {y})',visit:'Ghé thăm {n} thành trì',deliver:'Giao {item} từ {from} đến {to}'};
@@ -71,10 +61,10 @@ function render(){
  var t='';[['q','📜 Nhiệm vụ'],['n','🧙 NPC'],['a','🏆 Thành tựu'],['r','🏅 Danh tiếng']].forEach(function(x){t+='<button data-tab="'+x[0]+'" class="'+(tab==x[0]?'on':'')+'">'+x[1]+'</button>'});$('tabs').innerHTML=t;
  $('ed').innerHTML=tab=='q'?rQ():tab=='n'?rN():tab=='a'?rA():rR()}
 function rQ(){
- var h='<div class="card"><div class="row"><div><label>Chọn nhiệm vụ ('+Q.quests.length+')</label><select id="qsel">'+Q.quests.map(function(q,i){return '<option value="'+i+'"'+(i==cur?' selected':'')+'>['+esc(q.type)+'] '+esc(q.name||q.id)+'</option>'}).join('')+'</select></div><button class="btn fix" data-a="qnew">＋ Thêm</button></div></div>';
+ var h='<div class="card"><div class="row"><div><label>Chọn nhiệm vụ ('+Q.quests.length+')</label><select id="qsel">'+Q.quests.map(function(q,i){return '<option value="'+i+'"'+(i==cur?' selected':'')+'>['+esc(q.type)+' · '+GN[Math.min(5,Math.max(1,Math.round(+q.grade)||1))]+'] '+esc(q.name||q.id)+'</option>'}).join('')+'</select></div><button class="btn fix" data-a="qnew">＋ Thêm</button></div></div>';
  var q=Q.quests[cur];if(!q)return h+'<div class="card mu">Chưa có nhiệm vụ. Bấm “＋ Thêm”.</div>';
  h+='<div class="card"><h2>Thông tin</h2><div class="row">'+F(q,'ID (không đổi sau khi tạo)','id','',' readonly')+F(q,'Tên','name')+'</div><div class="row">'+
- S(q,'Loại','type',[['system','Hệ thống'],['main','Chính tuyến'],['side','Phụ tuyến'],['chain','Chuỗi'],['daily','Lặp lại (ngày)'],['repeat','Lặp lại']])+S(q,'Tab hiển thị','scope',[['country','Quốc gia'],['sect','Tông môn'],['system','Hệ thống']])+'</div>'+F(q,'Mô tả (dùng được biến số, xem khung bên dưới)','desc')+'<div class="sub mu" id="pvd">'+pv(q)+'</div><div class="mu">Biến số: <code>{n}</code> số lượng · <code>{target}</code> tên quái/NPC/vật phẩm · <code>{from}</code> <code>{to}</code> nơi nhận/giao · <code>{item}</code> tên vật phẩm · <code>{x}</code> <code>{y}</code> ô · <code>{giver}</code> <code>{turnIn}</code> NPC giao/trả · <code>{reward}</code> thưởng · <code>{name}</code> tên nhiệm vụ. Với mục tiêu thứ 2, 3…: <code>{o2.n}</code>, <code>{o2.target}</code>, <code>{o2.to}</code>… Tên được lấy từ database nên đổi tên quái/NPC/thành thì mô tả tự đổi theo.</div>'+
+ S(q,'Loại','type',[['system','Hệ thống'],['main','Chính tuyến'],['side','Phụ tuyến'],['chain','Chuỗi'],['daily','Lặp lại (ngày)'],['repeat','Lặp lại']])+S(q,'Tab hiển thị','scope',[['country','Quốc gia'],['sect','Tông môn'],['system','Hệ thống']])+S(q,'Phẩm cấp (1 thấp → 5 cao)','grade',GRD)+'</div>'+F(q,'Mô tả (dùng được biến số, xem khung bên dưới)','desc')+'<div class="sub mu" id="pvd">'+pv(q)+'</div><div class="mu">Biến số: <code>{n}</code> số lượng · <code>{target}</code> tên quái/NPC/vật phẩm · <code>{from}</code> <code>{to}</code> nơi nhận/giao · <code>{item}</code> tên vật phẩm · <code>{x}</code> <code>{y}</code> ô · <code>{giver}</code> <code>{turnIn}</code> NPC giao/trả · <code>{reward}</code> thưởng · <code>{name}</code> tên nhiệm vụ. Với mục tiêu thứ 2, 3…: <code>{o2.n}</code>, <code>{o2.target}</code>, <code>{o2.to}</code>… Tên được lấy từ database nên đổi tên quái/NPC/thành thì mô tả tự đổi theo.</div>'+
  '<div class="row">'+F(q,'Lời khi nhận','onGive')+F(q,'Lời khi trả','onDone')+'</div></div>';
  h+='<div class="card"><h2>Nơi nhận / trả</h2><div class="row">'+S(q,'NPC giao nhiệm vụ','giver',NPCO())+S(q,'NPC nhận trả (trống = NPC giao)','turnIn',NPCO())+'</div>'+
  '<div class="mu">Không chọn NPC: nhận/trả ngay trong bảng Nhiệm vụ. Có thể giới hạn theo vị trí (ô x, y, bán kính r; để trống = bất kỳ nơi nào).</div>'+
@@ -128,7 +118,7 @@ document.addEventListener('change',function(e){var el=e.target;
  draft();msg('Đã chỉnh (nháp trên máy). Bấm “Lưu LÊN GitHub” để đưa vào game.',1)});
 document.addEventListener('click',function(e){var b=e.target.closest('[data-a],[data-tab]');if(!b)return;
  if(b.dataset.tab){tab=b.dataset.tab;render();return}var a=b.dataset.a,i=+b.dataset.i,q=Q.quests[cur];
- if(a=='qnew'){var id=newId('q_');Q.quests.push({id:id,name:'Nhiệm vụ mới',type:'side',scope:'system',desc:'',giver:'',turnIn:'',req:{},objectives:[{t:'kill',target:'*',n:1,text:'Hạ dị thú'}],rewards:{xp:10,stones:{thuong:10}},choices:[],next:[]});cur=Q.quests.length-1}
+ if(a=='qnew'){var id=newId('q_');Q.quests.push({id:id,name:'Nhiệm vụ mới',type:'side',scope:'system',grade:1,desc:'',giver:'',turnIn:'',req:{},objectives:[{t:'kill',target:'*',n:1,text:'Hạ dị thú'}],rewards:{xp:10,stones:{thuong:10}},choices:[],next:[]});cur=Q.quests.length-1}
  else if(a=='qdup'&&q){var c=JSON.parse(JSON.stringify(q));c.id=newId('q_');c.name+=' (bản sao)';Q.quests.push(c);cur=Q.quests.length-1}
  else if(a=='qdel'&&q){if(!confirm('Xóa nhiệm vụ "'+q.name+'"?'))return;var d=q.id;Q.quests.splice(cur,1);Q.quests.forEach(function(x){x.next=(x.next||[]).filter(function(n){return n!=d})});cur=Math.max(0,cur-1)}
  else if(a=='oadd'&&q)q.objectives.push({t:'kill',target:'*',n:1,text:'Hạ dị thú'});

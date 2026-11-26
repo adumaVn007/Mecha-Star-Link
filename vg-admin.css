@@ -1,0 +1,45 @@
+/* vg-admin.css — MẪU GIAO DIỆN CHỈNH SỬA DUY NHẤT của Vân Giáp (tiên hiệp: giấy cổ, đồng đỏ, mực đen).
+   Dùng chung cho: admin.html (Mecha Studio), AdminEditNPCPlayer, AdminEditMonster, EditJobMSL, editmisson, stat-formula, player.
+   Trang kiểu "form" gắn class="ed" vào <body>. Muốn đổi màu/phông cho TẤT CẢ trang chỉnh sửa: chỉ sửa biến ở :root dưới đây. */
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#efe7d6;--card:#f7f1e3;--tx:#2b2118;--mut:#7a6a58;--bd:#bda985;--red:#8b1e1e;--ok:#4b7a52;
+--mu:var(--mut);--ac:var(--red);--er:var(--red);--gold:#b8892f;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17130f;--card:#211b15;--tx:#eadfcb;--mut:#a2937d;--bd:#4a3e30;--red:#d9605a;--ok:#7fbf86;--gold:#d9a21b;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.4 Georgia,"Noto Serif","Times New Roman",serif}
+/* ---- thanh điều hướng chung (do vg-admin.js chèn) ---- */
+#vgnav{position:sticky;top:0;z-index:50;display:flex;gap:6px;overflow-x:auto;padding:6px 8px;padding-top:calc(6px + env(safe-area-inset-top,0px));background:var(--card);border-bottom:2px solid var(--bd);scrollbar-width:thin}
+#vgnav a{flex:none;white-space:nowrap;text-decoration:none;color:var(--tx);border:1px solid var(--bd);border-radius:6px;padding:8px 10px;min-height:40px;display:inline-flex;align-items:center;background:var(--bg)}
+#vgnav a.on{border-color:var(--red);color:var(--red);font-weight:700}
+/* ---- phẩm chất / phẩm cấp (5 bậc) ---- */
+.q1{--rc:#a89f8d}.q2{--rc:#4fa86a}.q3{--rc:#3d7fd6}.q4{--rc:#8c52d6}.q5{--rc:#d9a21b}
+.qtag{display:inline-block;font-size:11px;padding:1px 8px;border-radius:10px;background:var(--rc,var(--bd));color:#fff}
+/* ---- trang dạng form: body.ed ---- */
+body.ed{margin:0 auto;padding:12px;max-width:720px}
+.ed h1{font-size:18px;margin:4px 0 10px;color:var(--red)}.ed h2{font-size:15px;margin:0 0 8px}.ed h3{font-size:13px;margin:10px 0 4px}
+.ed .card{background:var(--card);border:1px solid var(--bd);border-radius:6px;padding:12px;margin-bottom:10px}
+.ed input,.ed select,.ed textarea{width:100%;padding:8px;border:1px solid var(--bd);border-radius:5px;background:var(--bg);color:var(--tx);font:inherit}
+.ed input[type=checkbox]{width:auto}
+.ed label{display:block;font-size:12px;color:var(--mut);margin:6px 0 2px}
+.ed .btn,.ed .chips button,.ed .tabs button{font:inherit;cursor:pointer}
+.ed .btn{padding:10px 12px;border:1px solid var(--red);border-radius:6px;background:var(--red);color:#fff;min-height:44px}
+.ed .btn.g{background:var(--card);color:var(--tx);border-color:var(--bd)}.ed .btn.r{background:#5e1414;border-color:#5e1414}.ed .btn.s{padding:6px 10px;min-height:36px;font-size:13px}
+.ed .row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:6px}.ed .row>*{flex:1;min-width:90px}.ed .row>.fix{flex:none;min-width:0}.ed .row>.nw{flex:0 0 auto;min-width:0}
+.ed .mu{color:var(--mut);font-size:13px}.ed .ok{color:var(--ok)}.ed .er{color:var(--red);font-size:13px}
+.ed .chips,.ed .tabs{display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;padding-bottom:4px}
+.ed .chips button,.ed .tabs button{flex:none;padding:8px 14px;border-radius:6px;border:1px solid var(--bd);background:var(--card);color:var(--tx);white-space:nowrap;min-height:40px}
+.ed .tabs button{flex:1}
+.ed .chips button.on,.ed .chips .on,.ed .tabs button.on{border-color:var(--red);color:var(--red);font-weight:700;background:var(--card)}
+.ed .li{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:9px 4px;border-bottom:1px dashed var(--bd);cursor:pointer}.ed .li b{font-size:14px}.ed .li.sel{background:var(--bg)}
+.ed .tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:10px;background:var(--bd);margin-left:4px}.ed .tag.b{background:var(--red);color:#fff}
+.ed .ck{display:flex;flex-wrap:wrap;gap:6px}.ed .ck label{display:flex;align-items:center;gap:5px;margin:0;color:var(--tx);border:1px solid var(--bd);padding:6px 9px;border-radius:6px;width:auto;font-size:13px}.ed .ck input{width:auto}
+.ed .sub{border:1px solid var(--bd);border-radius:6px;padding:10px;margin-bottom:8px;background:var(--bg)}
+.ed #msg{margin-top:8px;padding:8px 10px;border-radius:6px;font-size:14px;white-space:pre-wrap}
+.ed #msg.ok{display:block;background:#4b7a5222;color:var(--ok)}.ed #msg.er{display:block;background:#8b1e1e22;color:var(--red)}
+.ed canvas{width:100%;image-rendering:pixelated;border:1px solid var(--bd);border-radius:6px;touch-action:manipulation;display:block}
+.ed .mapbox{max-height:340px;overflow:auto;border-radius:6px}
+.ed .bar{height:8px;background:var(--bd);border-radius:6px;overflow:hidden}.ed .bar i{display:block;height:100%;background:var(--red)}
+.ed .box{overflow-x:auto}.ed table{width:100%;border-collapse:collapse}.ed td,.ed th{padding:4px;text-align:left;font-size:13px}.ed th{color:var(--mut);font-weight:500}
+.ed .g2{display:grid;grid-template-columns:1fr 1fr;gap:6px}.ed .cell{border:1px solid var(--bd);border-radius:6px;padding:6px 8px}.ed details>summary{cursor:pointer;padding:6px 0}
+.ed #vgnav{margin:-12px -12px 12px}
+.ed #msg:empty{display:none}

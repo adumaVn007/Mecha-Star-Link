@@ -282,12 +282,16 @@
     el.innerHTML = '<b>' + esc(q.name) + '</b><span>' + esc(t) + '</span>'; el.style.display = 'block';
   };
   function where(id, at) { var n = id && Q.npc(id); if (n) return 'NPC ' + esc(n.name); if (at) return 'ô (' + at.x + ', ' + at.y + ')'; return null; }
+  /* 5 phẩm cấp nhiệm vụ (thấp → cao), cùng hệ với phẩm chất trang bị. q.grade thiếu = 1 */
+  Q.GN = ['', 'Phổ thông', 'Tốt', 'Hiếm', 'Sử thi', 'Truyền thuyết']; Q.GC = ['', '#a89f8d', '#4fa86a', '#3d7fd6', '#8c52d6', '#d9a21b']; Q.fg = 0;
+  Q.grade = function (q) { var g = Math.round(+(q && q.grade)); return g >= 1 ? Math.min(5, g) : 1; };
   Q.list = function (scope) {
     var by = { active: [], done: [], avail: [], claimed: [] };
-    Q.D.quests.forEach(function (q) { if ((q.scope || 'system') !== scope) return; var s = Q.state(q); if (by[s]) by[s].push(q); });
+    Q.D.quests.forEach(function (q) { if ((q.scope || 'system') !== scope) return; if (Q.fg && Q.grade(q) !== Q.fg) return; var s = Q.state(q); if (by[s]) by[s].push(q); });
+    Object.keys(by).forEach(function (k) { by[k].sort(function (a, b) { return Q.grade(a) - Q.grade(b); }); });
     var one = function (q, s) {
       var o = q.objectives || [], pr = o.length ? o.map(function (x, i) { return x.t === 'deliver' ? (Q.prog(q, i) >= 2 ? '2/2' : Q.prog(q, i) + '/2') : Q.prog(q, i) + '/' + Q.objN(x); }).join(' · ') : '';
-      return '<button class="btn" data-a="q:d:' + esc(q.id) + '">' + (s === 'done' ? '✔ ' : s === 'avail' ? '❗ ' : s === 'claimed' ? '✓ ' : '📜 ') + esc(q.name) + '<small>' + Q.stateName(s) + (pr && (s === 'active' || s === 'done') ? ' · ' + pr : '') + '</small></button>';
+      return '<button class="btn" style="border-left:4px solid ' + Q.GC[Q.grade(q)] + '" data-a="q:d:' + esc(q.id) + '">' + (s === 'done' ? '✔ ' : s === 'avail' ? '❗ ' : s === 'claimed' ? '✓ ' : '📜 ') + esc(q.name) + '<small>◆ ' + Q.GN[Q.grade(q)] + ' · ' + Q.stateName(s) + (pr && (s === 'active' || s === 'done') ? ' · ' + pr : '') + '</small></button>';
     };
     var h = '', add = function (t, k) { if (by[k].length) h += '<h2 style="font-size:13px;margin:10px 0 2px;color:var(--gold)">' + t + ' (' + by[k].length + ')</h2>' + by[k].map(function (q) { return one(q, k); }).join(''); };
     add('Đang làm', 'active'); add('Chờ nhận thưởng', 'done'); add('Có thể nhận', 'avail'); add('Đã hoàn thành', 'claimed');
@@ -297,6 +301,7 @@
     scope = scope || 'country';
     var tabs = '<div class="tabs"><button data-a="q:tab:country"' + (scope === 'country' ? ' class="on"' : '') + '>Quốc gia</button><button data-a="q:tab:sect"' + (scope === 'sect' ? ' class="on"' : '') + '>Tông môn</button><button data-a="q:tab:system"' + (scope === 'system' ? ' class="on"' : '') + '>Hệ thống</button></div>';
     var has = Q.D.quests.some(function (q) { return (q.scope || 'system') === scope; }), body = '';
+    if (has) tabs += '<div class="tabs" style="flex-wrap:wrap"><button data-a="q:fg:' + scope + ':0"' + (!Q.fg ? ' class="on"' : '') + '>Mọi phẩm cấp</button>' + [1, 2, 3, 4, 5].map(function (i) { return '<button data-a="q:fg:' + scope + ':' + i + '"' + (Q.fg === i ? ' class="on"' : '') + ' style="border-left:4px solid ' + Q.GC[i] + '">' + Q.GN[i] + '</button>'; }).join('') + '</div>';
     if (scope === 'sect' && !has) body = '<p>Nhiệm vụ tông môn.</p><div class="note">⚠ Chưa kết nối hệ thống thật: chưa có nhiệm vụ tông môn nào trong database/quests.json (thêm bằng editmisson.html, chọn phạm vi “Tông môn”).</div>';
     else body = Q.list(scope);
     body += '<button class="btn" data-a="q:ach:combat">🏆 Thành tựu<small>Dị thú đã hạ, sự kiện hoàn thành, v.v.</small></button>';
@@ -304,7 +309,7 @@
   };
   Q.detail = function (id) {
     var q = Q.def(id); if (!q) return Q.panel(); var s = Q.state(q), S = ST(), h = '';
-    h += '<p><span class="tag" style="background:#e4c27b">' + esc({ main: 'Chính tuyến', side: 'Phụ tuyến', chain: 'Chuỗi', system: 'Hệ thống', daily: 'Lặp lại', repeat: 'Lặp lại' }[q.type] || q.type || 'Nhiệm vụ') + '</span><b style="color:var(--gold)">' + esc(q.name) + '</b></p>';
+    h += '<p><span class="tag" style="background:#e4c27b">' + esc({ main: 'Chính tuyến', side: 'Phụ tuyến', chain: 'Chuỗi', system: 'Hệ thống', daily: 'Lặp lại', repeat: 'Lặp lại' }[q.type] || q.type || 'Nhiệm vụ') + '</span><span class="tag" style="background:' + Q.GC[Q.grade(q)] + ';color:#fff">' + Q.GN[Q.grade(q)] + '</span><b style="color:var(--gold)">' + esc(q.name) + '</b></p>';
     h += '<p>' + esc(Q.fmt(q.desc || '', Q.vars(q))) + '</p>' + row('Trạng thái', Q.stateName(s));
     (q.objectives || []).forEach(function (o, i) { var v = Q.prog(q, i), n = Q.objN(o); h += '<div class="jr" style="padding:6px 0;border-bottom:1px dotted #776644">' + (v >= n ? '✔ ' : '◻ ') + esc(Q.objText(q, i)) + '<small style="display:block;color:var(--mut)">' + esc(Q.progText(q, i)) + '</small>' + bar(v, n) + '</div>'; });
     h += row('Thưởng', esc(Q.rewardText(q.rewards)));
@@ -444,6 +449,7 @@
     var C = Q.C, p = a.split(':'), S = ST(), r, n;
     if (p[0] === 'q') {
       if (p[1] === 'tab') { var x = Q.panel(p[2]); C.openModal(x[0], x[1]); }
+      else if (p[1] === 'fg') { Q.fg = +p[3] || 0; var xf = Q.panel(p[2]); C.openModal(xf[0], xf[1]); }
       else if (p[1] === 'd') { var d = Q.detail(p[2]); C.openModal(d[0], d[1]); }
       else if (p[1] === 'acc') { var qd = Q.def(p[2]); if (qd && qd.giver && Q.npc(qd.giver)) C.toast('Nhận nhiệm vụ này tại NPC.'); else if (qd && qd.giveAt && !near(qd.giveAt)) C.toast('Chưa đến đúng vị trí nhận nhiệm vụ.'); else { r = Q.accept(p[2]); C.toast(r.msg); } var d2 = Q.detail(p[2]); C.openModal(d2[0], d2[1]); }
       else if (p[1] === 'claim') { var qc = Q.def(p[2]); if (qc && (qc.turnIn || qc.giver) && Q.npc(qc.turnIn || qc.giver)) C.toast('Trả nhiệm vụ này tại NPC.'); else if (qc && qc.turnAt && !near(qc.turnAt)) C.toast('Chưa đến đúng vị trí trả nhiệm vụ.'); else { r = Q.claim(p[2], +p[3] || 0); C.toast(r.msg); } var d3 = Q.detail(p[2]); C.openModal(d3[0], d3[1]); }

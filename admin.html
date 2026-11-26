@@ -4,12 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Mecha Studio – Dữ liệu game</title>
+<link rel="stylesheet" href="vg-admin.css?v=202611261">
+<script src="vg-admin.js?v=202611261" defer></script>
 <style>
-:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
---bg:#efe7d6;--card:#f7f1e3;--tx:#2b2118;--mut:#7a6a58;--bd:#bda985;--red:#8b1e1e;--ok:#4b7a52;color-scheme:light}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17130f;--card:#211b15;--tx:#eadfcb;--mut:#a2937d;--bd:#4a3e30;--red:#d9605a;--ok:#7fbf86;color-scheme:dark}}
 *{box-sizing:border-box}html,body{height:100%}
-body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.35 Georgia,"Noto Serif","Times New Roman",serif}
 #app{max-width:760px;margin:0 auto;padding:8px;display:flex;flex-direction:column;gap:8px}
 header{display:flex;gap:6px;align-items:center;flex-wrap:wrap}header h1{font-size:18px;margin:0;flex:1}
 button,.btn{font:inherit;color:var(--tx);background:var(--card);border:1px solid var(--bd);border-radius:6px;padding:8px 10px;cursor:pointer;display:inline-block}
@@ -47,12 +45,12 @@ const $=s=>document.querySelector(s);
 const T={
 humans:{l:"Nhân vật (human)",f:[["name","Tên","t"],["rank","Cảnh giới","g",12],["soul","Hồn lực tối đa","n",100],["bio","Mô tả","t"],["str","Sức mạnh (Strength)","n",10],["agi","Nhanh nhẹn (Agility)","n",10],["int","Trí tuệ (Int)","n",10]]},
 mechas:{l:"Mecha",f:[["name","Tên","t"],["pilot","Phi công","r:humans"],["hp","HP","n",400],["atk","Tấn công","n",40],["en","Năng lượng","n",100],["reg","Hồi NL mỗi lượt","n",8],["spd","Tốc độ","n",600],["head","Giáp đầu","e:head"],["body","Giáp bụng","e:body"],["shoulder","Giáp vai","e:shoulder"],["arm","Giáp tay","e:arm"],["glove","Găng tay","e:glove"],["leg","Giáp chân","e:leg"],["boot","Giày","e:boot"],["weapon","Vũ khí","e:weapon"],["backpack","Backpack","e:backpack"],["wing","Cánh (cần Backpack)","e:wing"],["drone","Drone (cần Backpack)","e:drone"],["pet","Pet (cần Backpack)","e:pet"]]},
-equips:{l:"Trang bị",f:[["name","Tên","t"],["rarity","Phẩm chất","s:Phổ thông=1|Tốt=2|Hiếm=3|Sử thi=4|Truyền thuyết=5|Thần thoại=6"],["slot","Vị trí","s:Giáp đầu=head|Giáp bụng=body|Giáp vai=shoulder|Giáp tay=arm|Găng tay=glove|Giáp chân=leg|Giày=boot|Backpack=backpack|Cánh=wing|Drone=drone|Pet=pet|Vũ khí=weapon"],["shield","+ Lá chắn","n",0],["hp","+ HP","n",0],["atk","+ Tấn công","n",0],["spd","+ Tốc độ","n",0],["wtype","Loại vũ khí (vũ khí/găng)","s:Không=|Súng=gun|Kiếm=blade|Lõi=core|Tên lửa=missile|Pháo=cannon"],["mastery","Thuần thục vũ khí % (găng)","n",0],["move","Di chuyển địa hình (giày)","n",0],["dtype","Loại drone/pet","s:Sentry=sentry|Repair=repair|Shield=shield"],["mpAtk","MP mỗi đòn","n",0],["dmg","Sát thương (Dmg)","n",0],["dmgType","Hệ sát thương (tạm: Non type)","s:Non type=nontype"],["dmgShape","Dạng sát thương","s:Đơn mục tiêu (Single)=single|Diện rộng (AoE)=aoe"],["acc","Chính xác (Accuracy)","n",0],["skill","Skill (lấy từ tab Nguyên liệu › Skill)","k"],["dur","Độ bền ẩn: số lần hư hỏng tối đa trước khi bị phá hủy hoàn toàn","n",3],["recipe","Nguyên liệu chế tạo (ảnh hưởng chỉ số)","q"],["wcat","Danh mục vũ khí","w"]]},
-items:{l:"Vật phẩm",f:[["name","Tên","t"],["rarity","Phẩm chất","s:Phổ thông=1|Tốt=2|Hiếm=3|Sử thi=4|Truyền thuyết=5|Thần thoại=6"],["type","Hiệu ứng","s:Năng lượng=cell|Hồn lực=tonic|HP (theo %)=nano|Lá chắn=shcell"],["val","Giá trị","n",50],["qty","Số lượng","n",1],["desc","Mô tả","t"]]},
+equips:{l:"Trang bị",f:[["name","Tên","t"],["rarity","Phẩm chất","s:Phổ thông=1|Tốt=2|Hiếm=3|Sử thi=4|Truyền thuyết=5"],["slot","Vị trí","s:Giáp đầu=head|Giáp bụng=body|Giáp vai=shoulder|Giáp tay=arm|Găng tay=glove|Giáp chân=leg|Giày=boot|Backpack=backpack|Cánh=wing|Drone=drone|Pet=pet|Vũ khí=weapon"],["shield","+ Lá chắn","n",0],["hp","+ HP","n",0],["atk","+ Tấn công","n",0],["spd","+ Tốc độ","n",0],["wtype","Loại vũ khí (vũ khí/găng)","s:Không=|Súng=gun|Kiếm=blade|Lõi=core|Tên lửa=missile|Pháo=cannon"],["mastery","Thuần thục vũ khí % (găng)","n",0],["move","Di chuyển địa hình (giày)","n",0],["dtype","Loại drone/pet","s:Sentry=sentry|Repair=repair|Shield=shield"],["mpAtk","MP mỗi đòn","n",0],["dmg","Sát thương (Dmg)","n",0],["dmgType","Hệ sát thương (tạm: Non type)","s:Non type=nontype"],["dmgShape","Dạng sát thương","s:Đơn mục tiêu (Single)=single|Diện rộng (AoE)=aoe"],["acc","Chính xác (Accuracy)","n",0],["skill","Skill (lấy từ tab Nguyên liệu › Skill)","k"],["dur","Độ bền ẩn: số lần hư hỏng tối đa trước khi bị phá hủy hoàn toàn","n",3],["recipe","Nguyên liệu chế tạo (ảnh hưởng chỉ số)","q"],["wcat","Danh mục vũ khí","w"]]},
+items:{l:"Vật phẩm",f:[["name","Tên","t"],["rarity","Phẩm chất","s:Phổ thông=1|Tốt=2|Hiếm=3|Sử thi=4|Truyền thuyết=5"],["type","Hiệu ứng","s:Năng lượng=cell|Hồn lực=tonic|HP (theo %)=nano|Lá chắn=shcell"],["val","Giá trị","n",50],["qty","Số lượng","n",1],["desc","Mô tả","t"]]},
 monsters:{l:"Quái vật",f:[["name","Tên","t"],["lv","Cảnh giới","g",12],["hp","HP","n",300],["atk","Tấn công","n",30],["spd","Tốc độ","n",450],["sh","Lá chắn","n",0]]},
 places:{l:"Thành phố / Bí cảnh",f:[["name","Tên","t"],["kind","Loại","s:Thành phố=city|Bí cảnh=realm"],["lvl","Cảnh giới quái","g",12],["desc","Mô tả","t"]]}};
 const TABS=["humans","mechas","equips","materials","items","monsters","places","map","samples","db"];
-T.materials={l:"Nguyên liệu",f:[["name","Tên","t"],["rarity","Phẩm chất","s:Phổ thông=1|Tốt=2|Hiếm=3|Sử thi=4|Truyền thuyết=5|Thần thoại=6"],["branch","Nhánh","s:Tài liệu từ quái vật=monster|Linh dược / quả kì bí=herb|Đan dược=pill|Công pháp=method|Skill=skill"],["rank","Cảnh giới (Công pháp, Skill)","g"],["desc","Mô tả","t"],["fxHp","Ảnh hưởng HP (Pet/Drone)","n",0],["fxMp","Ảnh hưởng MP mỗi đòn","n",0],["fxDmg","Ảnh hưởng Dmg","n",0],["fxAcc","Ảnh hưởng Accuracy","n",0],["fxDur","Ảnh hưởng độ bền ẩn","n",0]]};
+T.materials={l:"Nguyên liệu",f:[["name","Tên","t"],["rarity","Phẩm chất","s:Phổ thông=1|Tốt=2|Hiếm=3|Sử thi=4|Truyền thuyết=5"],["branch","Nhánh","s:Tài liệu từ quái vật=monster|Linh dược / quả kì bí=herb|Đan dược=pill|Công pháp=method|Skill=skill"],["rank","Cảnh giới (Công pháp, Skill)","g"],["desc","Mô tả","t"],["fxHp","Ảnh hưởng HP (Pet/Drone)","n",0],["fxMp","Ảnh hưởng MP mỗi đòn","n",0],["fxDmg","Ảnh hưởng Dmg","n",0],["fxAcc","Ảnh hưởng Accuracy","n",0],["fxDur","Ảnh hưởng độ bền ẩn","n",0]]};
 const NM={humans:"Nhân vật",mechas:"Mecha",equips:"Trang bị",materials:"Nguyên liệu",items:"Vật phẩm",monsters:"Quái",places:"Thành/Bí cảnh",map:"Bản đồ",samples:"Ảnh mẫu",db:"Database"};
 const WC=()=>["Kiếm","Cung","Nỏ","Búa","Chùy","Khiên","Chùy (biến thể)","Thương (Spear)","Dao","Gậy"].map((n,i)=>({id:"wc"+(i+1),name:n}));
 const blank=()=>({v:1,humans:[],mechas:[],equips:[],materials:[],items:[],monsters:[],places:[],map:"",wcats:WC()});
@@ -68,12 +66,21 @@ function saveLocal(){const j=JSON.stringify(D);$("#sz").textContent=Math.round(j
  try{localStorage.setItem("mstudio",j);$("#msg").textContent="";return true}catch(e){$("#msg").textContent="Bộ nhớ trình duyệt đầy hoặc bị chặn: hãy bấm Xuất dữ liệu để giữ bản dự phòng.";return false}}
 function save(){const ok=saveLocal();ver++;sD(true);if(ok)ghSchedule();return ok}
 function go(t){tab=t;armed=-1;render()}
+/* ===== 5 phẩm chất (thấp → cao): 1 Phổ thông · 2 Tốt · 3 Hiếm · 4 Sử thi · 5 Truyền thuyết ===== */
+const RQN=["","Phổ thông","Tốt","Hiếm","Sử thi","Truyền thuyết"],RQC=["","#a89f8d","#4fa86a","#3d7fd6","#8c52d6","#d9a21b"];
+const rq=o=>{const r=Math.round(+(o&&o.rarity)||1);return r<1?1:r>5?5:r};
+let qf=0;
+function normQ(){["equips","items","materials"].forEach(k=>(Array.isArray(D[k])?D[k]:[]).forEach(o=>{if(o&&+o.rarity>5)o.rarity="5"}))}
+function qBar(list){return `<div class="chips-q" style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;align-items:center"><span class="mut">Phẩm chất</span><button class="${qf===0?"pri":""}" onclick="qf=0;render()">Tất cả (${list.length})</button>${[1,2,3,4,5].map(i=>`<button class="${qf===i?"pri":""}" style="border-left:4px solid ${RQC[i]}" onclick="qf=${i};render()">${RQN[i]} (${list.filter(([o])=>rq(o)===i).length})</button>`).join("")}</div>`}
+function qApply(list){return (qf?list.filter(([o])=>rq(o)===qf):list).slice().sort((a,b)=>rq(a[0])-rq(b[0]))}
 function render(){
+ normQ();
  $("#tabs").innerHTML=TABS.map(t=>`<button class="${t===tab?"on":""}" onclick="go('${t}')">${NM[t]}${Array.isArray(D[t])?" ("+D[t].length+")":""}</button>`).join("");
  if(tab==="map")return mapView();if(tab==="samples")return samples();if(tab==="db")return dbView();
  if(tab==="mechas")return mechaView();if(tab==="equips")return equipView();if(tab==="materials")return materialView();
- $("#main").innerHTML=`<button class="pri" onclick="add()">+ Thêm ${T[tab].l.toLowerCase()}</button>`+D[tab].map((o,i)=>card(o,i)).join("");}
-function card(o,i){return `<div class="card"><div class="row"><label class="im">${o.img?`<img src="${o.img}">`:"Chạm để chọn ảnh"}<input type="file" accept="image/*" hidden onchange="pic(${i},this.files[0])"></label><div class="fl">${visFields(o).map(f=>fld(o,i,f)).join("")}</div></div>
+ const gl=D[tab].map((o,i)=>[o,i]),isQ=tab==="items";
+ $("#main").innerHTML=`<button class="pri" onclick="add()">+ Thêm ${T[tab].l.toLowerCase()}</button>`+(isQ?qBar(gl):"")+(isQ?qApply(gl):gl).map(([o,i])=>card(o,i)).join("");}
+function card(o,i){const qa=("rarity" in o||["equips","items","materials"].includes(tab));return `<div class="card"${qa?` style="border-left:5px solid ${RQC[rq(o)]}"`:""}>${qa?`<div class="mut" style="color:${RQC[rq(o)]};font-weight:700">◆ ${RQN[rq(o)]}</div>`:""}<div class="row"><label class="im">${o.img?`<img src="${o.img}">`:"Chạm để chọn ảnh"}<input type="file" accept="image/*" hidden onchange="pic(${i},this.files[0])"></label><div class="fl">${visFields(o).map(f=>fld(o,i,f)).join("")}</div></div>
 <div style="margin-top:6px"><button onclick="del(${i})">${armed===i?"Bấm lần nữa để xóa":"Xóa"}</button></div></div>`}
 function fld(o,i,[k,l,ty]){const v=o[k]??"";let c;
  if(ty==="t")c=`<input value="${esc(v)}" oninput="ed(${i},'${k}',this.value)">`;
@@ -110,7 +117,8 @@ function equipView(){
   const cur=D.wcats.find(c=>c.id===wsel);
   if(cur&&!list.length)h+=`<div style="margin-top:6px"><button onclick="delWCat()">Xóa danh mục "${esc(cur.name)}" (đang trống)</button></div>`;
  }else h+=`<button class="pri" onclick="addEq('${esub}')">+ Thêm ${EL[esub].toLowerCase()}</button>`;
- h+=list.length?list.map(([o,i])=>card(o,i)).join(""):'<p class="mut">Chưa có mục nào trong nhánh này.</p>';
+ h+=qBar(list);list=qApply(list);
+ h+=list.length?list.map(([o,i])=>card(o,i)).join(""):'<p class="mut">Chưa có mục nào trong nhánh/phẩm chất này.</p>';
  $("#main").innerHTML=h}
 function addEq(kind){
  const cat=D.wcats.find(c=>c.id===wsel),lab=EL[kind].toLowerCase();
@@ -248,7 +256,8 @@ function materialView(){
  h+=`<button class="pri" onclick="addMat()">+ Thêm vào "${esc(lab)}"</button>`;
  const gof=r=>{r=+r;return r<12?Math.floor(r/3):r<48?4:5};
  const list=all.filter(([o])=>o.branch===msub&&(msub!=="skill"||mgr==="all"||(o.rank!==undefined&&o.rank!==""&&gof(o.rank)===+mgr)));
- h+=list.length?list.map(([o,i])=>card(o,i)).join(""):'<p class="mut">Chưa có mục nào trong nhánh này.</p>';
+ h+=qBar(list);const list2=qApply(list);
+ h+=list2.length?list2.map(([o,i])=>card(o,i)).join(""):'<p class="mut">Chưa có mục nào trong nhánh/phẩm chất này.</p>';
  $("#main").innerHTML=h}
 function addMat(){const lab=BRN.find(x=>x[0]===msub)[1];doAdd("Thêm nguyên liệu",`Thêm một mục mới vào nhánh "${lab}"?`,()=>pushNew("materials",newObj("materials",{branch:msub}),lab))}
 function rcAdd(i){const o=D.equips[i];doAdd("Thêm nguyên liệu chế tạo",`Thêm một dòng nguyên liệu vào công thức chế tạo của "${o.name}"?`,()=>{if(!Array.isArray(o.recipe))o.recipe=[];o.recipe.push({m:"",q:1});const ok=save();render();return{ok,msg:ok?"Đã thêm một dòng nguyên liệu. Hãy chọn nguyên liệu và số lượng.":"Không lưu được: bộ nhớ trình duyệt đầy hoặc bị chặn."}})}

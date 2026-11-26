@@ -13,12 +13,12 @@
     ['boot', 'Giày', '👢'], ['weapon', 'Vũ khí', '⚔'], ['backpack', 'Ba lô', '🎒'], ['wing', 'Cánh', '🕊'], ['pet', 'Pet', '🐾'], ['drone', 'Drone', '🛸']], SLM = {};
   SL.forEach(function (s) { SLM[s[0]] = s; });
   var LEFT = ['head', 'body', 'shoulder', 'arm', 'glove', 'leg'], RIGHT = ['boot', 'weapon', 'backpack', 'wing', 'pet', 'drone'], NEEDBP = { wing: 1, drone: 1, pet: 1 };
-  var RN = ['', 'Phổ thông', 'Tốt', 'Hiếm', 'Sử thi', 'Truyền thuyết', 'Thần thoại'], RC = ['', '#a89f8d', '#4fa86a', '#3d7fd6', '#8c52d6', '#d9a21b', '#d6453d'];
+  var RN = ['', 'Phổ thông', 'Tốt', 'Hiếm', 'Sử thi', 'Truyền thuyết'], RC = ['', '#a89f8d', '#4fa86a', '#3d7fd6', '#8c52d6', '#d9a21b']; /* 5 phẩm chất, thấp → cao */
   var KIC = { cell: '🔋', tonic: '💧', nano: '🧪', shcell: '🔰', monster: '🦴', herb: '🌿', pill: '💊', artifact: '⚔️', talisman: '📜', ore: '💎', method: '📜', skill: '✨' };
   var LEG = {}, LIB = null, C = {}, libP = null;
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   var num = function (v) { v = +v; return isFinite(v) ? v : 0; };
-  var rar = function (d) { var r = Math.round(num(d && d.rarity)); return r >= 1 && r <= 6 ? r : 1; };
+  var rar = function (d) { var r = Math.round(num(d && d.rarity)); return r >= 1 ? Math.min(5, r) : 1; }; /* dữ liệu cũ phẩm 6 → gộp vào 5 */
   var fmt = function (n) { return GM && GM.fmt ? GM.fmt(n) : String(Math.round(n)); };
 
   /* ===== Dữ liệu ===== */
@@ -155,7 +155,7 @@
     var cap = pet ? BG.PETCAP : BG.CAP, used = pet ? cnt(ST.petBag) : BG.used(ST), filt = S.fRar || (S.fSlot && !pet);
     if (S.tab === 'bag') h += '<div class="sub"><button data-b="sub" data-v="main" class="' + (pet ? '' : 'on') + '">Túi chính ' + BG.used(ST) + '/' + BG.CAP + '</button><button data-b="sub" data-v="pet" class="' + (pet ? 'on' : '') + '">Túi Pet ' + cnt(ST.petBag) + '/' + BG.PETCAP + '</button></div>';
     h += '<div class="bh"><b>' + (pet ? 'Túi Pet' : 'Túi đồ') + ' (' + used + '/' + cap + ')</b><select data-b="frar" aria-label="Phẩm chất"><option value="0">Phẩm chất ▾</option>' +
-      [1, 2, 3, 4, 5, 6].map(function (i) { return '<option value="' + i + '"' + (S.fRar === i ? ' selected' : '') + '>' + RN[i] + '</option>'; }).join('') + '</select><select data-b="sort" aria-label="Sắp xếp">' +
+      [1, 2, 3, 4, 5].map(function (i) { return '<option value="' + i + '"' + (S.fRar === i ? ' selected' : '') + '>' + RN[i] + '</option>'; }).join('') + '</select><select data-b="sort" aria-label="Sắp xếp">' +
       [['def', 'Sắp xếp ▾'], ['rar', 'Theo phẩm chất'], ['name', 'Theo tên'], ['type', 'Theo loại'], ['qty', 'Theo số lượng']].map(function (o) { return '<option value="' + o[0] + '"' + (S.sort === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></div>';
     if (S.fSlot && !pet) h += '<button class="chip" data-b="clrslot">Đang lọc ô: ' + esc(SLM[S.fSlot][1]) + ' ✕</button>';
     var cells = ent.map(function (x) {

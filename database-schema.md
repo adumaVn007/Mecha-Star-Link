@@ -43,8 +43,15 @@ Tạo/sửa bằng `EditJobMSL.html`. `{ v:1, jobs:[ … ] }`. Mỗi nghề: `id
 `equips[]` (`{id, name, slot, reqLv, desc, img}`), `recipes[]` (`{id, name, reqLv, exp, mats, out, desc}`; `reqLv` = cấp nghề mở khóa, `exp` = EXP nhận khi chế).
 Tiến trình nghề của người chơi lưu trong save: `ST.jobs[jobId] = { lv, xp }` (mặc định cấp 1, 0 EXP).
 
-## Phẩm chất — trường `rarity` (MỚI, tùy chọn) trên `equips[]`, `items[]`, `materials[]`
-Số 1–6: 1 Phổ thông · 2 Tốt · 3 Hiếm · 4 Sử thi · 5 Truyền thuyết · 6 Thần thoại. Thiếu trường = 1. Thêm/sửa trong Mecha Studio (`admin.html`, ô "Phẩm chất"). Dữ liệu cũ vẫn đọc được.
+## Phẩm chất — trường `rarity` (tùy chọn) trên `equips[]`, `items[]`, `materials[]` và trang bị nghề (`jobs.json › equips[]`)
+5 bậc, thấp → cao: 1 Phổ thông · 2 Tốt · 3 Hiếm · 4 Sử thi · 5 Truyền thuyết. Thiếu trường = 1. Dữ liệu cũ có `rarity` = 6 (Thần thoại, đã bỏ) tự gộp vào 5 khi mở Mecha Studio / vào game.
+Thêm/sửa: Mecha Studio (`admin.html`, ô "Phẩm chất", có thanh lọc theo phẩm chất; danh sách xếp từ thấp → cao) và `EditJobMSL.html` (trang bị nghề).
+
+## Phẩm cấp nhiệm vụ — trường `grade` (tùy chọn) trên `quests[]` của `database/quests.json`
+Cùng 5 bậc với phẩm chất (1–5, thiếu = 1, lớn hơn 5 gộp về 5). Thêm/sửa trong `editmisson.html` (ô "Phẩm cấp"). Trong game: bảng Nhiệm vụ có thanh lọc phẩm cấp, mỗi nhóm trạng thái xếp thấp → cao, viền màu + nhãn phẩm cấp ở danh sách và chi tiết.
+
+## Giao diện chỉnh sửa dùng chung
+`vg-admin.css` + `vg-admin.js` là mẫu duy nhất cho `admin.html`, `AdminEditNPCPlayer.html`, `AdminEditMonster.html`, `EditJobMSL.html`, `editmisson.html`, `stat-formula.html`, `player.html`: màu/phông nằm ở biến `:root` của `vg-admin.css`; `vg-admin.js` chèn thanh điều hướng giữa các công cụ. Trang dạng form gắn `class="ed"` vào `<body>`. `worldmap-editor.html` là trình vẽ bản đồ toàn màn hình nên giữ bố cục riêng (đã có trong thanh điều hướng của các trang khác).
 
 ## Túi đồ & Trang bị của người chơi — nằm trong SAVE (`vg_save_v1`), KHÔNG ghi vào database (MỚI)
 Module `vg-bag.js`. Khóa tùy chọn trong save: `inv {id:số lượng}` (id = id trong `mecha-studio.json`), `eq {slot:id}` (slot: head, body, shoulder, arm, glove, leg, boot, weapon, backpack, wing, pet, drone), `petBag {id:số lượng}`, `eqB {max,atk,spd,sh}` (tổng chỉ số trang bị, tính lại từ database mỗi lần mặc/tháo/mở túi). Vật phẩm cũ `cell/tonic/nano/shcell` vẫn ở `ST.items`. Save cũ không có các khóa này vẫn chạy.
