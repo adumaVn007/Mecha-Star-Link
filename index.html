@@ -118,6 +118,7 @@ html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none;backgrou
 <script src="vg-bag.js?v=202611254"></script>
 <script src="vg-mapart.js?v=202611254"></script>
 <script src="vg-quest.js?v=202611255"></script>
+<script src="city-ui.js?v=1"></script>
 <script>
 (function(){
 "use strict";
@@ -465,8 +466,8 @@ function rest(full){
  const p=ST.p;p.en=p.enMax;p.soul=p.soulMax;p.hp=full?EM():Math.min(EM(),p.hp+Math.round(EM()*.25));
  ST.day++;persist();renderHUD();say(full?'Nghỉ ngơi trong thành, hồi phục toàn bộ.':'Nghỉ ngơi, hồi phục linh lực và một phần HP.');toast(full?'Đã hồi phục toàn bộ.':'Đã nghỉ ngơi: linh lực đầy, HP +25%.')}
 function openCity(pl){
- openModal(pl.name,`<p>${esc(pl.desc||'')}</p><button class="btn pri" data-a="restfull">🏯 Nghỉ ngơi trong thành<small>Hồi đầy HP, linh lực, hồn lực. Qua một ngày.</small></button>
- <button class="btn" disabled>🏪 Cửa hàng<small>Chưa kết nối hệ thống vật phẩm thật</small></button><button class="btn" disabled>🏯 Tông môn<small>Chưa kết nối</small></button><button class="btn" data-a="close">Rời thành</button>`)}
+ modal=true;$('#ov').classList.remove('show');
+ CityUI.open({name:pl.name,type:pl.kind==='village'?'village':'city'})}
 function openRealm(pl){openModal(pl.name,`<p>${esc(pl.desc||'')}</p><div class="note">${pl.kind==='realm'?'Bí cảnh chưa mở: chưa có dữ liệu bản đồ bí cảnh trong database.':'Nơi này chưa mở: chưa có dữ liệu nội dung (tông môn / hang động) trong database.'}</div><button class="btn" data-a="close">Quay lại</button>`)}
 
 function openModal(t,h){modal=true;$('#oT').textContent=t;$('#oB').innerHTML=h;$('#ov').classList.add('show');$('#oB').scrollTop=0}
@@ -508,6 +509,31 @@ function panel(k){
  return['','']}
 const EM=()=>VG.bag.eff(ST).max;
 VG.bag.setLegacy(IT);
+/* ===== Nối City UI (city-ui.js) với dữ liệu game ===== */
+const CTY=()=>{const c=ST.city=ST.city||{};c.bag=c.bag||{};c.quests=c.quests||{};return c};
+const STV=[['thuong',1],['trung',100],['cao',1e4],['sieu',1e6]];
+const CTY_WEALTH=()=>STV.reduce((t,x)=>t+(ST.stones[x[0]]||0)*x[1],0);
+CityUI.configure({
+ getStones:()=>ST.stones,
+ addStones:(k,n)=>{ST.stones[k]=Math.max(0,(ST.stones[k]||0)+n);persist();renderHUD()},
+ wealth:CTY_WEALTH,
+ pay:n=>{if(CTY_WEALTH()<n)return false;let left=CTY_WEALTH()-n;for(let i=STV.length-1;i>=0;i--){ST.stones[STV[i][0]]=Math.floor(left/STV[i][1]);left-=ST.stones[STV[i][0]]*STV[i][1]}persist();renderHUD();return true},
+ earn:n=>{ST.stones.thuong=(ST.stones.thuong||0)+Math.round(n);persist();renderHUD()},
+ getBag:()=>CTY().bag,
+ count:id=>CTY().bag[id]||0,
+ bagFree:()=>200-Object.values(CTY().bag).reduce((a,b)=>a+b,0),
+ addItem:(id,n=1)=>{const b=CTY().bag;b[id]=(b[id]||0)+n;persist()},
+ removeItem:(id,n=1)=>{const b=CTY().bag;if((b[id]||0)<n)return false;b[id]-=n;if(!b[id])delete b[id];persist();return true},
+ getDay:()=>ST.day,
+ nextDay:()=>{},
+ hasQuest:id=>!!CTY().quests[id],
+ acceptQuest:q=>{CTY().quests[q.id]={id:q.id,title:q.title,type:q.type,target:q.target||null,count:q.count,got:0,reward:q.reward,city:q.city,at:ST.day};persist()},
+ loadNpcs:()=>CTY().npcs||null,
+ saveNpcs:n=>{CTY().npcs=n;persist()},
+ onRest:()=>{rest(true);return 'Đã nghỉ ngơi. Hồi đầy HP, linh lực, hồn lực. Qua một ngày.'},
+ onLeave:()=>{modal=false;renderHUD()}
+});
+
 function openBag(tab){modal=true;VG.bag.open({get:()=>ST,persist,toast,IT,loadLib:()=>GM.loadLib(),useLegacy:useItem,after:renderHUD,onClose:()=>{modal=false;renderHUD()}},tab)}
 const fsEl=()=>document.fullscreenElement||document.webkitFullscreenElement;
 const fsOK=()=>!!(document.fullscreenEnabled||document.webkitFullscreenEnabled);
@@ -657,7 +683,7 @@ function init(w){
  world=w;monById=new Map((w.monsters||[]).map(m=>[m.id,m]));zone=wmap?wmap.zone:w.zones[0];zone.eventCount=Math.round((zone.eventCount||0)*MCFG.mult);pmap={};zone.places.forEach(p=>{pmap[p.x*1000+p.y]=p});
  tiles=[];for(let x=0;x<zone.w;x++){tiles[x]=[];for(let y=0;y<zone.h;y++)tiles[x][y]=typ(x,y)}
  ST=GM.load(zone);
- if(ST.zone!==zone.id){const k=ST;ST=GM.defaults(zone);ST.char=k.char;ST.p=k.p;ST.items=k.items;ST.stones=k.stones;ST.auto=k.auto;ST.autoSet=k.autoSet;ST.day=k.day;ST.kills=k.kills;ST.cleared=k.cleared;if(k.jobs)ST.jobs=k.jobs;['inv','eq','petBag','eqB','q'].forEach(x=>{if(k[x])ST[x]=k[x]})}
+ if(ST.zone!==zone.id){const k=ST;ST=GM.defaults(zone);ST.char=k.char;ST.p=k.p;ST.items=k.items;ST.stones=k.stones;ST.auto=k.auto;ST.autoSet=k.autoSet;ST.day=k.day;ST.kills=k.kills;ST.cleared=k.cleared;if(k.jobs)ST.jobs=k.jobs;['inv','eq','petBag','eqB','q','city'].forEach(x=>{if(k[x])ST[x]=k[x]})}
  VG.quest.ensure(ST);
  if(!ST.char)return startCreate();
  boot()}
