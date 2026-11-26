@@ -117,7 +117,7 @@
     var n = Q.npc(id); if (n) return n.name;
     var C = Q.C, v = C.placeName && C.placeName(id); if (v) return v;
     v = C.monName && C.monName(id); if (v) return v;
-    return (C.IT && C.IT[id] && C.IT[id][0]) || id;
+    return (C.IT && C.IT[id] && C.IT[id][0]) || (VG.bag && VG.bag.nameOf && VG.bag.nameOf(id)) || id;
   };
   Q.vars = function (q) {
     var V = { name: q.name || '', giver: Q.nameOf(q.giver) || 'bảng nhiệm vụ', turnIn: Q.nameOf(q.turnIn || q.giver) || 'bảng nhiệm vụ', reward: Q.rewardText(q.rewards) };
@@ -217,7 +217,7 @@
       if (!ok || !it || !it.id) return; var n = Math.max(1, +it.q || 1);
       if (S.items && Object.prototype.hasOwnProperty.call(S.items, it.id) && Q.C.IT && Q.C.IT[it.id]) { S.items[it.id] = (S.items[it.id] | 0) + n; parts.push(n + '× ' + Q.C.IT[it.id][0]); return; }
       var res = VG.bag && VG.bag.add ? VG.bag.add(S, it.id, n) : { ok: false, msg: 'Chưa có hệ thống túi đồ.' };
-      if (res && res.ok) parts.push(n + '× ' + it.id); else { ok = false; fail = (res && res.msg) || 'Túi đồ đầy.'; }
+      if (res && res.ok) parts.push(n + '× ' + ((VG.bag && VG.bag.nameOf && VG.bag.nameOf(it.id)) || it.id)); else { ok = false; fail = (res && res.msg) || 'Túi đồ đầy.'; }
     });
     if (!ok) { var o = JSON.parse(snap); S.inv = o.inv; S.petBag = o.petBag; S.items = o.items; S.eqB = o.eqB; return { ok: false, msg: fail }; }
     if (r.xp) { S.p.xp += +r.xp; parts.unshift('+' + r.xp + ' KN'); levelUp(S); }
@@ -228,7 +228,7 @@
     r = r || {}; var a = [];
     if (r.xp) a.push('+' + r.xp + ' KN');
     SN.forEach(function (k) { if (r.stones && r.stones[k]) a.push('+' + r.stones[k] + ' LT ' + SL[k]); });
-    (r.items || []).forEach(function (i) { a.push((i.q || 1) + '× ' + (Q.C.IT && Q.C.IT[i.id] ? Q.C.IT[i.id][0] : i.id)); });
+    (r.items || []).forEach(function (i) { a.push((i.q || 1) + '× ' + (Q.C.IT && Q.C.IT[i.id] ? Q.C.IT[i.id][0] : ((VG.bag && VG.bag.nameOf && VG.bag.nameOf(i.id)) || i.id))); });
     if (r.rep) for (var f in r.rep) if (r.rep[f]) a.push((r.rep[f] > 0 ? '+' : '') + r.rep[f] + ' danh tiếng ' + f);
     return a.join(', ') || '—';
   };

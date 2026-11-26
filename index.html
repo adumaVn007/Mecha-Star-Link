@@ -466,6 +466,7 @@ function rest(full){
  const p=ST.p;p.en=p.enMax;p.soul=p.soulMax;p.hp=full?EM():Math.min(EM(),p.hp+Math.round(EM()*.25));
  ST.day++;persist();renderHUD();say(full?'Nghỉ ngơi trong thành, hồi phục toàn bộ.':'Nghỉ ngơi, hồi phục linh lực và một phần HP.');toast(full?'Đã hồi phục toàn bộ.':'Đã nghỉ ngơi: linh lực đầy, HP +25%.')}
 function openCity(pl){
+ if(!libSet){libSet=true;libMerged().then(l=>{if(l)VG.bag.setLib(l)}).catch(()=>{libSet=false})}
  modal=true;$('#ov').classList.remove('show');
  CityUI.open({name:pl.name,type:pl.kind==='village'?'village':'city'})}
 function openRealm(pl){openModal(pl.name,`<p>${esc(pl.desc||'')}</p><div class="note">${pl.kind==='realm'?'Bí cảnh chưa mở: chưa có dữ liệu bản đồ bí cảnh trong database.':'Nơi này chưa mở: chưa có dữ liệu nội dung (tông môn / hang động) trong database.'}</div><button class="btn" data-a="close">Quay lại</button>`)}
@@ -510,31 +511,36 @@ function panel(k){
 const EM=()=>VG.bag.eff(ST).max;
 VG.bag.setLegacy(IT);
 /* ===== Nối City UI (city-ui.js) với dữ liệu game ===== */
-const CTY=()=>{const c=ST.city=ST.city||{};c.bag=c.bag||{};c.quests=c.quests||{};return c};
+const CTY=()=>{const c=ST.city=ST.city||{};return c};
 const STV=[['thuong',1],['trung',100],['cao',1e4],['sieu',1e6]];
 const CTY_WEALTH=()=>STV.reduce((t,x)=>t+(ST.stones[x[0]]||0)*x[1],0);
+const CITYDB=fetch('database/city-items.json?t='+Date.now()).then(r=>r.ok?r.json():null).catch(()=>null).then(j=>{if(j)CityUI.setItems(j);return j});
+const libMerged=()=>Promise.resolve(GM.loadLib()).catch(()=>null).then(l=>CITYDB.then(j=>{if(!j)return l;l=l||{};const have={};['materials','items'].forEach(k=>(l[k]||[]).forEach(e=>{have[e.id]=1}));const add=k=>(j[k]||[]).filter(e=>!have[e.id]);return Object.assign({},l,{materials:(l.materials||[]).concat(add('materials')),items:(l.items||[]).concat(add('items'))})}));
+let libSet=false;
+const cityDef=q=>{let d=VG.quest.def(q.id);if(!d){d={id:q.id,name:q.name,desc:q.line+' (Giao: '+q.giver[0]+', '+q.giver[1]+')',scope:'country',objectives:q.objectives,rewards:q.rewards,repeat:q.repeat};VG.quest.D.quests.push(d)}return d};
 CityUI.configure({
  getStones:()=>ST.stones,
  addStones:(k,n)=>{ST.stones[k]=Math.max(0,(ST.stones[k]||0)+n);persist();renderHUD()},
  wealth:CTY_WEALTH,
  pay:n=>{if(CTY_WEALTH()<n)return false;let left=CTY_WEALTH()-n;for(let i=STV.length-1;i>=0;i--){ST.stones[STV[i][0]]=Math.floor(left/STV[i][1]);left-=ST.stones[STV[i][0]]*STV[i][1]}persist();renderHUD();return true},
  earn:n=>{ST.stones.thuong=(ST.stones.thuong||0)+Math.round(n);persist();renderHUD()},
- getBag:()=>CTY().bag,
- count:id=>CTY().bag[id]||0,
- bagFree:()=>200-Object.values(CTY().bag).reduce((a,b)=>a+b,0),
- addItem:(id,n=1)=>{const b=CTY().bag;b[id]=(b[id]||0)+n;persist()},
- removeItem:(id,n=1)=>{const b=CTY().bag;if((b[id]||0)<n)return false;b[id]-=n;if(!b[id])delete b[id];persist();return true},
+ getBag:()=>{VG.bag.init(ST);const o={};[ST.inv,ST.petBag].forEach(m=>Object.keys(m).forEach(k=>{if(m[k]>0)o[k]=(o[k]||0)+m[k]}));return o},
+ count:id=>(ST.inv&&ST.inv[id]|0)+(ST.petBag&&ST.petBag[id]|0),
+ bagFree:()=>VG.bag.CAP-VG.bag.used(ST),
+ addItem:(id,n=1)=>{const r=VG.bag.add(ST,id,n);persist();if(r&&r.msg)toast(r.msg);return r},
+ removeItem:(id,n=1)=>{VG.bag.init(ST);let t=n;if((ST.inv[id]|0)+(ST.petBag[id]|0)<n)return false;['inv','petBag'].forEach(k=>{if(t>0&&ST[k][id]){const d=Math.min(t,ST[k][id]);ST[k][id]-=d;t-=d;if(ST[k][id]<=0)delete ST[k][id]}});persist();return true},
  getDay:()=>ST.day,
  nextDay:()=>{},
- hasQuest:id=>!!CTY().quests[id],
- acceptQuest:q=>{CTY().quests[q.id]={id:q.id,title:q.title,type:q.type,target:q.target||null,count:q.count,got:0,reward:q.reward,city:q.city,at:ST.day};persist()},
+ questState:q=>VG.quest.state(cityDef(q)),
+ acceptQuest:q=>{cityDef(q);const r=VG.quest.accept(q.id);return r},
+ claimQuest:id=>{const r=VG.quest.claim(id);renderHUD();return r},
  loadNpcs:()=>CTY().npcs||null,
  saveNpcs:n=>{CTY().npcs=n;persist()},
  onRest:()=>{rest(true);return 'Đã nghỉ ngơi. Hồi đầy HP, linh lực, hồn lực. Qua một ngày.'},
  onLeave:()=>{modal=false;renderHUD()}
 });
 
-function openBag(tab){modal=true;VG.bag.open({get:()=>ST,persist,toast,IT,loadLib:()=>GM.loadLib(),useLegacy:useItem,after:renderHUD,onClose:()=>{modal=false;renderHUD()}},tab)}
+function openBag(tab){modal=true;VG.bag.open({get:()=>ST,persist,toast,IT,loadLib:libMerged,useLegacy:useItem,after:renderHUD,onClose:()=>{modal=false;renderHUD()}},tab)}
 const fsEl=()=>document.fullscreenElement||document.webkitFullscreenElement;
 const fsOK=()=>!!(document.fullscreenEnabled||document.webkitFullscreenEnabled);
 function toggleFS(){const d=document,e=d.documentElement;

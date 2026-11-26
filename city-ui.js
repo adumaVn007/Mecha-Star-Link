@@ -49,11 +49,25 @@ const ITEMS = [
  ['truyen_tong_phu','Truyền Tống Phù','phu',3,3500,'—','Dịch chuyển tức thời một quãng ngắn.'],
  ['ho_than_phu','Hộ Thân Phù','phu',4,20000,'—','Tạo lá chắn chặn sát thương lớn.'],
  ['han_thiet','Hàn Thiết','khoang',1,60,'Kim','Quặng sắt lạnh.'],
+ ['thanh_diep_thao','Thanh Diệp Thảo','thao',1,55,'Mộc','Lá xanh mướt, dùng làm phụ liệu luyện đan.'],
+ ['hoa_van_qua','Hỏa Vân Quả','thao',2,680,'Hỏa','Quả đỏ rực mọc gần mạch địa hỏa.'],
+ ['bach_ngoc_sam','Bạch Ngọc Sâm','thao',3,3800,'Thổ','Nhân sâm trắng ngà, đại bổ nguyên khí.'],
+ ['thien_tam_thao','Thiên Tâm Thảo','thao',4,22000,'Thủy','Chỉ nở khi sương đầu mùa đông rơi.'],
+ ['trung_hoi_khi_dan','Trung Hồi Khí Đan','dan',2,650,'—','Hồi 150 linh lực.'],
+ ['cao_hoi_khi_dan','Cao Hồi Khí Đan','dan',3,3000,'—','Hồi 400 linh lực.'],
+ ['trung_hoi_huyet_dan','Trung Hồi Huyết Đan','dan',2,900,'—','Hồi 50% HP.'],
+ ['cao_hoi_huyet_dan','Cao Hồi Huyết Đan','dan',3,4000,'—','Hồi 100% HP.'],
+ ['ngung_hon_dan','Ngưng Hồn Đan','dan',2,800,'—','Hồi 60 hồn lực.'],
+ ['cao_ngung_hon_dan','Cao Ngưng Hồn Đan','dan',3,3500,'—','Hồi 200 hồn lực.'],
+ ['bo_huyet_dan','Bổ Huyết Đan','dan',2,700,'—','Dược liệu hậu kỳ cho luyện thể.'],
+ ['thanh_dong','Thanh Đồng','khoang',1,70,'Kim','Đồng xanh phổ thông.'],
+ ['bach_ngan','Bạch Ngân','khoang',2,450,'Kim','Bạc tinh luyện, dẫn linh khí tốt.'],
  ['tinh_kim','Tinh Kim','khoang',2,500,'Kim','Kim loại tinh luyện.'],
  ['huyen_bang_thiet','Huyền Băng Thiết','khoang',3,2500,'Thủy','Thiết lạnh vạn năm.'],
  ['thien_ngoc','Thiên Ngọc','khoang',4,18000,'Thổ','Ngọc chứa linh khí đậm đặc.'],
  ['ngu_hanh_tinh','Ngũ Hành Tinh','khoang',5,250000,'Ngũ hành','Kết tinh năm hệ, vật liệu luyện bảo tối thượng.']
 ].map(a => ({id:a[0], name:a[1], type:a[2], tier:a[3], price:a[4], he:a[5], desc:a[6]}));
+ITEMS.forEach(i => { i.id = 'cty_' + i.id; });
 const IT = id => ITEMS.find(i => i.id === id);
 
 /* ===== CÔNG THỨC LUYỆN ĐAN ===== */
@@ -64,15 +78,22 @@ const RECIPES = [
  {out:'tay_tuy_dan', in:{bang_tam_lien:2, minh_dang_thao:1}, fee:150, rate:.75},
  {out:'tu_khi_dan', in:{tu_van_qua:2, linh_thao:2}, fee:200, rate:.75},
  {out:'truc_co_dan', in:{kim_nguyen_hoa:2, tu_van_qua:2}, fee:1000, rate:.6},
- {out:'ket_dan_dan', in:{huyen_nguyet_chi:2, kim_nguyen_hoa:2}, fee:8000, rate:.45}
+ {out:'ket_dan_dan', in:{huyen_nguyet_chi:2, kim_nguyen_hoa:2}, fee:8000, rate:.45},
+ {out:'trung_hoi_khi_dan', in:{tu_van_qua:1, linh_thao:2}, fee:120, rate:.8},
+ {out:'cao_hoi_khi_dan', in:{kim_nguyen_hoa:1, tu_van_qua:2}, fee:600, rate:.65},
+ {out:'trung_hoi_huyet_dan', in:{hoa_van_qua:1, huyet_tam_thao:2}, fee:150, rate:.8},
+ {out:'cao_hoi_huyet_dan', in:{bach_ngoc_sam:1, hoa_van_qua:2}, fee:700, rate:.65},
+ {out:'ngung_hon_dan', in:{minh_dang_thao:2, thanh_diep_thao:2}, fee:140, rate:.8},
+ {out:'cao_ngung_hon_dan', in:{thien_tam_thao:1, minh_dang_thao:2}, fee:2500, rate:.55}
 ];
+RECIPES.forEach(r => { r.out = 'cty_' + r.out; const o = {}; Object.keys(r.in).forEach(k => { o['cty_' + k] = r.in[k]; }); r.in = o; });
 
 /* ===== ADAPTER: nối vào game thật bằng CityUI.configure({...}) ===== */
 const KEY = 'cityui_state_v1', NKEY = 'cityui_npcs_v1';
 const A = {
   s: null,
   _load() { if (A.s) return; try { A.s = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
-    if (!A.s) A.s = {stones:{thuong:1114, trung:12, cao:0, sieu:0}, bag:{linh_thao:6, minh_dang_thao:2, thiet_kiem:1}, day:1, quests:{}, cap:50}; },
+    if (!A.s) A.s = {stones:{thuong:1114, trung:12, cao:0, sieu:0}, bag:{cty_linh_thao:6, cty_minh_dang_thao:2}, day:1, quests:{}, cap:50}; },
   _save() { try { localStorage.setItem(KEY, JSON.stringify(A.s)); } catch (e) {} },
   getStones() { A._load(); return A.s.stones; },
   addStones(k, n) { A._load(); A.s.stones[k] = Math.max(0, (A.s.stones[k] || 0) + n); A._save(); },
@@ -88,6 +109,8 @@ const A = {
   getDay() { A._load(); return A.s.day; },
   nextDay() { A._load(); A.s.day++; A._save(); },
   hasQuest(id) { A._load(); return !!A.s.quests[id]; },
+  questState(q) { return A.hasQuest(q.id) ? 'active' : 'avail'; },   // game thật: 'avail'|'active'|'done'|'claimed'
+  claimQuest(id) { return {ok:false, msg:'Chưa nối hệ thống nhận thưởng.'}; },
   acceptQuest(q) { A._load(); A.s.quests[q.id] = q; A._save(); },      // game thật: đẩy vào thanh nhiệm vụ
   loadNpcs() { try { return JSON.parse(localStorage.getItem(NKEY)); } catch (e) { return null; } },
   saveNpcs(n) { try { localStorage.setItem(NKEY, JSON.stringify(n)); } catch (e) {} },
@@ -185,15 +208,21 @@ function questsFor(city) {
   const gs = shuffle(G).slice(0, 3), herb = ITEMS.filter(i => i.type === 'thao' && i.tier <= 2), h = herb[Math.floor(r() * herb.length)];
   const k = 5 + Math.floor(r() * 11), c = 3 + Math.floor(r() * 6);
   return [
-    {id:city + ':0', city, giver:gs[0], title:'Dọn dẹp dị thú quanh ' + city, type:'hunt', count:k, line:'Dị thú đang quấy phá ngoài thành. Xin đạo hữu ra tay trừ hại.', reward:{stones:k * 60, items:{hoi_huyet_dan:2}}},
-    {id:city + ':1', city, giver:gs[1], title:'Thu thập ' + h.name, type:'collect', target:h.id, count:c, line:'Tiệm đang thiếu ' + h.name + '. Mang về giúp ta, sẽ không để đạo hữu thiệt.', reward:{stones:c * h.price * 1.5, items:{}}},
-    {id:city + ':2', city, giver:gs[2], title:'Đưa thư khẩn', type:'deliver', count:1, line:'Có một phong thư cần gửi đến thành lân cận, càng sớm càng tốt.', reward:{stones:400, items:{hac_vu_phu_but:1}}}
+    {id:'cty:' + city + ':0', city, giver:gs[0], name:'Dọn dẹp dị thú quanh ' + city, line:'Dị thú đang quấy phá ngoài thành. Xin đạo hữu ra tay trừ hại.',
+      objectives:[{t:'kill', target:'*', n:k}], rewards:{xp:k * 8, stones:{thuong:k * 60}, items:[{id:'cty_hoi_huyet_dan', q:2}]}, repeat:{days:3}},
+    {id:'cty:' + city + ':1', city, giver:gs[1], name:'Thu thập ' + h.name, line:'Tiệm đang thiếu ' + h.name + '. Mang về giúp ta, sẽ không để đạo hữu thiệt.',
+      objectives:[{t:'collect', target:h.id, n:c, consume:true}], rewards:{xp:c * 10, stones:{thuong:Math.round(c * h.price * 1.5)}, items:[]}, repeat:{days:2}},
+    {id:'cty:' + city + ':2', city, giver:gs[2], name:'Thám thính các thành lân cận', line:'Ta cần người đi xem tình hình các thành trì khác. Ghé thăm hai nơi rồi về báo.',
+      objectives:[{t:'visit', n:2}], rewards:{xp:60, stones:{thuong:400}, items:[{id:'cty_hac_vu_phu_but', q:1}]}, repeat:{days:5}}
   ]; }
+const rewardTxt = w => [w.xp ? '+' + w.xp + ' KN' : '', w.stones && w.stones.thuong ? fmt(w.stones.thuong) + ' Thường' : ''].concat((w.items || []).map(i => (IT(i.id) ? IT(i.id).name : i.id) + ' ×' + (i.q || 1))).filter(Boolean).join(', ');
+const objTxt = o => o.t === 'kill' ? 'Tiêu diệt ' + o.n + ' dị thú bất kỳ' : o.t === 'collect' ? 'Thu thập ' + o.n + ' ' + (IT(o.target) ? IT(o.target).name : o.target) : 'Ghé thăm ' + o.n + ' thành trì';
 function questHtml() {
-  return questsFor(cfg.name).map(q => { const got = A.hasQuest(q.id);
-    return '<div class="cu-card col"><div><b>' + esc(q.giver[0]) + '</b> <small>· ' + esc(q.giver[1]) + '</small></div><div class="cu-say">“' + esc(q.line) + '”</div><div><b>' + esc(q.title) + '</b> <small>(' + q.count + ')</small></div>' +
-      '<div class="cu-s">Thưởng: ' + fmt(q.reward.stones) + ' Thường' + Object.keys(q.reward.items).map(id => ', ' + IT(id).name + ' ×' + q.reward.items[id]).join('') + '</div>' +
-      '<button class="cu-b' + (got ? ' alt' : '') + '" data-a="quest" data-v="' + q.id + '"' + (got ? ' disabled' : '') + '>' + (got ? 'Đã nhận' : 'Nhận nhiệm vụ') + '</button></div>'; }).join(''); }
+  return questsFor(cfg.name).map(q => { const st = A.questState ? A.questState(q) : (A.hasQuest(q.id) ? 'active' : 'avail');
+    const btn = st === 'avail' ? '<button class="cu-b" data-a="quest" data-v="' + q.id + '">Nhận nhiệm vụ</button>' : st === 'done' ? '<button class="cu-b gold" data-a="qclaim" data-v="' + q.id + '">Nhận thưởng</button>' :
+      '<button class="cu-b alt" disabled>' + (st === 'active' ? 'Đang làm (xem ở thanh Nhiệm vụ)' : st === 'claimed' ? 'Đã hoàn thành' : 'Chưa mở') + '</button>';
+    return '<div class="cu-card col"><div><b>' + esc(q.giver[0]) + '</b> <small>· ' + esc(q.giver[1]) + '</small></div><div class="cu-say">“' + esc(q.line) + '”</div><div><b>' + esc(q.name) + '</b></div>' +
+      '<div class="cu-s">' + q.objectives.map(objTxt).join(' · ') + '</div><div class="cu-s">Thưởng: ' + esc(rewardTxt(q.rewards)) + '</div>' + btn + '</div>'; }).join(''); }
 
 /* ===== PHƯỜNG THỊ ===== */
 let PT = 'buy';
@@ -307,7 +336,8 @@ const ACT = {
   rest() { note = A.onRest(); render(true); },
   feat(d) { FEAT[d.v][3](); },
   go(d) { go({vb:{title:'Vạn Bảo · Vật phẩm', html:vbHtml}, alch:{title:'Lò luyện đan', html:alchHtml}, lib:{title:'Thư viện', html:libHtml}}[d.v]); },
-  quest(d) { const q = questsFor(cfg.name).find(x => x.id === d.v); A.acceptQuest(q); note = 'Đã nhận: ' + q.title + '. Theo dõi trong thanh nhiệm vụ.'; render(true); },
+  quest(d) { const q = questsFor(cfg.name).find(x => x.id === d.v); const r = A.acceptQuest(q); note = (r && r.msg) || ('Đã nhận: ' + q.name + '.'); render(true); },
+  qclaim(d) { const r = A.claimQuest(d.v); note = (r && r.msg) || 'Đã nhận thưởng.'; render(true); },
   pt(d) { PT = d.v; render(); }, buy(d) { const [i, p, q] = d.v.split('|'); buy(i, +p, q); render(true); }, sell(d) { const [i, p, q] = d.v.split('|'); sell(i, +p, q); render(true); },
   vbuy(d) { const s = vbStock().list.find(x => x.id === d.v); if (s.qty < 1) return; if (A.bagFree() < 1) note = 'Túi đầy, cất bớt đồ rồi hãy mua.'; else if (!A.pay(s.price)) note = 'Không đủ linh thạch.'; else { s.qty--; A.addItem(s.id); note = 'Đã mua ' + IT(s.id).name + '.'; } render(true); },
   alch(d) { const r = RECIPES[+d.v], o = IT(r.out);
@@ -328,5 +358,17 @@ function open(c) { cfg = Object.assign({name:'Thành', type:'city'}, c || {}); i
   root.addEventListener('input', e => { const t = e.target, k = t.dataset.i; if (k === 'au') AU.input = +t.value; else if (k === 'bet') CS.bet = Math.max(0, Math.min(MAXBET, Math.floor(+t.value || 0))); else if (k === 'lib') { LB.q = t.value; root.querySelector('#cu-lib').innerHTML = libList(); } });
   document.body.appendChild(root); note = ''; stack = [{title:cfg.name, html:menuHtml}]; render(); }
 
-global.CityUI = {open, close:() => root && ACT.close(), configure:o => Object.assign(A, o), adapter:A, items:ITEMS, recipes:RECIPES, npcs};
+function setItems(db) { // nạp từ database/city-items.json
+  const toT = {herb:'thao', pill:'dan', artifact:'khi', talisman:'phu', ore:'khoang'}, L = [];
+  ['materials', 'items'].forEach(k => (db[k] || []).forEach(e => { if (e && e.id && e.cat) L.push({id:e.id, name:e.name, type:e.cat, tier:Math.min(5, Math.max(1, e.rarity | 0 || 1)), price:+e.price || 1, he:e.he || '—', desc:e.desc || ''}); }));
+  if (L.length) { ITEMS.length = 0; L.forEach(x => ITEMS.push(x)); }
+  if (Array.isArray(db.recipes) && db.recipes.length) { const R = db.recipes.slice(); RECIPES.length = 0; R.forEach(x => RECIPES.push(x)); } }
+function toDB() { // xuất ITEMS hiện có thành format database của game
+  const br = {thao:'herb', dan:'pill', khi:'artifact', phu:'talisman', khoang:'ore'}, use = {cty_hoi_khi_dan:['cell',40], cty_trung_hoi_khi_dan:['cell',150], cty_cao_hoi_khi_dan:['cell',400],
+    cty_hoi_huyet_dan:['nano',25], cty_trung_hoi_huyet_dan:['nano',50], cty_cao_hoi_huyet_dan:['nano',100], cty_ngung_hon_dan:['tonic',60], cty_cao_ngung_hon_dan:['tonic',200]};
+  const db = {_note:'Vật phẩm của hệ thống Thành/Làng (city-ui.js). Có thể sửa tay: price = giá trị quy về linh thạch Thường, cat = thao|dan|khi|phu|khoang.', materials:[], items:[], recipes:RECIPES};
+  ITEMS.forEach(i => { const e = {id:i.id, name:i.name, rarity:i.tier, desc:i.desc, price:i.price, he:i.he, cat:i.type};
+    if (use[i.id]) { e.type = use[i.id][0]; e.val = use[i.id][1]; db.items.push(e); } else { e.branch = br[i.type]; db.materials.push(e); } });
+  return db; }
+global.CityUI = {setItems, toDB, open, close:() => root && ACT.close(), configure:o => Object.assign(A, o), adapter:A, items:ITEMS, recipes:RECIPES, npcs};
 })(window);

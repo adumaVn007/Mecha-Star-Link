@@ -1,0 +1,573 @@
+{
+ "_note": "Vật phẩm của hệ thống Thành/Làng (city-ui.js). Có thể sửa tay: price = giá trị quy về linh thạch Thường, cat = thao|dan|khi|phu|khoang.",
+ "materials": [
+  {
+   "id": "cty_linh_thao",
+   "name": "Linh Thảo",
+   "rarity": 1,
+   "desc": "Cỏ linh khí phổ thông, nguyên liệu căn bản.",
+   "price": 40,
+   "he": "Mộc",
+   "cat": "thao",
+   "branch": "herb"
+  },
+  {
+   "id": "cty_huyet_tam_thao",
+   "name": "Huyết Tâm Thảo",
+   "rarity": 1,
+   "desc": "Lá đỏ như máu, dùng luyện đan hồi huyết.",
+   "price": 90,
+   "he": "Hỏa",
+   "cat": "thao",
+   "branch": "herb"
+  },
+  {
+   "id": "cty_minh_dang_thao",
+   "name": "Minh Đăng Thảo",
+   "rarity": 1,
+   "desc": "Cỏ mọc trên nấm mộ, đêm đến ngọn cỏ sáng lân xanh như đèn.",
+   "price": 142,
+   "he": "Ám · Mộc",
+   "cat": "thao",
+   "branch": "herb"
+  },
+  {
+   "id": "cty_bang_tam_lien",
+   "name": "Băng Tâm Liên",
+   "rarity": 2,
+   "desc": "Sen mọc nơi hàn đàm, thanh tâm tịnh khí.",
+   "price": 400,
+   "he": "Thủy",
+   "cat": "thao",
+   "branch": "herb"
+  },
+  {
+   "id": "cty_tu_van_qua",
+   "name": "Tử Vân Quả",
+   "rarity": 2,
+   "desc": "Quả tím nở rộ khi mây tụ, bổ linh lực.",
+   "price": 750,
+   "he": "Mộc",
+   "cat": "thao",
+   "branch": "herb"
+  },
+  {
+   "id": "cty_kim_nguyen_hoa",
+   "name": "Kim Nguyên Hoa",
+   "rarity": 3,
+   "desc": "Hoa kim sắc, nguyên liệu Trúc Cơ Đan.",
+   "price": 3000,
+   "he": "Kim",
+   "cat": "thao",
+   "branch": "herb"
+  },
+  {
+   "id": "cty_huyen_nguyet_chi",
+   "name": "Huyền Nguyệt Chi",
+   "rarity": 4,
+   "desc": "Linh chi hấp thụ nguyệt hoa trăm năm.",
+   "price": 25000,
+   "he": "Ám",
+   "cat": "thao",
+   "branch": "herb"
+  },
+  {
+   "id": "cty_cuu_diep_linh_chi",
+   "name": "Cửu Diệp Linh Chi",
+   "rarity": 5,
+   "desc": "Cực phẩm linh dược, vạn năm khó gặp.",
+   "price": 300000,
+   "he": "Mộc",
+   "cat": "thao",
+   "branch": "herb"
+  },
+  {
+   "id": "cty_giai_doc_dan",
+   "name": "Giải Độc Đan",
+   "rarity": 1,
+   "desc": "Giải độc tố cấp thấp.",
+   "price": 150,
+   "he": "—",
+   "cat": "dan",
+   "branch": "pill"
+  },
+  {
+   "id": "cty_tay_tuy_dan",
+   "name": "Tẩy Tủy Đan",
+   "rarity": 2,
+   "desc": "Thanh lọc tạp chất trong cơ thể.",
+   "price": 800,
+   "he": "—",
+   "cat": "dan",
+   "branch": "pill"
+  },
+  {
+   "id": "cty_tu_khi_dan",
+   "name": "Tụ Khí Đan",
+   "rarity": 2,
+   "desc": "Tăng tốc tu luyện Luyện Khí kỳ.",
+   "price": 1200,
+   "he": "—",
+   "cat": "dan",
+   "branch": "pill"
+  },
+  {
+   "id": "cty_truc_co_dan",
+   "name": "Trúc Cơ Đan",
+   "rarity": 3,
+   "desc": "Hỗ trợ đột phá Trúc Cơ.",
+   "price": 5000,
+   "he": "—",
+   "cat": "dan",
+   "branch": "pill"
+  },
+  {
+   "id": "cty_ket_dan_dan",
+   "name": "Kết Đan Đan",
+   "rarity": 4,
+   "desc": "Hỗ trợ ngưng kết kim đan.",
+   "price": 40000,
+   "he": "—",
+   "cat": "dan",
+   "branch": "pill"
+  },
+  {
+   "id": "cty_pha_canh_dan",
+   "name": "Phá Cảnh Đan",
+   "rarity": 5,
+   "desc": "Tăng mạnh xác suất phá cảnh giới.",
+   "price": 400000,
+   "he": "—",
+   "cat": "dan",
+   "branch": "pill"
+  },
+  {
+   "id": "cty_thiet_kiem",
+   "name": "Thiết Kiếm",
+   "rarity": 1,
+   "desc": "Kiếm sắt phàm, bền chắc.",
+   "price": 200,
+   "he": "Kim",
+   "cat": "khi",
+   "branch": "artifact"
+  },
+  {
+   "id": "cty_hac_vu_phu_but",
+   "name": "Hạc Vũ Phù Bút",
+   "rarity": 2,
+   "desc": "Bút lông hạc, vẽ phù thêm linh lực.",
+   "price": 476,
+   "he": "Mộc",
+   "cat": "khi",
+   "branch": "artifact"
+  },
+  {
+   "id": "cty_thanh_phong_kiem",
+   "name": "Thanh Phong Kiếm",
+   "rarity": 2,
+   "desc": "Nhẹ như gió, tốc độ cao.",
+   "price": 1500,
+   "he": "Mộc",
+   "cat": "khi",
+   "branch": "artifact"
+  },
+  {
+   "id": "cty_han_thiet_giap",
+   "name": "Hàn Thiết Giáp",
+   "rarity": 3,
+   "desc": "Giáp luyện từ hàn thiết.",
+   "price": 4500,
+   "he": "Kim",
+   "cat": "khi",
+   "branch": "artifact"
+  },
+  {
+   "id": "cty_ly_hoa_kiem",
+   "name": "Ly Hỏa Kiếm",
+   "rarity": 4,
+   "desc": "Kiếm mang hỏa diễm.",
+   "price": 30000,
+   "he": "Hỏa",
+   "cat": "khi",
+   "branch": "artifact"
+  },
+  {
+   "id": "cty_tru_than_chung",
+   "name": "Trụ Thần Chung",
+   "rarity": 5,
+   "desc": "Pháp bảo phòng ngự cực phẩm.",
+   "price": 350000,
+   "he": "Thổ",
+   "cat": "khi",
+   "branch": "artifact"
+  },
+  {
+   "id": "cty_hoa_cau_phu",
+   "name": "Hỏa Cầu Phù",
+   "rarity": 1,
+   "desc": "Phù tấn công cơ bản.",
+   "price": 80,
+   "he": "Hỏa",
+   "cat": "phu",
+   "branch": "talisman"
+  },
+  {
+   "id": "cty_tinh_than_phu",
+   "name": "Tĩnh Thần Phù",
+   "rarity": 2,
+   "desc": "Giữ vững thần thức.",
+   "price": 600,
+   "he": "—",
+   "cat": "phu",
+   "branch": "talisman"
+  },
+  {
+   "id": "cty_truyen_tong_phu",
+   "name": "Truyền Tống Phù",
+   "rarity": 3,
+   "desc": "Dịch chuyển tức thời một quãng ngắn.",
+   "price": 3500,
+   "he": "—",
+   "cat": "phu",
+   "branch": "talisman"
+  },
+  {
+   "id": "cty_ho_than_phu",
+   "name": "Hộ Thân Phù",
+   "rarity": 4,
+   "desc": "Tạo lá chắn chặn sát thương lớn.",
+   "price": 20000,
+   "he": "—",
+   "cat": "phu",
+   "branch": "talisman"
+  },
+  {
+   "id": "cty_han_thiet",
+   "name": "Hàn Thiết",
+   "rarity": 1,
+   "desc": "Quặng sắt lạnh.",
+   "price": 60,
+   "he": "Kim",
+   "cat": "khoang",
+   "branch": "ore"
+  },
+  {
+   "id": "cty_thanh_diep_thao",
+   "name": "Thanh Diệp Thảo",
+   "rarity": 1,
+   "desc": "Lá xanh mướt, dùng làm phụ liệu luyện đan.",
+   "price": 55,
+   "he": "Mộc",
+   "cat": "thao",
+   "branch": "herb"
+  },
+  {
+   "id": "cty_hoa_van_qua",
+   "name": "Hỏa Vân Quả",
+   "rarity": 2,
+   "desc": "Quả đỏ rực mọc gần mạch địa hỏa.",
+   "price": 680,
+   "he": "Hỏa",
+   "cat": "thao",
+   "branch": "herb"
+  },
+  {
+   "id": "cty_bach_ngoc_sam",
+   "name": "Bạch Ngọc Sâm",
+   "rarity": 3,
+   "desc": "Nhân sâm trắng ngà, đại bổ nguyên khí.",
+   "price": 3800,
+   "he": "Thổ",
+   "cat": "thao",
+   "branch": "herb"
+  },
+  {
+   "id": "cty_thien_tam_thao",
+   "name": "Thiên Tâm Thảo",
+   "rarity": 4,
+   "desc": "Chỉ nở khi sương đầu mùa đông rơi.",
+   "price": 22000,
+   "he": "Thủy",
+   "cat": "thao",
+   "branch": "herb"
+  },
+  {
+   "id": "cty_bo_huyet_dan",
+   "name": "Bổ Huyết Đan",
+   "rarity": 2,
+   "desc": "Dược liệu hậu kỳ cho luyện thể.",
+   "price": 700,
+   "he": "—",
+   "cat": "dan",
+   "branch": "pill"
+  },
+  {
+   "id": "cty_thanh_dong",
+   "name": "Thanh Đồng",
+   "rarity": 1,
+   "desc": "Đồng xanh phổ thông.",
+   "price": 70,
+   "he": "Kim",
+   "cat": "khoang",
+   "branch": "ore"
+  },
+  {
+   "id": "cty_bach_ngan",
+   "name": "Bạch Ngân",
+   "rarity": 2,
+   "desc": "Bạc tinh luyện, dẫn linh khí tốt.",
+   "price": 450,
+   "he": "Kim",
+   "cat": "khoang",
+   "branch": "ore"
+  },
+  {
+   "id": "cty_tinh_kim",
+   "name": "Tinh Kim",
+   "rarity": 2,
+   "desc": "Kim loại tinh luyện.",
+   "price": 500,
+   "he": "Kim",
+   "cat": "khoang",
+   "branch": "ore"
+  },
+  {
+   "id": "cty_huyen_bang_thiet",
+   "name": "Huyền Băng Thiết",
+   "rarity": 3,
+   "desc": "Thiết lạnh vạn năm.",
+   "price": 2500,
+   "he": "Thủy",
+   "cat": "khoang",
+   "branch": "ore"
+  },
+  {
+   "id": "cty_thien_ngoc",
+   "name": "Thiên Ngọc",
+   "rarity": 4,
+   "desc": "Ngọc chứa linh khí đậm đặc.",
+   "price": 18000,
+   "he": "Thổ",
+   "cat": "khoang",
+   "branch": "ore"
+  },
+  {
+   "id": "cty_ngu_hanh_tinh",
+   "name": "Ngũ Hành Tinh",
+   "rarity": 5,
+   "desc": "Kết tinh năm hệ, vật liệu luyện bảo tối thượng.",
+   "price": 250000,
+   "he": "Ngũ hành",
+   "cat": "khoang",
+   "branch": "ore"
+  }
+ ],
+ "items": [
+  {
+   "id": "cty_hoi_khi_dan",
+   "name": "Hồi Khí Đan",
+   "rarity": 1,
+   "desc": "Hồi một lượng nhỏ linh lực.",
+   "price": 120,
+   "he": "—",
+   "cat": "dan",
+   "type": "cell",
+   "val": 40
+  },
+  {
+   "id": "cty_hoi_huyet_dan",
+   "name": "Hồi Huyết Đan",
+   "rarity": 1,
+   "desc": "Hồi một lượng nhỏ HP.",
+   "price": 100,
+   "he": "—",
+   "cat": "dan",
+   "type": "nano",
+   "val": 25
+  },
+  {
+   "id": "cty_trung_hoi_khi_dan",
+   "name": "Trung Hồi Khí Đan",
+   "rarity": 2,
+   "desc": "Hồi 150 linh lực.",
+   "price": 650,
+   "he": "—",
+   "cat": "dan",
+   "type": "cell",
+   "val": 150
+  },
+  {
+   "id": "cty_cao_hoi_khi_dan",
+   "name": "Cao Hồi Khí Đan",
+   "rarity": 3,
+   "desc": "Hồi 400 linh lực.",
+   "price": 3000,
+   "he": "—",
+   "cat": "dan",
+   "type": "cell",
+   "val": 400
+  },
+  {
+   "id": "cty_trung_hoi_huyet_dan",
+   "name": "Trung Hồi Huyết Đan",
+   "rarity": 2,
+   "desc": "Hồi 50% HP.",
+   "price": 900,
+   "he": "—",
+   "cat": "dan",
+   "type": "nano",
+   "val": 50
+  },
+  {
+   "id": "cty_cao_hoi_huyet_dan",
+   "name": "Cao Hồi Huyết Đan",
+   "rarity": 3,
+   "desc": "Hồi 100% HP.",
+   "price": 4000,
+   "he": "—",
+   "cat": "dan",
+   "type": "nano",
+   "val": 100
+  },
+  {
+   "id": "cty_ngung_hon_dan",
+   "name": "Ngưng Hồn Đan",
+   "rarity": 2,
+   "desc": "Hồi 60 hồn lực.",
+   "price": 800,
+   "he": "—",
+   "cat": "dan",
+   "type": "tonic",
+   "val": 60
+  },
+  {
+   "id": "cty_cao_ngung_hon_dan",
+   "name": "Cao Ngưng Hồn Đan",
+   "rarity": 3,
+   "desc": "Hồi 200 hồn lực.",
+   "price": 3500,
+   "he": "—",
+   "cat": "dan",
+   "type": "tonic",
+   "val": 200
+  }
+ ],
+ "recipes": [
+  {
+   "out": "cty_hoi_khi_dan",
+   "in": {
+    "cty_linh_thao": 3
+   },
+   "fee": 20,
+   "rate": 0.9
+  },
+  {
+   "out": "cty_hoi_huyet_dan",
+   "in": {
+    "cty_huyet_tam_thao": 2,
+    "cty_linh_thao": 1
+   },
+   "fee": 20,
+   "rate": 0.9
+  },
+  {
+   "out": "cty_giai_doc_dan",
+   "in": {
+    "cty_linh_thao": 2,
+    "cty_minh_dang_thao": 1
+   },
+   "fee": 30,
+   "rate": 0.85
+  },
+  {
+   "out": "cty_tay_tuy_dan",
+   "in": {
+    "cty_bang_tam_lien": 2,
+    "cty_minh_dang_thao": 1
+   },
+   "fee": 150,
+   "rate": 0.75
+  },
+  {
+   "out": "cty_tu_khi_dan",
+   "in": {
+    "cty_tu_van_qua": 2,
+    "cty_linh_thao": 2
+   },
+   "fee": 200,
+   "rate": 0.75
+  },
+  {
+   "out": "cty_truc_co_dan",
+   "in": {
+    "cty_kim_nguyen_hoa": 2,
+    "cty_tu_van_qua": 2
+   },
+   "fee": 1000,
+   "rate": 0.6
+  },
+  {
+   "out": "cty_ket_dan_dan",
+   "in": {
+    "cty_huyen_nguyet_chi": 2,
+    "cty_kim_nguyen_hoa": 2
+   },
+   "fee": 8000,
+   "rate": 0.45
+  },
+  {
+   "out": "cty_trung_hoi_khi_dan",
+   "in": {
+    "cty_tu_van_qua": 1,
+    "cty_linh_thao": 2
+   },
+   "fee": 120,
+   "rate": 0.8
+  },
+  {
+   "out": "cty_cao_hoi_khi_dan",
+   "in": {
+    "cty_kim_nguyen_hoa": 1,
+    "cty_tu_van_qua": 2
+   },
+   "fee": 600,
+   "rate": 0.65
+  },
+  {
+   "out": "cty_trung_hoi_huyet_dan",
+   "in": {
+    "cty_hoa_van_qua": 1,
+    "cty_huyet_tam_thao": 2
+   },
+   "fee": 150,
+   "rate": 0.8
+  },
+  {
+   "out": "cty_cao_hoi_huyet_dan",
+   "in": {
+    "cty_bach_ngoc_sam": 1,
+    "cty_hoa_van_qua": 2
+   },
+   "fee": 700,
+   "rate": 0.65
+  },
+  {
+   "out": "cty_ngung_hon_dan",
+   "in": {
+    "cty_minh_dang_thao": 2,
+    "cty_thanh_diep_thao": 2
+   },
+   "fee": 140,
+   "rate": 0.8
+  },
+  {
+   "out": "cty_cao_ngung_hon_dan",
+   "in": {
+    "cty_thien_tam_thao": 1,
+    "cty_minh_dang_thao": 2
+   },
+   "fee": 2500,
+   "rate": 0.55
+  }
+ ]
+}

@@ -14,7 +14,7 @@
   SL.forEach(function (s) { SLM[s[0]] = s; });
   var LEFT = ['head', 'body', 'shoulder', 'arm', 'glove', 'leg'], RIGHT = ['boot', 'weapon', 'backpack', 'wing', 'pet', 'drone'], NEEDBP = { wing: 1, drone: 1, pet: 1 };
   var RN = ['', 'Phổ thông', 'Tốt', 'Hiếm', 'Sử thi', 'Truyền thuyết', 'Thần thoại'], RC = ['', '#a89f8d', '#4fa86a', '#3d7fd6', '#8c52d6', '#d9a21b', '#d6453d'];
-  var KIC = { cell: '🔋', tonic: '💧', nano: '🧪', shcell: '🔰', monster: '🦴', herb: '🌿', pill: '💊', method: '📜', skill: '✨' };
+  var KIC = { cell: '🔋', tonic: '💧', nano: '🧪', shcell: '🔰', monster: '🦴', herb: '🌿', pill: '💊', artifact: '⚔️', talisman: '📜', ore: '💎', method: '📜', skill: '✨' };
   var LEG = {}, LIB = null, C = {}, libP = null;
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   var num = function (v) { v = +v; return isFinite(v) ? v : 0; };
@@ -23,6 +23,7 @@
 
   /* ===== Dữ liệu ===== */
   BG.setLegacy = function (IT) { LEG = IT || {}; };
+  BG.nameOf = function (id) { return LEG[id] ? LEG[id][0] : (C[id] ? C[id].d.name : null); };
   BG.setLib = function (lib) { LIB = lib || null; C = {}; if (lib) [['equips', 'e'], ['items', 'i'], ['materials', 'm']].forEach(function (p) { (lib[p[0]] || []).forEach(function (d) { if (d && d.id) C[d.id] = { k: p[1], d: d }; }); }); };
   BG.init = function (ST) {
     ['inv', 'eq', 'petBag', 'eqB'].forEach(function (k) { if (!ST[k] || typeof ST[k] !== 'object' || Array.isArray(ST[k])) ST[k] = {}; });
@@ -119,7 +120,7 @@
       });
       out.unshift('<div class="ln" style="color:#cbbd98">Vị trí: ' + esc(SLM[d.slot] ? SLM[d.slot][1] : (d.slot || '—')) + '</div>');
     } else if (it.k === 'i') out.push('<div class="ln">Hiệu ứng: ' + esc({ cell: 'Năng lượng', tonic: 'Hồn lực', nano: 'HP (theo %)', shcell: 'Lá chắn (chỉ dùng khi chiến đấu)' }[d.type] || d.type || '—') + (d.val ? ' · ' + fmt(num(d.val)) + (d.type === 'nano' ? '%' : '') : '') + '</div>');
-    else if (it.k === 'm') out.push('<div class="ln" style="color:#cbbd98">Nguyên liệu: ' + esc({ monster: 'Tài liệu từ quái vật', herb: 'Linh dược / quả kì bí', pill: 'Đan dược', method: 'Công pháp', skill: 'Skill' }[d.branch] || '—') + '</div>');
+    else if (it.k === 'm') out.push('<div class="ln" style="color:#cbbd98">Nguyên liệu: ' + esc({ monster: 'Tài liệu từ quái vật', herb: 'Linh dược / quả kì bí', pill: 'Đan dược', artifact: 'Pháp khí', talisman: 'Phù chú', ore: 'Khoáng liệu', method: 'Công pháp', skill: 'Skill' }[d.branch] || '—') + '</div>');
     return out.join('');
   }
   function selItem(ST) {
