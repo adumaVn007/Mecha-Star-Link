@@ -163,23 +163,23 @@ function closeLot(l, byPlayer) {
   const n = AU.lots.findIndex(x => !x.done); if (n < 0) AU.finished = true; else { AU.idx = n; AU.input = minBid(AU.lots[n]); } }
 function auBid(amt) {
   const l = AU.lots[AU.idx]; amt = Math.round(amt);
-  if (A.bagFree() < 1) return note = 'Túi đầy, cất bớt đồ rồi hãy ra giá.';
-  if (amt < minBid(l)) return note = 'Giá thấp hơn mức tối thiểu ' + fmt(minBid(l)) + '.';
-  if (A.wealth() < amt) return note = 'Không đủ linh thạch.';
+  if (A.bagFree() < 1) return no(fullMsg('ra giá') + ' Chưa bị trừ linh thạch.');
+  if (amt < minBid(l)) return no('Giá ' + fmt(amt) + ' thấp hơn mức tối thiểu ' + fmt(minBid(l)) + ' (giá hiện tại + 1 nấc). Ra giá không hợp lệ.');
+  if (A.wealth() < amt) return no(needMsg(amt, 'để ra giá'));
   l.cur = amt; l.leader = 'player';
-  if (!npcCounter(l)) { closeLot(l, true); note = 'Chốt! Bạn đấu giá thành công ' + l.item.name + ' với ' + fmt(l.cur) + '.'; }
-  else { note = l.leader.npc.name + ' ra giá ' + fmt(l.cur) + '.'; AU.input = minBid(l); } }
+  if (!npcCounter(l)) { closeLot(l, true); ok('Chốt! Bạn đấu giá thành công ' + l.item.name + ' với ' + fmt(l.cur) + '. Đã trừ ' + fmt(l.cur) + ' linh thạch (quy Thường), vật phẩm đã vào túi. ' + wal()); }
+  else { inf(l.leader.npc.name + ' ra giá ' + fmt(l.cur) + ', vượt giá của bạn. Linh thạch chỉ bị trừ khi bạn chốt thắng lô.'); AU.input = minBid(l); } }
 function auPass() { const l = AU.lots[AU.idx]; npcChain(l); closeLot(l, false);
-  note = l.result.who ? l.result.who + ' đấu được ' + l.item.name + ' với ' + fmt(l.result.price) + '.' : 'Lô ' + l.item.name + ' không ai ra giá.'; }
+  inf((l.result.who ? l.result.who + ' đấu được ' + l.item.name + ' với ' + fmt(l.result.price) + '.' : 'Lô ' + l.item.name + ' không ai ra giá.') + ' Bạn bỏ qua lô này, không mất linh thạch.'); }
 function auConsign(id) {
   const it = IT(id); if (!it || !A.count(id)) return;
-  if (AU.consign < 1) return note = 'Hết lượt gửi bán.';
+  if (AU.consign < 1) return no('Hết lượt gửi bán trong phiên này.');
   const start = Math.round(it.price * .6), step = Math.max(1, Math.round(start * .1));
   const mx = makeBidders(it, start).map(b => b.max).sort((a, b) => b - a);
   AU.consign--; A.removeItem(id);
-  if (!mx.length || mx[0] < start) { A.addItem(id); return note = 'Không ai ra giá ' + it.name + '. Vật phẩm được trả lại.'; }
+  if (!mx.length || mx[0] < start) { A.addItem(id); return inf('Không ai ra giá ' + it.name + '. Vật phẩm đã trả lại túi, đã mất 1 lượt gửi bán, không thu phí.'); }
   const price = Math.min(mx[0], Math.max(start, (mx[1] || 0) + step)), net = Math.round(price * .95);
-  A.earn(net); note = 'Đã bán ' + it.name + ' giá ' + fmt(price) + ' (phí 5%, nhận ' + fmt(net) + ').'; }
+  A.earn(net); ok('Đã bán ' + it.name + ' giá ' + fmt(price) + '. Phí 5% (' + fmt(price - net) + '), bạn nhận ' + fmt(net) + ' linh thạch Thường. ' + wal()); }
 
 function auHtml() {
   const S = auSession(), l = S.lots[S.idx];
@@ -219,10 +219,16 @@ const rewardTxt = w => [w.xp ? '+' + w.xp + ' KN' : '', w.stones && w.stones.thu
 const objTxt = o => o.t === 'kill' ? 'Tiêu diệt ' + o.n + ' dị thú bất kỳ' : o.t === 'collect' ? 'Thu thập ' + o.n + ' ' + (IT(o.target) ? IT(o.target).name : o.target) : 'Ghé thăm ' + o.n + ' thành trì';
 function questHtml() {
   return questsFor(cfg.name).map(q => { const st = A.questState ? A.questState(q) : (A.hasQuest(q.id) ? 'active' : 'avail');
-    const btn = st === 'avail' ? '<button class="cu-b" data-a="quest" data-v="' + q.id + '">Nhận nhiệm vụ</button>' : st === 'done' ? '<button class="cu-b gold" data-a="qclaim" data-v="' + q.id + '">Nhận thưởng</button>' :
+    const why = whyQ(q, st), btn = st === 'avail' ? '<button class="cu-b" data-a="quest" data-v="' + q.id + '">Nhận nhiệm vụ</button>' : st === 'done' ? '<button class="cu-b gold" data-a="qclaim" data-v="' + q.id + '">Nhận thưởng</button>' :
       '<button class="cu-b alt" disabled>' + (st === 'active' ? 'Đang làm (xem ở thanh Nhiệm vụ)' : st === 'claimed' ? 'Đã hoàn thành' : 'Chưa mở') + '</button>';
     return '<div class="cu-card col"><div><b>' + esc(q.giver[0]) + '</b> <small>· ' + esc(q.giver[1]) + '</small></div><div class="cu-say">“' + esc(q.line) + '”</div><div><b>' + esc(q.name) + '</b></div>' +
-      '<div class="cu-s">' + q.objectives.map(objTxt).join(' · ') + '</div><div class="cu-s">Thưởng: ' + esc(rewardTxt(q.rewards)) + '</div>' + btn + '</div>'; }).join(''); }
+      '<div class="cu-s">' + q.objectives.map(objTxt).join(' · ') + '</div><div class="cu-s">Thưởng: ' + esc(rewardTxt(q.rewards)) + '</div>' + (why ? '<div class="cu-s cu-why">ℹ ' + esc(why) + '</div>' : '') + btn + '</div>'; }).join(''); }
+function whyQ(q, st) {
+  if (st === 'avail') return '';
+  if (st === 'active') return 'Bạn đang làm nhiệm vụ này nên không thể nhận lại. Tiến độ xem ở thanh Nhiệm vụ.';
+  if (st === 'done') return 'Đã đủ mục tiêu — bấm Nhận thưởng để hoàn thành.';
+  if (st === 'claimed') return q.repeat && q.repeat.days ? 'Đã hoàn thành. Nhiệm vụ lặp lại, có thể nhận lại sau ' + q.repeat.days + ' ngày kể từ lần nhận thưởng.' : 'Đã hoàn thành, không thể nhận lại.';
+  return 'Chưa đủ điều kiện mở nhiệm vụ này (cấp bậc hoặc nhiệm vụ tiền đề).'; }
 
 /* ===== PHƯỜNG THỊ ===== */
 let PT = 'buy';
@@ -235,10 +241,10 @@ function ptHtml() {
     return row(i, '×' + A.count(i.id) + ' · ' + fmt(p) + ' Thường/cái', '<button class="cu-sm" data-a="sell" data-v="' + i.id + '|' + p + '|1">Bán</button><button class="cu-sm" data-a="sell" data-v="' + i.id + '|' + p + '|all">Hết</button>'); }).join('') || '<p class="cu-m">Không có vật phẩm phù hợp để bán (chỉ nhận phẩm cấp Phàm → Trung).</p>') + '</div>'; }
 const row = (i, sub, btns) => '<div class="cu-r"><div><b style="color:' + TCOL[i.tier] + '">' + ICON[i.type] + ' ' + esc(i.name) + '</b><div class="cu-s">' + sub + '</div></div><span>' + btns + '</span></div>';
 function buy(id, p, q) { const it = IT(id); q = +q; const t = p * q;
-  if (A.bagFree() < q) return note = 'Túi đầy, cất bớt đồ rồi hãy mua.';
-  if (!A.pay(t)) return note = 'Không đủ linh thạch (cần ' + fmt(t) + ').';
-  A.addItem(id, q); note = 'Đã mua ' + it.name + ' ×' + q + '.'; }
-function sell(id, p, q) { const have = A.count(id); q = q === 'all' ? have : +q; if (!q || have < q) return; A.removeItem(id, q); A.earn(p * q); note = 'Đã bán ' + IT(id).name + ' ×' + q + ' nhận ' + fmt(p * q) + '.'; }
+  if (A.bagFree() < q) return no(fullMsg('mua ×' + q) + ' (cần ' + q + ' ô trống, còn ' + Math.max(0, A.bagFree()) + '). Chưa bị trừ linh thạch.');
+  if (!A.pay(t)) return no(needMsg(t, 'để mua ' + it.name + ' ×' + q));
+  A.addItem(id, q); ok('Đã mua ' + it.name + ' ×' + q + '. Đã trừ ' + fmt(t) + ' linh thạch (quy Thường). ' + wal()); }
+function sell(id, p, q) { const have = A.count(id); q = q === 'all' ? have : +q; if (!q || have < q) return no('Không thể bán: bạn chỉ có ' + have + ' ' + IT(id).name + '.'); A.removeItem(id, q); A.earn(p * q); ok('Đã bán ' + IT(id).name + ' ×' + q + ', nhận ' + fmt(p * q) + ' linh thạch Thường. ' + wal()); }
 
 /* ===== VẠN BẢO ===== */
 let VB = null;
@@ -265,7 +271,8 @@ function libHtml() { return '<input class="cu-q" data-i="lib" placeholder="Tìm 
 const CS = {stone:'thuong', bet:100, game:'tx', msg:'', cards:null};
 const MAXBET = 10000, GAMES = {tx:'Tài / Xỉu (x2)', quay:'Quay số (đến x5)', the:'Lật thẻ (x5)'};
 function wager(mult, text) { const k = CS.stone; A.addStones(k, -CS.bet); const win = Math.round(CS.bet * mult); if (win) A.addStones(k, win);
-  CS.msg = text + (mult ? ' → trả x' + mult + ' (' + fmt(win) + ')' : ' → thua ' + fmt(CS.bet)) + ' ' + stName(k); }
+  CS.msg = text + (mult ? ' → trả x' + mult + ' (' + fmt(win) + ')' : ' → thua ' + fmt(CS.bet)) + ' ' + stName(k);
+  mult > 1 ? ok('Thắng! Nhận ' + fmt(win) + ' ' + stName(k) + ' (lãi ' + fmt(win - CS.bet) + '). ' + wal()) : mult === 1 ? inf('Hòa vốn: cược ' + fmt(CS.bet) + ' được trả lại đủ. ' + wal()) : no('Thua! Đã trừ ' + fmt(CS.bet) + ' linh thạch ' + stName(k) + '. ' + wal()); }
 const stName = k => ST.find(s => s.k === k).n;
 function casinoHtml() {
   const bal = A.getStones()[CS.stone] || 0;
@@ -278,8 +285,8 @@ function casinoHtml() {
      '<div class="cu-cards">' + [0,1,2,3,4,5,6].map(i => '<button class="cu-card2" data-a="play" data-v="' + i + '">' + (CS.cards ? CS.cards[i] : '🂠') + '</button>').join('') + '</div><p class="cu-s">Chọn 1 trong 7 thẻ.</p>') +
     (CS.msg ? '<div class="cu-res">' + esc(CS.msg) + '</div>' : '') + '<p class="cu-s">Số dư ' + stName(CS.stone) + ': ' + fmt(bal) + '</p>'; }
 function play(v) {
-  if (CS.bet < 1 || CS.bet > MAXBET) return CS.msg = 'Cược từ 1 đến ' + fmt(MAXBET) + '.';
-  if ((A.getStones()[CS.stone] || 0) < CS.bet) return CS.msg = 'Không đủ ' + stName(CS.stone) + ' linh thạch.';
+  if (CS.bet < 1 || CS.bet > MAXBET) return CS.msg = '', no('Mức cược không hợp lệ: chỉ được cược từ 1 đến ' + fmt(MAXBET) + '.');
+  if ((A.getStones()[CS.stone] || 0) < CS.bet) return CS.msg = '', no('Không đủ linh thạch ' + stName(CS.stone) + ': cược ' + fmt(CS.bet) + ', bạn có ' + fmt(A.getStones()[CS.stone] || 0) + '. Chưa bị trừ gì.');
   if (CS.game === 'tx') { const d = [rnd(1,6), rnd(1,6), rnd(1,6)], s = d[0] + d[1] + d[2], bao = d[0] === d[1] && d[1] === d[2];
     wager(!bao && ((s >= 11) === (v === 'tai')) ? 2 : 0, '🎲 ' + d.join('-') + ' = ' + s + (bao ? ' (bão)' : s >= 11 ? ' Tài' : ' Xỉu')); }
   else if (CS.game === 'quay') { let r = Math.random(), m = 0; const W = [[.52,0],[.22,1],[.14,2],[.07,3],[.03,4],[.02,5]];
@@ -287,7 +294,11 @@ function play(v) {
   else { const c = shuffle(['x5','x1','x0','x0','x0','x0','x0']); CS.cards = c; const m = +c[+v].slice(1); wager(m, '🂠 Thẻ ' + (+v + 1) + ': ' + c[+v]); } }
 
 /* ===== KHUNG UI ===== */
-let cfg, root, stack = [], note = '';
+let cfg, root, stack = [], note = '', noteT = 'info';
+const ok = m => (noteT = 'ok', note = m), no = m => (noteT = 'no', note = m), inf = m => (noteT = 'info', note = m);
+const wal = () => { const w = A.getStones(); return 'Số dư: ' + ST.map(x => x.n + ' ' + fmt(w[x.k] || 0)).join(' · ') + '.'; };
+const needMsg = (n, what) => 'Không đủ linh thạch ' + what + ': cần ' + fmt(n) + ', bạn có ' + fmt(A.wealth()) + ' (quy Thường). Chưa bị trừ gì.';
+const fullMsg = what => 'Túi đã đầy (0 ô trống), không thể ' + what + '. Cất bớt đồ rồi thử lại.';
 const FEAT = {
   su_vu:['📋','Sự vụ','Nhận nhiệm vụ của ' , () => go({title:'Sự vụ', html:questHtml})],
   phuong_thi:['🏮','Phường thị tu sĩ','Mua bán vật phẩm cơ bản → trung bình', () => go({title:'Phường thị tu sĩ', html:ptHtml})],
@@ -298,7 +309,7 @@ const FEAT = {
 };
 function menuHtml() {
   const f = cfg.features || (cfg.type === 'village' ? ['su_vu','phuong_thi'] : Object.keys(FEAT));
-  return '<button class="cu-b gold" data-a="rest"><b>🏯 Nghỉ ngơi trong thành</b><small>Hồi đầy HP, linh lực, hồn lực. Qua một ngày.</small></button>' +
+  return '<button class="cu-b gold" data-a="rest"><b>🏯 Nghỉ ngơi trong thành</b><small>Hồi đầy HP, linh lực, hồn lực. Qua một ngày. Miễn phí.</small></button>' +
     f.map(k => '<button class="cu-b" data-a="feat" data-v="' + k + '"><b>' + FEAT[k][0] + ' ' + FEAT[k][1] + '</b><small>' + FEAT[k][2] + (k === 'su_vu' ? esc(cfg.name) : '') + '</small></button>').join('') +
     '<button class="cu-b" data-a="close">Rời thành</button>'; }
 function css() { if (document.getElementById('cu-css')) return; const s = document.createElement('style'); s.id = 'cu-css'; s.textContent = `
@@ -322,27 +333,38 @@ function css() { if (document.getElementById('cu-css')) return; const s = docume
 .cu-hoi{display:flex;align-items:center;gap:6px;margin:8px 0}.cu-hoi span{flex:0 0 auto}.cu-hoi input,.cu-q{flex:1;min-width:0;padding:8px;font:inherit;border-radius:8px;border:1px solid #888;background:#fffdf5;color:#222;text-align:center}.cu-hoi .cu-b{width:auto;margin:0}.cu-q{width:100%;box-sizing:border-box;text-align:left;margin-bottom:6px}
 .cu-tabs{display:flex;flex-wrap:wrap;gap:2px;margin:6px 0}.cu-note{background:rgba(201,162,77,.2);border:1px solid #c9a24d;border-radius:8px;padding:8px;margin:6px 0;font-size:14px}
 .cu-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.cu-card2{font-size:26px;padding:14px 0;border-radius:8px;border:1px solid #888;background:rgba(255,255,255,.08);color:inherit;cursor:pointer}
+.cu-nt{display:none;align-items:flex-start;gap:8px;margin:4px 0;padding:8px 10px;border-radius:8px;font-size:14px;line-height:1.35;border:1px solid #c9a24d;background:rgba(201,162,77,.22)}.cu-nt.show{display:flex}.cu-nt div{flex:1}.cu-nt span{font-weight:bold}.cu-nt button{background:none;border:0;color:inherit;font-size:20px;line-height:1;cursor:pointer;min-width:32px;min-height:32px}.cu-nt.ok{border-color:#3f9b55;background:rgba(63,155,85,.2)}.cu-nt.no{border-color:#c0443b;background:rgba(192,68,59,.2)}.cu-why{font-style:italic}
 .cu-res{margin:10px 0;padding:10px;border-radius:8px;background:rgba(201,162,77,.2);font-size:16px}`; document.head.appendChild(s); }
 function render(keep) {
   const s = stack[stack.length - 1], bd = root.querySelector('.cu-bd'), top = keep ? bd.scrollTop : 0;
   root.querySelector('.cu-box').classList.toggle('parch', !!s.parch);
   root.querySelector('h2').textContent = s.title; root.querySelector('.cu-back').style.display = stack.length > 1 ? '' : 'none';
   const w = A.getStones(); root.querySelector('.cu-wal').innerHTML = (s.sub ? esc(s.sub) + ' · ' : '') + '💎 ' + ST.map(x => x.n + ' ' + fmt(w[x.k] || 0)).join(' · ');
-  bd.innerHTML = (note ? '<div class="cu-note">' + esc(note) + '</div>' : '') + s.html(); bd.scrollTop = top; }
+  const nt = root.querySelector('.cu-nt'); nt.className = 'cu-nt' + (note ? ' show ' + noteT : ''); nt.innerHTML = note ? '<span>' + (noteT === 'ok' ? '✔' : noteT === 'no' ? '✖' : 'ℹ') + '</span><div>' + esc(note) + '</div><button data-a="nclose">×</button>' : '';
+  bd.innerHTML = s.html(); bd.scrollTop = top; }
 function go(s) { note = ''; stack.push(s); render(); }
 const ACT = {
+  nclose() { note = ''; render(true); },
   close() { root.remove(); root = null; stack = []; A.onLeave && A.onLeave(); },
   back() { note = ''; if (AU && AU.consigning) AU.consigning = false; else if (stack.length > 1) stack.pop(); render(); },
-  rest() { note = A.onRest(); render(true); },
+  rest() { ok(A.onRest() + ' Không tốn linh thạch.'); render(true); },
   feat(d) { FEAT[d.v][3](); },
   go(d) { go({vb:{title:'Vạn Bảo · Vật phẩm', html:vbHtml}, alch:{title:'Lò luyện đan', html:alchHtml}, lib:{title:'Thư viện', html:libHtml}}[d.v]); },
-  quest(d) { const q = questsFor(cfg.name).find(x => x.id === d.v); const r = A.acceptQuest(q); note = (r && r.msg) || ('Đã nhận: ' + q.name + '.'); render(true); },
-  qclaim(d) { const r = A.claimQuest(d.v); note = (r && r.msg) || 'Đã nhận thưởng.'; render(true); },
+  quest(d) { const q = questsFor(cfg.name).find(x => x.id === d.v); if (!q) { no('Không tìm thấy nhiệm vụ.'); return render(true); }
+    const st = A.questState ? A.questState(q) : 'avail';
+    if (st !== 'avail') no('Không thể nhận «' + q.name + '». ' + whyQ(q, st));
+    else { const r = A.acceptQuest(q); (r && r.ok === false ? no : ok)(((r && r.msg) || 'Đã nhận nhiệm vụ: ' + q.name + '.') + (r && r.ok === false ? '' : ' Nhiệm vụ không tốn linh thạch; xem tiến độ ở thanh Nhiệm vụ.')); }
+    render(true); },
+  qclaim(d) { const r = A.claimQuest(d.v); (r && r.ok === false ? no : ok)((r && r.msg) || 'Đã nhận thưởng.'); render(true); },
   pt(d) { PT = d.v; render(); }, buy(d) { const [i, p, q] = d.v.split('|'); buy(i, +p, q); render(true); }, sell(d) { const [i, p, q] = d.v.split('|'); sell(i, +p, q); render(true); },
-  vbuy(d) { const s = vbStock().list.find(x => x.id === d.v); if (s.qty < 1) return; if (A.bagFree() < 1) note = 'Túi đầy, cất bớt đồ rồi hãy mua.'; else if (!A.pay(s.price)) note = 'Không đủ linh thạch.'; else { s.qty--; A.addItem(s.id); note = 'Đã mua ' + IT(s.id).name + '.'; } render(true); },
+  vbuy(d) { const s = vbStock().list.find(x => x.id === d.v); if (!s) return;
+    if (s.qty < 1) no(IT(s.id).name + ' đã bán hết trong phiên hôm nay. Làm mới vào ngày mai.'); else if (A.bagFree() < 1) no(fullMsg('mua') + ' Chưa bị trừ linh thạch.'); else if (!A.pay(s.price)) no(needMsg(s.price, 'để mua ' + IT(s.id).name));
+    else { s.qty--; A.addItem(s.id); ok('Đã mua ' + IT(s.id).name + '. Đã trừ ' + fmt(s.price) + ' linh thạch (quy Thường). ' + wal()); } render(true); },
   alch(d) { const r = RECIPES[+d.v], o = IT(r.out);
-    if (!Object.keys(r.in).every(id => A.count(id) >= r.in[id])) note = 'Thiếu nguyên liệu.'; else if (A.bagFree() < 1) note = 'Túi đầy, cất bớt đồ rồi hãy luyện.'; else if (!A.pay(r.fee)) note = 'Không đủ linh thạch trả phí lò.';
-    else { Object.keys(r.in).forEach(id => A.removeItem(id, r.in[id])); if (Math.random() < r.rate) { A.addItem(r.out); note = 'Luyện thành công: ' + o.name + '!'; } else note = 'Luyện thất bại, nguyên liệu hóa tro.'; } render(true); },
+    const miss = Object.keys(r.in).filter(id => A.count(id) < r.in[id]).map(id => (IT(id) ? IT(id).name : id) + ' (cần ' + r.in[id] + ', có ' + A.count(id) + ')');
+    if (miss.length) no('Thiếu nguyên liệu: ' + miss.join(', ') + '. Chưa tiêu hao gì.'); else if (A.bagFree() < 1) no(fullMsg('luyện') + ' Chưa tiêu hao gì.'); else if (!A.pay(r.fee)) no(needMsg(r.fee, 'trả phí lò'));
+    else { Object.keys(r.in).forEach(id => A.removeItem(id, r.in[id])); const cost = 'Đã trừ phí lò ' + fmt(r.fee) + ' linh thạch và tiêu hao nguyên liệu. ';
+      if (Math.random() < r.rate) { A.addItem(r.out); ok('Luyện thành công: ' + o.name + '! ' + cost + wal()); } else no('Luyện thất bại, nguyên liệu hóa tro. ' + cost + wal()); } render(true); },
   lt(d) { LB.type = d.v; render(true); },
   bid(d) { auBid(+d.v); render(true); }, hoi() { auBid(+AU.input); render(true); }, pass() { auPass(); render(true); },
   inc(d) { AU.input = Math.max(minBid(AU.lots[AU.idx]), (+AU.input || 0) + +d.v); render(true); },
@@ -353,10 +375,10 @@ const ACT = {
 };
 function open(c) { cfg = Object.assign({name:'Thành', type:'city'}, c || {}); if (root) root.remove(); css();
   root = document.createElement('div'); root.className = 'cu-ov';
-  root.innerHTML = '<div class="cu-box"><div class="cu-hd"><button class="cu-back" data-a="back">‹</button><h2></h2><button class="cu-x" data-a="close">✕</button></div><div class="cu-wal"></div><div class="cu-bd"></div></div>';
+  root.innerHTML = '<div class="cu-box"><div class="cu-hd"><button class="cu-back" data-a="back">‹</button><h2></h2><button class="cu-x" data-a="close">✕</button></div><div class="cu-wal"></div><div class="cu-nt"></div><div class="cu-bd"></div></div>';
   root.addEventListener('click', e => { const t = e.target.closest('[data-a]'); if (!t || t.disabled) return; const f = ACT[t.dataset.a]; f && f(t.dataset); });
   root.addEventListener('input', e => { const t = e.target, k = t.dataset.i; if (k === 'au') AU.input = +t.value; else if (k === 'bet') CS.bet = Math.max(0, Math.min(MAXBET, Math.floor(+t.value || 0))); else if (k === 'lib') { LB.q = t.value; root.querySelector('#cu-lib').innerHTML = libList(); } });
-  document.body.appendChild(root); note = ''; stack = [{title:cfg.name, html:menuHtml}]; render(); }
+  if (AU) AU.consigning = false; document.body.appendChild(root); note = ''; noteT = 'info'; stack = [{title:cfg.name, html:menuHtml}]; render(); }
 
 function setItems(db) { // nạp từ database/city-items.json
   const toT = {herb:'thao', pill:'dan', artifact:'khi', talisman:'phu', ore:'khoang'}, L = [];
