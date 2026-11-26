@@ -1,0 +1,155 @@
+{
+  "schema": "msl-prime-catalog/v1",
+  "note": "Nguồn dữ liệu chung cho TẤT CẢ Prime Mecha (thư viện, lab). Thêm Prime Mecha mới = thêm 1 mục vào \"models\". Không phải schema xuất cấu hình của lab (msl-prime-modular/v0.3). Giá trị chiến đấu chưa cân bằng; đây là catalog hình/model.",
+  "source_manifest": "assets/prime_mecha/model_manifest.json (schema msl-prime-modular/v0.3, giữ nguyên để tương thích)",
+  "pages": {
+    "library": "prime-mecha-library.html",
+    "lab": "prime-mecha-lab.html",
+    "solomon_hangar": "solomon-hangar.html"
+  },
+  "comparison_image": "assets/prime_mecha/comparison-3d-models.jpg",
+  "slots": [
+    {
+      "id": "head",
+      "name": "Đầu"
+    },
+    {
+      "id": "torso",
+      "name": "Thân / lõi"
+    },
+    {
+      "id": "shoulder",
+      "name": "Giáp vai"
+    },
+    {
+      "id": "arm",
+      "name": "Cánh tay"
+    },
+    {
+      "id": "glove",
+      "name": "Bàn tay"
+    },
+    {
+      "id": "leg",
+      "name": "Chân"
+    },
+    {
+      "id": "boot",
+      "name": "Bàn chân"
+    },
+    {
+      "id": "backpack",
+      "name": "Động cơ"
+    },
+    {
+      "id": "wing",
+      "name": "Cánh / pháo"
+    },
+    {
+      "id": "weapon",
+      "name": "Vũ khí"
+    },
+    {
+      "id": "drone",
+      "name": "Drone"
+    }
+  ],
+  "models": [
+    {
+      "id": "van-kiem",
+      "code": "PM-01",
+      "name": "Vân Kiếm",
+      "type": "melee",
+      "type_vi": "Cận chiến",
+      "role": "Cận chiến · cơ động · trường kích",
+      "design": "Prime Mecha cận chiến, thiên về tốc độ và trường kích; mặc định không gắn drone.",
+      "slots": [
+        "head",
+        "torso",
+        "shoulder",
+        "arm",
+        "glove",
+        "leg",
+        "boot",
+        "backpack",
+        "wing",
+        "weapon",
+        "drone"
+      ],
+      "stats_model": {
+        "triangles": 3486,
+        "parts": 133,
+        "meshes": 133,
+        "size_glb": 123144,
+        "bounds": [
+          [
+            -2.46,
+            -0.4,
+            -1.14
+          ],
+          [
+            2.49,
+            4.96,
+            1.12
+          ]
+        ]
+      },
+      "files": {
+        "glb": "assets/prime_mecha/van-kiem/van-kiem.glb",
+        "concept": "assets/prime_mecha/van-kiem-concept.png",
+        "preview_front": "assets/prime_mecha/van-kiem/van-kiem-preview-front.png",
+        "preview_3quarter": "assets/prime_mecha/van-kiem/van-kiem-preview-3quarter.png",
+        "preview_back": "assets/prime_mecha/van-kiem/van-kiem-preview-back.png"
+      },
+      "lab": "prime-mecha-lab.html?base=van-kiem"
+    },
+    {
+      "id": "thien-van-phao-co",
+      "code": "PM-02",
+      "name": "Thiên Vân Pháo Cơ",
+      "type": "ranged",
+      "type_vi": "Pháo tầm xa",
+      "role": "Tầm xa · hỏa lực · drone hỗ trợ",
+      "design": "Prime Mecha pháo tầm xa, hỏa lực nặng, có drone hỗ trợ.",
+      "slots": [
+        "head",
+        "torso",
+        "shoulder",
+        "arm",
+        "glove",
+        "leg",
+        "boot",
+        "backpack",
+        "wing",
+        "weapon",
+        "drone"
+      ],
+      "stats_model": {
+        "triangles": 4834,
+        "parts": 151,
+        "meshes": 151,
+        "size_glb": 138004,
+        "bounds": [
+          [
+            -3.1550000000000002,
+            0.015000000000000013,
+            -1.55
+          ],
+          [
+            3.1550000000000002,
+            5.03,
+            2.2199999999999998
+          ]
+        ]
+      },
+      "files": {
+        "glb": "assets/prime_mecha/thien-van-phao-co/thien-van-phao-co.glb",
+        "concept": "assets/prime_mecha/thien-van-phao-co-concept.png",
+        "preview_front": "assets/prime_mecha/thien-van-phao-co/thien-van-phao-co-preview-front.png",
+        "preview_3quarter": "assets/prime_mecha/thien-van-phao-co/thien-van-phao-co-preview-3quarter.png",
+        "preview_back": "assets/prime_mecha/thien-van-phao-co/thien-van-phao-co-preview-back.png"
+      },
+      "lab": "prime-mecha-lab.html?base=thien-van-phao-co"
+    }
+  ]
+}

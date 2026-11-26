@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="vi">
+<head><script src="msl-prime-embed.js?v=20261126"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Mecha-Star-Link · Thư viện Prime Mecha</title>
+<style>
+:root{--bg:#08111f;--card:#0f1b2f;--line:#334866;--gold:#e8c37a;--cyan:#7be0ef;--fg:#edf3fb;--mut:#aac0d6;--err:#ff9e92;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 system-ui,"Segoe UI",sans-serif}
+header{padding:14px 18px;border-bottom:1px solid var(--line);background:#0d1728;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+header strong{font-size:18px;color:var(--gold)}
+header a{color:var(--cyan);text-decoration:none}
+header .sp{margin-left:auto;display:flex;gap:14px;flex-wrap:wrap}
+.bar{max-width:1600px;margin:auto;padding:12px 16px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.bar input{flex:1;min-width:180px;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--fg);font:inherit}
+.chip{padding:8px 12px;border:1px solid var(--line);border-radius:20px;background:var(--card);color:var(--fg);font:inherit;cursor:pointer}
+.chip.on{background:linear-gradient(#b68d4d,#75542c);border-color:#b68d4d;font-weight:bold}
+#count{color:var(--mut);font-size:12px}
+main{max-width:1600px;margin:auto;padding:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.card h2{margin:0;font-size:19px;color:var(--gold)}
+.card h2 small{color:var(--cyan);font-size:12px;margin-right:6px}
+.role{color:var(--mut);font-size:13px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tabs button{padding:6px 11px;border:1px solid var(--line);border-radius:8px;background:#0b1626;color:var(--fg);font:inherit;font-size:12px;cursor:pointer}
+.tabs button.on{background:var(--cyan);color:#06222b;border-color:var(--cyan);font-weight:bold}
+.view{width:100%;aspect-ratio:1/1;background:#091423;border:1px solid #304861;border-radius:10px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.view img{max-width:100%;max-height:100%;object-fit:contain;cursor:zoom-in}
+.st{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.st div{background:#0b1626;border:1px solid #243750;border-radius:8px;padding:6px 8px;text-align:center}
+.st b{display:block;color:var(--gold);font-size:15px}.st span{color:var(--mut);font-size:11px}
+.slots{display:flex;gap:5px;flex-wrap:wrap}
+.slots span{font-size:11px;padding:3px 8px;border:1px solid #2c415e;border-radius:12px;color:var(--mut)}
+.links{display:flex;gap:10px;flex-wrap:wrap;padding-top:4px}
+.links a{color:var(--cyan);text-decoration:none}
+.links a.main{padding:7px 12px;border-radius:8px;background:linear-gradient(#b68d4d,#75542c);color:#fff;font-weight:bold}
+.cmp{max-width:1600px;margin:0 auto;padding:0 16px 16px}
+.cmp img{width:100%;border:1px solid var(--line);border-radius:12px;cursor:zoom-in}
+.cmp h3{color:var(--gold);margin:8px 0}
+.msg{max-width:900px;margin:30px auto;padding:16px;border:1px solid var(--err);border-radius:12px;color:var(--err);background:#1a1013}
+footer{max-width:1600px;margin:auto;padding:4px 16px 24px;color:var(--mut);font-size:12px}
+#lb{position:fixed;inset:0;background:rgba(3,8,16,.92);display:none;align-items:center;justify-content:center;z-index:9;padding:16px;cursor:zoom-out}
+#lb.on{display:flex}#lb img{max-width:100%;max-height:100%;object-fit:contain}
+</style>
+</head>
+<body>
+<header>
+  <strong>✦ THƯ VIỆN PRIME MECHA</strong>
+  <small id="count" style="color:var(--mut)"></small>
+  <span class="sp"><a href="prime-mecha-lab.html">Prime Lab (ghép bộ phận)</a><a href="solomon-hangar.html">Solomon Hangar</a><a href="index.html">Về game</a></span>
+</header>
+<div class="bar">
+  <input id="q" type="search" placeholder="Tìm theo tên, mã (PM-01), vai trò…" aria-label="Tìm Prime Mecha">
+  <span id="types" style="display:flex;gap:6px;flex-wrap:wrap"></span>
+</div>
+<main id="grid"><p style="color:var(--mut)">Đang tải catalog…</p></main>
+<section class="cmp" id="cmp" hidden><h3>So sánh các model 3D</h3><img id="cmpImg" alt="So sánh model 3D Prime Mecha"></section>
+<footer>Dữ liệu đọc từ <code>database/prime-mecha.json</code>. Thêm Prime Mecha mới = thêm một mục vào <code>models</code> của file đó, trang này tự hiển thị. Cần mở qua HTTP / GitHub Pages (không dùng <code>file://</code>).</footer>
+<div id="lb"><img alt=""></div>
+<script>
+(function(){
+  var DB='database/prime-mecha.json',S={q:'',t:''},CAT=null;
+  var $=function(s){return document.querySelector(s)};
+  var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+  var VIEWS=[['concept','Concept'],['preview_front','Trước'],['preview_3quarter','3/4'],['preview_back','Sau']];
+  function fmt(n){return n==null?'—':Number(n).toLocaleString('vi-VN')}
+  function kb(n){return n==null?'—':(n/1024).toFixed(0)+' KB'}
+  function card(m){
+    var st=m.stats_model||{},f=m.files||{},names={};
+    (CAT.slots||[]).forEach(function(s){names[s.id]=s.name});
+    var first=VIEWS.filter(function(v){return f[v[0]]})[0];
+    return '<article class="card" data-id="'+esc(m.id)+'">'+
+      '<h2><small>'+esc(m.code||'')+'</small>'+esc(m.name)+'</h2>'+
+      '<div class="role">'+esc(m.type_vi||'')+(m.role?' · '+esc(m.role):'')+'</div>'+
+      '<div class="tabs">'+VIEWS.filter(function(v){return f[v[0]]}).map(function(v){return '<button data-v="'+v[0]+'"'+(first&&v[0]===first[0]?' class="on"':'')+'>'+v[1]+'</button>'}).join('')+'</div>'+
+      '<div class="view">'+(first?'<img src="'+esc(f[first[0]])+'" alt="'+esc(m.name)+'" loading="lazy">':'')+'</div>'+
+      (m.design?'<div class="role">'+esc(m.design)+'</div>':'')+
+      '<div class="st"><div><b>'+fmt(st.triangles)+'</b><span>tam giác</span></div><div><b>'+fmt(st.parts)+'</b><span>chi tiết</span></div><div><b>'+kb(st.size_glb)+'</b><span>file GLB</span></div></div>'+
+      '<div class="slots">'+(m.slots||[]).map(function(s){return '<span>'+esc(names[s]||s)+'</span>'}).join('')+'</div>'+
+      '<div class="links">'+(m.lab?'<a class="main" href="'+esc(m.lab)+'">Mở trong Lab 3D</a>':'')+(f.glb?'<a href="'+esc(f.glb)+'" download>Tải GLB</a>':'')+(f.concept?'<a href="'+esc(f.concept)+'" target="_blank" rel="noopener">Concept gốc</a>':'')+'</div>'+
+    '</article>';
+  }
+  function render(){
+    var q=S.q.trim().toLowerCase();
+    var list=CAT.models.filter(function(m){
+      if(S.t&&m.type!==S.t)return false;
+      return !q||[m.id,m.code,m.name,m.type_vi,m.role,m.design].join(' ').toLowerCase().indexOf(q)>=0;
+    });
+    $('#count').textContent=list.length+' / '+CAT.models.length+' Prime Mecha';
+    $('#grid').innerHTML=list.length?list.map(card).join(''):'<p style="color:var(--mut)">Không có Prime Mecha phù hợp.</p>';
+  }
+  function types(){
+    var seen={},arr=[];
+    CAT.models.forEach(function(m){if(m.type&&!seen[m.type]){seen[m.type]=1;arr.push([m.type,m.type_vi||m.type])}});
+    $('#types').innerHTML=[['','Tất cả']].concat(arr).map(function(t){return '<button class="chip'+(S.t===t[0]?' on':'')+'" data-t="'+esc(t[0])+'">'+esc(t[1])+'</button>'}).join('');
+  }
+  $('#q').addEventListener('input',function(e){S.q=e.target.value;render()});
+  $('#types').addEventListener('click',function(e){var b=e.target.closest('[data-t]');if(!b)return;S.t=b.getAttribute('data-t');types();render()});
+  $('#grid').addEventListener('click',function(e){
+    var tab=e.target.closest('.tabs button');
+    if(tab){
+      var c=tab.closest('.card'),m=CAT.models.filter(function(x){return x.id===c.getAttribute('data-id')})[0];
+      var src=m&&m.files&&m.files[tab.getAttribute('data-v')];if(!src)return;
+      c.querySelectorAll('.tabs button').forEach(function(b){b.classList.toggle('on',b===tab)});
+      c.querySelector('.view img').src=src;return;
+    }
+    if(e.target.matches('.view img'))zoom(e.target.src);
+  });
+  function zoom(src){var lb=$('#lb');lb.querySelector('img').src=src;lb.classList.add('on')}
+  $('#lb').addEventListener('click',function(){this.classList.remove('on')});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')$('#lb').classList.remove('on')});
+  $('#cmpImg').addEventListener('click',function(){zoom(this.src)});
+  fetch(DB,{cache:'no-cache'}).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}).then(function(j){
+    if(!j||!Array.isArray(j.models))throw new Error('Sai định dạng catalog');
+    CAT=j;types();render();
+    if(j.comparison_image){$('#cmpImg').src=j.comparison_image;$('#cmp').hidden=false}
+  }).catch(function(e){
+    $('#grid').innerHTML='<div class="msg">Không tải được <code>'+DB+'</code> ('+esc(e.message)+'). Hãy mở trang qua HTTP (<code>python -m http.server 8765</code>) hoặc GitHub Pages, không mở trực tiếp bằng <code>file://</code>.</div>';
+  });
+})();
+</script>
+</body>
+</html>
