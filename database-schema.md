@@ -82,3 +82,6 @@ Giữ nguyên trường cũ. Thêm (tùy chọn): `functions[]` (quest | shop | 
 ### Biến số trong mô tả nhiệm vụ (`desc`, `onGive`, `onDone`, `objectives[].text`)
 `{n}` `{target}` `{from}` `{to}` `{item}` `{x}` `{y}` `{fn}` (của mục tiêu 1; mục tiêu k dùng `{ok.n}`, `{ok.target}`…), `{giver}` `{turnIn}` `{reward}` `{name}`. Tên lấy từ database (quái, NPC, địa điểm). `text` trống = tự sinh theo loại mục tiêu.
 Mục tiêu mới `deliver`: `{t:'deliver', from:<id địa điểm hoặc NPC>, to:<id>, itemName}` — tới `from` để nhận, tới `to` để giao (2 bước, lưu trong save).
+
+## `database/prime-mecha.json` — catalog Prime Mecha (schema `msl-prime-catalog/v1`)
+Catalog chung cho thư viện `prime-mecha-library.html`. Gồm `slots[]` (11 slot: id + tên hiển thị), `comparison_image`, `pages` và `models[]`. Mỗi model: `id`, `code` (PM-01…), `name`, `type` / `type_vi`, `role`, `design`, `slots[]`, `stats_model{triangles,parts,meshes,size_glb,bounds}`, `files{glb,concept,preview_front,preview_3quarter,preview_back}`, `lab` (link mở trong lab). Chỉ là dữ liệu hình/model, chưa có chỉ số chiến đấu; không ảnh hưởng `mecha-studio.json` hay save game.

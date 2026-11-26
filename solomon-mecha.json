@@ -1,0 +1,506 @@
+{
+  "schema": "msl-solomon/v0.4-test",
+  "source": "Original procedural blockout inspired by Ars Goetia character descriptions; stats and mechanics are provisional.",
+  "models": [
+    {
+      "id": "bael",
+      "goetia_number": 1,
+      "name": "Bael",
+      "title_vi": "Vua",
+      "markers": "Mèo • Cóc • Người",
+      "role": "Tàng hình, trinh sát, chỉ huy",
+      "design": "Ba đầu cơ giới; module mèo trinh sát, cóc phòng thủ, nhân hình chỉ huy",
+      "type": "stealth",
+      "glb": "assets/solomon/bael/bael.glb",
+      "preview": "assets/solomon/bael/bael-preview.png",
+      "sheet": "assets/solomon/bael/bael-4-directions.png",
+      "palette": [
+        "#f4e8de",
+        "#252735",
+        "#c7363e",
+        "#f5c16a",
+        "#ffbf62"
+      ],
+      "slots": [
+        "head",
+        "torso",
+        "shoulder",
+        "arm",
+        "glove",
+        "leg",
+        "boot",
+        "backpack",
+        "wing",
+        "weapon",
+        "drone"
+      ],
+      "geometry_count": 93,
+      "triangles": 3080,
+      "bytes": 92296,
+      "bounds": [
+        [
+          -2.72,
+          0.010000000000000009,
+          -1.23
+        ],
+        [
+          2.2,
+          4.900835203627962,
+          2.98
+        ]
+      ],
+      "pixel_sheet": "assets/solomon/bael/bael-4-directions-pixel-96.png",
+      "isometric_board": "assets/solomon/bael/bael-isometric-board.png"
+    },
+    {
+      "id": "paimon",
+      "goetia_number": 9,
+      "name": "Paimon",
+      "title_vi": "Vua",
+      "markers": "Vương miện • Lạc đà • Âm nhạc",
+      "role": "Chỉ huy, cộng hưởng âm, học thức",
+      "design": "Vương miện anten; lạc đà cơ khí; dàn loa và chũm chọe drone",
+      "type": "support",
+      "glb": "assets/solomon/paimon/paimon.glb",
+      "preview": "assets/solomon/paimon/paimon-preview.png",
+      "sheet": "assets/solomon/paimon/paimon-4-directions.png",
+      "palette": [
+        "#eee4d2",
+        "#1e3d7d",
+        "#bc314e",
+        "#e6bb6e",
+        "#59ccef"
+      ],
+      "slots": [
+        "head",
+        "torso",
+        "shoulder",
+        "arm",
+        "glove",
+        "leg",
+        "boot",
+        "backpack",
+        "wing",
+        "weapon",
+        "drone"
+      ],
+      "geometry_count": 130,
+      "triangles": 4144,
+      "bytes": 127456,
+      "bounds": [
+        [
+          -2.69,
+          0.010000000000000009,
+          -1.23
+        ],
+        [
+          3.0308327971759974,
+          5.46,
+          0.945
+        ]
+      ],
+      "pixel_sheet": "assets/solomon/paimon/paimon-4-directions-pixel-96.png",
+      "isometric_board": "assets/solomon/paimon/paimon-isometric-board.png"
+    },
+    {
+      "id": "astaroth",
+      "goetia_number": 29,
+      "name": "Astaroth",
+      "title_vi": "Công tước",
+      "markers": "Rồng • Rắn độc • Thiên thần sa ngã",
+      "role": "Đột kích, độc tố, trinh sát",
+      "design": "Rồng cánh máy, rắn module, lõi độc quang",
+      "type": "assault",
+      "glb": "assets/solomon/astaroth/astaroth.glb",
+      "preview": "assets/solomon/astaroth/astaroth-preview.png",
+      "sheet": "assets/solomon/astaroth/astaroth-4-directions.png",
+      "palette": [
+        "#e7ddd7",
+        "#252d32",
+        "#8c292d",
+        "#d3ac70",
+        "#6df18c"
+      ],
+      "slots": [
+        "head",
+        "torso",
+        "shoulder",
+        "arm",
+        "glove",
+        "leg",
+        "boot",
+        "backpack",
+        "wing",
+        "weapon",
+        "drone"
+      ],
+      "geometry_count": 104,
+      "triangles": 3148,
+      "bytes": 102828,
+      "bounds": [
+        [
+          -2.6100000000000003,
+          0.010000000000000009,
+          -1.62
+        ],
+        [
+          2.76425,
+          5.42,
+          2.3524999999999996
+        ]
+      ],
+      "pixel_sheet": "assets/solomon/astaroth/astaroth-4-directions-pixel-96.png",
+      "isometric_board": "assets/solomon/astaroth/astaroth-isometric-board.png"
+    },
+    {
+      "id": "asmoday",
+      "goetia_number": 32,
+      "name": "Asmoday",
+      "title_vi": "Vua",
+      "markers": "Ba đầu Bò • Người • Cừu; rồng",
+      "role": "Cận chiến hạng nặng, nhiệt năng",
+      "design": "Ba đầu nhận diện; sừng trâu/cừu; lưỡi vũ khí nhiệt",
+      "type": "heavy",
+      "glb": "assets/solomon/asmoday/asmoday.glb",
+      "preview": "assets/solomon/asmoday/asmoday-preview.png",
+      "sheet": "assets/solomon/asmoday/asmoday-4-directions.png",
+      "palette": [
+        "#aaaab0",
+        "#29242a",
+        "#b6342d",
+        "#d77b3d",
+        "#ff6533"
+      ],
+      "slots": [
+        "head",
+        "torso",
+        "shoulder",
+        "arm",
+        "glove",
+        "leg",
+        "boot",
+        "backpack",
+        "wing",
+        "weapon",
+        "drone"
+      ],
+      "geometry_count": 110,
+      "triangles": 3376,
+      "bytes": 106440,
+      "bounds": [
+        [
+          -2.92,
+          0.010000000000000009,
+          -1.23
+        ],
+        [
+          2.48,
+          5.38,
+          0.945
+        ]
+      ],
+      "pixel_sheet": "assets/solomon/asmoday/asmoday-4-directions-pixel-96.png",
+      "isometric_board": "assets/solomon/asmoday/asmoday-isometric-board.png"
+    },
+    {
+      "id": "stolas",
+      "goetia_number": 36,
+      "name": "Stolas",
+      "title_vi": "Hoàng tử",
+      "markers": "Cú quạ • Thiên văn • Thảo dược",
+      "role": "Trinh sát, phân tích và hỗ trợ",
+      "design": "Cú đêm cơ giới; cánh kính thiên văn; cảm biến sao",
+      "type": "recon",
+      "glb": "assets/solomon/stolas/stolas.glb",
+      "preview": "assets/solomon/stolas/stolas-preview.png",
+      "sheet": "assets/solomon/stolas/stolas-4-directions.png",
+      "palette": [
+        "#b2c0d1",
+        "#1e2a47",
+        "#5656a0",
+        "#9cd8ea",
+        "#74daff"
+      ],
+      "slots": [
+        "head",
+        "torso",
+        "shoulder",
+        "arm",
+        "glove",
+        "leg",
+        "boot",
+        "backpack",
+        "wing",
+        "weapon",
+        "drone"
+      ],
+      "geometry_count": 151,
+      "triangles": 4696,
+      "bytes": 151404,
+      "bounds": [
+        [
+          -3.07,
+          0.010000000000000009,
+          -1.76
+        ],
+        [
+          3.07,
+          5.800000000000001,
+          0.945
+        ]
+      ],
+      "pixel_sheet": "assets/solomon/stolas/stolas-4-directions-pixel-96.png",
+      "isometric_board": "assets/solomon/stolas/stolas-isometric-board.png"
+    },
+    {
+      "id": "orobas",
+      "goetia_number": 55,
+      "name": "Orobas",
+      "title_vi": "Hoàng tử",
+      "markers": "Ngựa • Chân lý • Bảo hộ",
+      "role": "Hộ vệ, phản ảo ảnh, phòng thủ",
+      "design": "Khung nhân mã ngựa cơ khí; khiên hộ vệ",
+      "type": "guardian",
+      "glb": "assets/solomon/orobas/orobas.glb",
+      "preview": "assets/solomon/orobas/orobas-preview.png",
+      "sheet": "assets/solomon/orobas/orobas-4-directions.png",
+      "palette": [
+        "#eee0c3",
+        "#343936",
+        "#a77c42",
+        "#e2bf76",
+        "#99dfd5"
+      ],
+      "slots": [
+        "head",
+        "torso",
+        "shoulder",
+        "arm",
+        "glove",
+        "leg",
+        "boot",
+        "backpack",
+        "wing",
+        "weapon",
+        "drone"
+      ],
+      "geometry_count": 98,
+      "triangles": 2924,
+      "bytes": 90324,
+      "bounds": [
+        [
+          -1.8,
+          0.010000000000000009,
+          -3.6511286086830648
+        ],
+        [
+          1.74,
+          4.900835203627962,
+          2.98
+        ]
+      ],
+      "pixel_sheet": "assets/solomon/orobas/orobas-4-directions-pixel-96.png",
+      "isometric_board": "assets/solomon/orobas/orobas-isometric-board.png"
+    },
+    {
+      "id": "valac",
+      "goetia_number": 62,
+      "name": "Valac",
+      "title_vi": "Chủ tịch",
+      "markers": "Thiếu niên có cánh • Rồng hai đầu",
+      "role": "Truy tìm, điều khiển song long",
+      "design": "Mecha nhỏ gọn; linh thú rồng máy hai đầu",
+      "type": "summoner",
+      "glb": "assets/solomon/valac/valac.glb",
+      "preview": "assets/solomon/valac/valac-preview.png",
+      "sheet": "assets/solomon/valac/valac-4-directions.png",
+      "palette": [
+        "#e4edf1",
+        "#40517a",
+        "#7c8fc5",
+        "#f4cd8f",
+        "#8aeeeb"
+      ],
+      "slots": [
+        "head",
+        "torso",
+        "shoulder",
+        "arm",
+        "glove",
+        "leg",
+        "boot",
+        "backpack",
+        "wing",
+        "weapon",
+        "drone"
+      ],
+      "geometry_count": 131,
+      "triangles": 4064,
+      "bytes": 121932,
+      "bounds": [
+        [
+          -2.787232153946795,
+          0.010000000000000009,
+          -1.48
+        ],
+        [
+          2.787232153946795,
+          5.05,
+          0.945
+        ]
+      ],
+      "pixel_sheet": "assets/solomon/valac/valac-4-directions-pixel-96.png",
+      "isometric_board": "assets/solomon/valac/valac-isometric-board.png"
+    },
+    {
+      "id": "andras",
+      "goetia_number": 63,
+      "name": "Andras",
+      "title_vi": "Hầu tước",
+      "markers": "Đầu quạ • Sói đen • Kiếm",
+      "role": "Ám kích, phá đội hình",
+      "design": "Mặt nạ quạ cơ khí; sói module; thanh kiếm bóng tối",
+      "type": "skirmish",
+      "glb": "assets/solomon/andras/andras.glb",
+      "preview": "assets/solomon/andras/andras-preview.png",
+      "sheet": "assets/solomon/andras/andras-4-directions.png",
+      "palette": [
+        "#a6a8b6",
+        "#212536",
+        "#77293e",
+        "#dc667d",
+        "#ee5483"
+      ],
+      "slots": [
+        "head",
+        "torso",
+        "shoulder",
+        "arm",
+        "glove",
+        "leg",
+        "boot",
+        "backpack",
+        "wing",
+        "weapon",
+        "drone"
+      ],
+      "geometry_count": 105,
+      "triangles": 3096,
+      "bytes": 102116,
+      "bounds": [
+        [
+          -2.779143161663247,
+          0.010000000000000009,
+          -1.62
+        ],
+        [
+          2.6100000000000003,
+          5.42,
+          2.98
+        ]
+      ],
+      "pixel_sheet": "assets/solomon/andras/andras-4-directions-pixel-96.png",
+      "isometric_board": "assets/solomon/andras/andras-isometric-board.png"
+    },
+    {
+      "id": "decarabia",
+      "goetia_number": 69,
+      "name": "Decarabia",
+      "title_vi": "Hầu tước",
+      "markers": "Ngôi sao năm cánh • Chim",
+      "role": "Drone, tác chiến đội hình",
+      "design": "Quỹ đạo pentagram, 5 cánh xòe; drone chim",
+      "type": "swarm",
+      "glb": "assets/solomon/decarabia/decarabia.glb",
+      "preview": "assets/solomon/decarabia/decarabia-preview.png",
+      "sheet": "assets/solomon/decarabia/decarabia-4-directions.png",
+      "palette": [
+        "#bce1d9",
+        "#172c34",
+        "#45907e",
+        "#e5c775",
+        "#5bfbd2"
+      ],
+      "slots": [
+        "head",
+        "torso",
+        "shoulder",
+        "arm",
+        "glove",
+        "leg",
+        "boot",
+        "backpack",
+        "wing",
+        "weapon",
+        "drone"
+      ],
+      "geometry_count": 110,
+      "triangles": 3652,
+      "bytes": 105796,
+      "bounds": [
+        [
+          -1.7563066428647125,
+          0.010000000000000009,
+          -1.23
+        ],
+        [
+          2.79,
+          4.900835203627962,
+          1.6480000000000001
+        ]
+      ],
+      "pixel_sheet": "assets/solomon/decarabia/decarabia-4-directions-pixel-96.png",
+      "isometric_board": "assets/solomon/decarabia/decarabia-isometric-board.png"
+    },
+    {
+      "id": "dantalion",
+      "goetia_number": 71,
+      "name": "Dantalion",
+      "title_vi": "Công tước",
+      "markers": "Nhiều khuôn mặt • Sách",
+      "role": "Thông tin, thao túng nhận thức",
+      "design": "Vòng mặt nạ ảo, sách nổi, module tâm trí",
+      "type": "control",
+      "glb": "assets/solomon/dantalion/dantalion.glb",
+      "preview": "assets/solomon/dantalion/dantalion-preview.png",
+      "sheet": "assets/solomon/dantalion/dantalion-4-directions.png",
+      "palette": [
+        "#ded7e7",
+        "#292341",
+        "#675293",
+        "#bf9deb",
+        "#bda7ff"
+      ],
+      "slots": [
+        "head",
+        "torso",
+        "shoulder",
+        "arm",
+        "glove",
+        "leg",
+        "boot",
+        "backpack",
+        "wing",
+        "weapon",
+        "drone"
+      ],
+      "geometry_count": 120,
+      "triangles": 3852,
+      "bytes": 119320,
+      "bounds": [
+        [
+          -2.81,
+          0.010000000000000009,
+          -1.328
+        ],
+        [
+          2.1487224574255084,
+          5.037077693459355,
+          0.945
+        ]
+      ],
+      "pixel_sheet": "assets/solomon/dantalion/dantalion-4-directions-pixel-96.png",
+      "isometric_board": "assets/solomon/dantalion/dantalion-isometric-board.png"
+    }
+  ]
+}
