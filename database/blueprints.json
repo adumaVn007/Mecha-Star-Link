@@ -1,0 +1,290 @@
+{
+ "v": 1,
+ "blueprints": [
+  {
+   "id": "bp_skkqkbg",
+   "name": "Bản vẽ Đao 2 tay",
+   "target": "skkqkbg",
+   "job": "luyenkhi",
+   "reqLv": 1,
+   "exp": 20,
+   "rarity": 1,
+   "stones": {
+    "thuong": 100,
+    "trung": 0,
+    "cao": 0,
+    "sieu": 0
+   },
+   "cores": [],
+   "monmats": [],
+   "extra": [],
+   "desc": "Bản vẽ chế tạo Đao 2 tay. Cân bằng nguyên liệu bằng AdminEditBlueprint.html."
+  },
+  {
+   "id": "bp_s18j3f3",
+   "name": "Bản vẽ Đao 5 dòng",
+   "target": "s18j3f3",
+   "job": "luyenkhi",
+   "reqLv": 1,
+   "exp": 20,
+   "rarity": 1,
+   "stones": {
+    "thuong": 100,
+    "trung": 0,
+    "cao": 0,
+    "sieu": 0
+   },
+   "cores": [],
+   "monmats": [],
+   "extra": [],
+   "desc": "Bản vẽ chế tạo Đao 5 dòng. Cân bằng nguyên liệu bằng AdminEditBlueprint.html."
+  },
+  {
+   "id": "bp_zcxkgji",
+   "name": "Bản vẽ Mới",
+   "target": "zcxkgji",
+   "job": "luyenkhi",
+   "reqLv": 1,
+   "exp": 20,
+   "rarity": 1,
+   "stones": {
+    "thuong": 100,
+    "trung": 0,
+    "cao": 0,
+    "sieu": 0
+   },
+   "cores": [],
+   "monmats": [],
+   "extra": [],
+   "desc": "Bản vẽ chế tạo Mới. Cân bằng nguyên liệu bằng AdminEditBlueprint.html."
+  },
+  {
+   "id": "bp_utopia_head",
+   "name": "Bản vẽ Utopia – Đầu",
+   "target": "utopia_head",
+   "job": "luyenkhi",
+   "reqLv": 1,
+   "exp": 20,
+   "rarity": 1,
+   "stones": {
+    "thuong": 100,
+    "trung": 0,
+    "cao": 0,
+    "sieu": 0
+   },
+   "cores": [],
+   "monmats": [],
+   "extra": [],
+   "desc": "Bản vẽ chế tạo Utopia – Đầu. Cân bằng nguyên liệu bằng AdminEditBlueprint.html."
+  },
+  {
+   "id": "bp_utopia_body",
+   "name": "Bản vẽ Utopia – Thân",
+   "target": "utopia_body",
+   "job": "luyenkhi",
+   "reqLv": 1,
+   "exp": 20,
+   "rarity": 1,
+   "stones": {
+    "thuong": 100,
+    "trung": 0,
+    "cao": 0,
+    "sieu": 0
+   },
+   "cores": [],
+   "monmats": [],
+   "extra": [],
+   "desc": "Bản vẽ chế tạo Utopia – Thân. Cân bằng nguyên liệu bằng AdminEditBlueprint.html."
+  },
+  {
+   "id": "bp_utopia_shoulder",
+   "name": "Bản vẽ Utopia – Vai",
+   "target": "utopia_shoulder",
+   "job": "luyenkhi",
+   "reqLv": 1,
+   "exp": 20,
+   "rarity": 1,
+   "stones": {
+    "thuong": 100,
+    "trung": 0,
+    "cao": 0,
+    "sieu": 0
+   },
+   "cores": [],
+   "monmats": [],
+   "extra": [],
+   "desc": "Bản vẽ chế tạo Utopia – Vai. Cân bằng nguyên liệu bằng AdminEditBlueprint.html."
+  },
+  {
+   "id": "bp_utopia_arm",
+   "name": "Bản vẽ Utopia – Tay",
+   "target": "utopia_arm",
+   "job": "luyenkhi",
+   "reqLv": 1,
+   "exp": 20,
+   "rarity": 1,
+   "stones": {
+    "thuong": 100,
+    "trung": 0,
+    "cao": 0,
+    "sieu": 0
+   },
+   "cores": [],
+   "monmats": [],
+   "extra": [],
+   "desc": "Bản vẽ chế tạo Utopia – Tay. Cân bằng nguyên liệu bằng AdminEditBlueprint.html."
+  },
+  {
+   "id": "bp_utopia_glove",
+   "name": "Bản vẽ Utopia – Găng",
+   "target": "utopia_glove",
+   "job": "luyenkhi",
+   "reqLv": 1,
+   "exp": 20,
+   "rarity": 1,
+   "stones": {
+    "thuong": 100,
+    "trung": 0,
+    "cao": 0,
+    "sieu": 0
+   },
+   "cores": [],
+   "monmats": [],
+   "extra": [],
+   "desc": "Bản vẽ chế tạo Utopia – Găng. Cân bằng nguyên liệu bằng AdminEditBlueprint.html."
+  },
+  {
+   "id": "bp_utopia_leg",
+   "name": "Bản vẽ Utopia – Chân",
+   "target": "utopia_leg",
+   "job": "luyenkhi",
+   "reqLv": 1,
+   "exp": 20,
+   "rarity": 1,
+   "stones": {
+    "thuong": 100,
+    "trung": 0,
+    "cao": 0,
+    "sieu": 0
+   },
+   "cores": [],
+   "monmats": [],
+   "extra": [],
+   "desc": "Bản vẽ chế tạo Utopia – Chân. Cân bằng nguyên liệu bằng AdminEditBlueprint.html."
+  },
+  {
+   "id": "bp_utopia_boot",
+   "name": "Bản vẽ Utopia – Giày",
+   "target": "utopia_boot",
+   "job": "luyenkhi",
+   "reqLv": 1,
+   "exp": 20,
+   "rarity": 1,
+   "stones": {
+    "thuong": 100,
+    "trung": 0,
+    "cao": 0,
+    "sieu": 0
+   },
+   "cores": [],
+   "monmats": [],
+   "extra": [],
+   "desc": "Bản vẽ chế tạo Utopia – Giày. Cân bằng nguyên liệu bằng AdminEditBlueprint.html."
+  },
+  {
+   "id": "bp_utopia_weapon",
+   "name": "Bản vẽ Utopia – Vũ khí",
+   "target": "utopia_weapon",
+   "job": "luyenkhi",
+   "reqLv": 1,
+   "exp": 20,
+   "rarity": 1,
+   "stones": {
+    "thuong": 100,
+    "trung": 0,
+    "cao": 0,
+    "sieu": 0
+   },
+   "cores": [],
+   "monmats": [],
+   "extra": [],
+   "desc": "Bản vẽ chế tạo Utopia – Vũ khí. Cân bằng nguyên liệu bằng AdminEditBlueprint.html."
+  },
+  {
+   "id": "bp_utopia_backpack",
+   "name": "Bản vẽ Utopia – Ba lô",
+   "target": "utopia_backpack",
+   "job": "luyenkhi",
+   "reqLv": 1,
+   "exp": 20,
+   "rarity": 1,
+   "stones": {
+    "thuong": 100,
+    "trung": 0,
+    "cao": 0,
+    "sieu": 0
+   },
+   "cores": [],
+   "monmats": [],
+   "extra": [],
+   "desc": "Bản vẽ chế tạo Utopia – Ba lô. Cân bằng nguyên liệu bằng AdminEditBlueprint.html."
+  },
+  {
+   "id": "bp_utopia_wing",
+   "name": "Bản vẽ Utopia – Cánh",
+   "target": "utopia_wing",
+   "job": "luyenkhi",
+   "reqLv": 1,
+   "exp": 20,
+   "rarity": 1,
+   "stones": {
+    "thuong": 100,
+    "trung": 0,
+    "cao": 0,
+    "sieu": 0
+   },
+   "cores": [],
+   "monmats": [],
+   "extra": [],
+   "desc": "Bản vẽ chế tạo Utopia – Cánh. Cân bằng nguyên liệu bằng AdminEditBlueprint.html."
+  },
+  {
+   "id": "bp_utopia_pet",
+   "name": "Bản vẽ Utopia – Pet",
+   "target": "utopia_pet",
+   "job": "luyenkhi",
+   "reqLv": 1,
+   "exp": 20,
+   "rarity": 1,
+   "stones": {
+    "thuong": 100,
+    "trung": 0,
+    "cao": 0,
+    "sieu": 0
+   },
+   "cores": [],
+   "monmats": [],
+   "extra": [],
+   "desc": "Bản vẽ chế tạo Utopia – Pet. Cân bằng nguyên liệu bằng AdminEditBlueprint.html."
+  },
+  {
+   "id": "bp_utopia_drone",
+   "name": "Bản vẽ Utopia – Drone",
+   "target": "utopia_drone",
+   "job": "luyenkhi",
+   "reqLv": 1,
+   "exp": 20,
+   "rarity": 1,
+   "stones": {
+    "thuong": 100,
+    "trung": 0,
+    "cao": 0,
+    "sieu": 0
+   },
+   "cores": [],
+   "monmats": [],
+   "extra": [],
+   "desc": "Bản vẽ chế tạo Utopia – Drone. Cân bằng nguyên liệu bằng AdminEditBlueprint.html."
+  }
+ ]
+}
