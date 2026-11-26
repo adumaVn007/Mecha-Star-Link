@@ -30,6 +30,16 @@
     if (!ST.items || typeof ST.items !== 'object') ST.items = {};
     return ST;
   };
+  /* Bộ Mecha cơ bản "Utopia" (12 bộ phận, định nghĩa trong database/mecha-studio.json, id utopia_<ô>): tặng vào túi đồ 1 lần cho mỗi bản save. */
+  BG.STARTER = SL.map(function (s) { return 'utopia_' + s[0]; });
+  BG.grantStarter = function (ST) {
+    BG.init(ST); if (ST.starter) return 0; var n = 0, fail = false;
+    BG.STARTER.forEach(function (id) {
+      if (ST.eq[id.slice(7)] === id || num(ST.inv[id]) > 0) return;
+      var r = BG.add(ST, id, 1, { noPet: true }); if (r.ok) n++; else fail = true;
+    });
+    if (!fail) ST.starter = 1; return n;
+  };
   function cnt(m) { return Object.keys(m || {}).filter(function (k) { return num(m[k]) > 0; }).length; }
   BG.used = function (ST) { BG.init(ST); return cnt(ST.inv) + Object.keys(LEG).filter(function (k) { return num(ST.items[k]) > 0; }).length; };
   BG.eff = function (ST) { var p = ST.p, b = ST.eqB || {}; return { max: p.max + num(b.max), atk: p.atk + num(b.atk), spd: p.spd + num(b.spd), sh: p.gear ? p.shMax + num(b.sh) : 0, b: b }; };
@@ -84,7 +94,7 @@
     '#vgb .sl{position:relative;border-radius:8px;border:2px solid #b89556;background:linear-gradient(#34303c,#201d27);color:#f4e7c4;cursor:pointer;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:46px;overflow:hidden;font:inherit}' +
     '#vgb .sl .ic{font-size:20px;line-height:1}#vgb .sl img{width:30px;height:30px;object-fit:contain}#vgb .sl em{font:bold 10px system-ui;font-style:normal;margin-top:1px}#vgb .sl.em{opacity:.65;border-style:dashed}#vgb .sl.on{box-shadow:0 0 0 2px #fff3 inset,0 0 8px #ffd96a;border-color:#ffd96a}' +
     '#vgb .art{border-radius:12px;border:1px solid #c9a24a88;background:radial-gradient(ellipse at 50% 70%,#fffbe8,#ecd9a8 70%);display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;padding:6px;text-align:center}#vgb .art img{max-width:100%;max-height:230px;object-fit:contain}#vgb .art .big{font-size:78px;line-height:1}#vgb .art b{color:#7a5a22;font-size:13px}#vgb .art small{color:#5b4520;font-size:11px}' +
-    '#vgb .st{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;margin:8px 0;padding:8px 12px;border-radius:18px;border:1px solid #b89556;background:linear-gradient(#fff7de,#ecdcae);font:bold 13px system-ui}#vgb .st i{font-style:normal;color:#2e8a4a;font-size:11px;margin-left:3px}' +
+    '#vgb .st u{flex:0 0 100%;text-decoration:none;font:11px system-ui;color:#7a5a22}#vgb .st.on{margin-top:-2px;border-color:#2e8a4a}#vgb .st{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;margin:8px 0;padding:8px 12px;border-radius:18px;border:1px solid #b89556;background:linear-gradient(#fff7de,#ecdcae);font:bold 13px system-ui}#vgb .st i{font-style:normal;color:#2e8a4a;font-size:11px;margin-left:3px}' +
     '#vgb .bh{display:flex;align-items:center;gap:6px;margin:10px 0 6px}#vgb .bh b{flex:1;font-size:15px}#vgb select{min-height:36px;border-radius:9px;border:1px solid #8a7a58;background:linear-gradient(#5a5560,#35313b);color:#f1e5c5;font:bold 12px system-ui;padding:0 6px;max-width:42%}' +
     '#vgb .sub{display:flex;gap:6px;margin-bottom:6px}#vgb .sub button{flex:1;min-height:38px;border-radius:8px;border:1px solid #8a7a58;background:#d8c595;color:#3b2a14;font:bold 13px system-ui;cursor:pointer}#vgb .sub button.on{background:#3a3340;color:#ffd96a}' +
     '#vgb .grid{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:3px}#vgb .c{position:relative;aspect-ratio:1;min-height:32px;border-radius:6px;border:2px solid var(--rc,#8a7a58);background:linear-gradient(#3a3640,#25222c);padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#f4e7c4;font-size:16px}' +
@@ -146,7 +156,10 @@
       h += '<div class="stage"><div class="col">' + LEFT.map(sl).join('') + '</div><div class="art">' + (av ? '<img alt="" src="' + esc(hm.img) + '">' : '<span class="big">🤖</span>') +
         '<b>' + esc((ST.char && ST.char.name) || 'Vân Giáp') + '</b><small>' + esc(GM.rankName(p.lv)) + '</small></div><div class="col">' + RIGHT.map(sl).join('') + '</div></div>';
       var sp = function (k, v, b) { return '<span>' + k + ' ' + fmt(v) + (b ? '<i>+' + fmt(b) + '</i>' : '') + '</span>'; };
-      h += '<div class="st">' + sp('❤ HP', e.max, num(e.b.max)) + sp('⚔ ATK', e.atk, num(e.b.atk)) + sp('⚡ SPD', e.spd, num(e.b.spd)) + sp('🛡 Giáp', e.sh, p.gear ? num(e.b.sh) : 0) + '</div>';
+      /* Chỉ số nhân vật = chỉ số cơ bản của Mecha. Trang bị chỉ cộng vào Mecha (hàng dưới), không đổi chỉ số nhân vật; tháo ra thì về lại chỉ số cơ bản. */
+      var bs = function (k, v) { return '<span>' + k + ' ' + fmt(v) + '</span>'; };
+      h += '<div class="st"><u>Nhân vật = Mecha cơ bản</u>' + bs('❤ HP', p.max) + bs('⚔ ATK', p.atk) + bs('⚡ SPD', p.spd) + bs('🛡 Giáp', p.gear ? p.shMax : 0) + '</div>';
+      if (num(e.b.max) || num(e.b.atk) || num(e.b.spd) || (p.gear && num(e.b.sh)))         h += '<div class="st on"><u>Mecha khi mặc trang bị</u>' + sp('❤ HP', e.max, num(e.b.max)) + sp('⚔ ATK', e.atk, num(e.b.atk)) + sp('⚡ SPD', e.spd, num(e.b.spd)) + sp('🛡 Giáp', e.sh, p.gear ? num(e.b.sh) : 0) + '</div>';
     }
     var pet = S.sub === 'pet' && S.tab === 'bag', ent = pet ? entries(ST, ST.petBag, false) : entries(ST, ST.inv, true);
     if (S.fRar) ent = ent.filter(function (x) { return x.r === S.fRar; });
@@ -252,7 +265,7 @@
   function onKey(e) { if (e.key === 'Escape') BG.close(); }
   /* ctx: { get:()=>ST, persist:fn, toast:fn, loadLib:()=>Promise<lib>, useLegacy:fn(id), after:fn, onClose:fn }  tab: 'equip' | 'bag' */
   BG.open = function (ctx, tab) {
-    X = ctx; if (ctx.IT) BG.setLegacy(ctx.IT);
+    X = ctx; if (ctx.IT) BG.setLegacy(ctx.IT); if (BG.grantStarter(X.get())) try { X.persist(); } catch (e) {}
     if (root) { S.tab = tab === 'equip' ? 'equip' : 'bag'; render(); return; }
     S = { tab: tab === 'equip' ? 'equip' : 'bag', sub: 'main', fRar: 0, sort: 'def', fSlot: '', sel: null, cmp: false };
     css = document.createElement('style'); css.textContent = CSS; document.head.appendChild(css);

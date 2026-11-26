@@ -1,0 +1,127 @@
+<!doctype html><html lang="vi"><head><title>Vân Giáp – Admin: Bản vẽ</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><link rel="stylesheet" href="vg-admin.css?v=202611262">
+<script src="vg-admin.js?v=202611262" defer></script></head><body class="ed">
+<h1>📐 Vân Giáp – Admin: Bản vẽ chế tạo</h1>
+<div class="card mu" id="src">Đang tải dữ liệu…</div>
+<div class="card">
+<h2>Danh sách bản vẽ</h2>
+<div class="row"><div><label>Lọc theo nghề</label><select id="fj"></select></div><div><label>Tìm theo tên</label><input id="fq" placeholder="Nhập tên bản vẽ / trang bị" autocomplete="off"></div></div>
+<div id="list"></div>
+<div class="row" style="margin-top:8px"><button class="btn" id="bAdd">＋ Thêm bản vẽ</button><button class="btn g" id="bMiss">＋ Tạo bản vẽ cho trang bị còn thiếu</button></div>
+</div>
+<div id="ed"></div>
+<div class="card">
+<h2>Đồng bộ</h2>
+<label>Token GitHub (chỉ lưu tạm trong phiên, không ghi vào code)</label><input id="tk" type="password" placeholder="ghp_… hoặc github_pat_…" autocomplete="off">
+<div class="row" style="margin-top:8px"><button class="btn" id="bUp">⬆ Lưu LÊN GitHub</button><button class="btn g" id="bDn">⬇ Lấy TỪ GitHub</button></div>
+<div class="row" style="margin-top:8px"><button class="btn g" id="bEx">Tải JSON xuống</button><button class="btn g" id="bIm">Dán JSON</button></div>
+<textarea id="io" rows="5" style="display:none;margin-top:8px" placeholder="Dán nội dung blueprints.json rồi bấm Dán JSON lần nữa"></textarea>
+<div id="msg"></div>
+<div class="mu" style="margin-top:8px">Dữ liệu ghi vào <code>database/blueprints.json</code>. Danh sách trang bị lấy từ <code>mecha-studio.json</code>, nghề lấy từ <code>jobs.json</code>, nguyên liệu lấy từ <code>mecha-studio.json</code> + <code>city-items.json</code>. Trong game, bản vẽ hiện ở bảng Nghề (mục “Bản vẽ chế tạo”) khi đủ cấp nghề.</div>
+</div>
+<script src="vg-github.js"></script>
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)},PATH='database/blueprints.json',DK='vg_bp_draft';
+var D={v:1,blueprints:[]},cur=-1,dirty=false,LIB={equips:[],items:[],materials:[]},JOBS=[],libOK=false,jobsOK=false,EQ={},MT={};
+var QN=['','Phổ thông','Tốt','Hiếm','Sử thi','Truyền thuyết'];
+var BR={monster:'Tài liệu từ quái vật (tinh hạch / vật liệu yêu thú)',herb:'Linh dược / quả kì bí',pill:'Đan dược',method:'Công pháp',skill:'Skill',artifact:'Pháp khí',talisman:'Phù chú',ore:'Khoáng liệu'};
+var SLN={head:'Đầu',body:'Thân',shoulder:'Vai',arm:'Tay',glove:'Găng',leg:'Chân',boot:'Giày',weapon:'Vũ khí',backpack:'Ba lô',wing:'Cánh',pet:'Pet',drone:'Drone'};
+var STK=[['thuong','Linh thạch Thường'],['trung','Linh thạch Trung'],['cao','Linh thạch Cao'],['sieu','Linh thạch Siêu']];
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function msg(t,ok){var m=$('msg');m.textContent=t;m.className=ok?'ok':'er'}
+function uid(p){return p+Math.random().toString(36).slice(2,7)}
+function ri(v,lo,hi){v=Math.round(+v);if(!isFinite(v))v=lo;return Math.max(lo,Math.min(hi,v))}
+function norm(j){if(!j||!Array.isArray(j.blueprints))throw Error('Tệp không đúng định dạng (thiếu mảng blueprints)');
+ j.v=1;j.blueprints.forEach(function(b){b.id=b.id||uid('bp_');b.name=b.name||'Bản vẽ';b.target=b.target||'';b.job=b.job||'';b.reqLv=ri(b.reqLv||1,1,999);b.exp=ri(b.exp||0,0,1e9);b.rarity=ri(b.rarity||1,1,5);b.desc=b.desc||'';
+  b.stones=b.stones&&typeof b.stones=='object'?b.stones:{};STK.forEach(function(s){b.stones[s[0]]=ri(b.stones[s[0]]||0,0,1e12)});
+  ['cores','monmats','extra'].forEach(function(k){b[k]=Array.isArray(b[k])?b[k].filter(function(x){return x&&x.id}).map(function(x){return{id:String(x.id),q:ri(x.q||1,1,1e6)}}):[]})});return j}
+function draft(){try{localStorage.setItem(DK,JSON.stringify(D))}catch(e){}dirty=true}
+function ld(path){return fetch(path+'?t='+Date.now()).then(function(r){if(!r.ok)throw 0;return r.json()}).catch(function(){return VG.fetchJSON(path)})}
+function eqName(id){return EQ[id]?EQ[id].name:(id||'—')}
+function jobName(id){for(var i=0;i<JOBS.length;i++)if(JOBS[i].id==id)return JOBS[i].name;return id||'—'}
+function itemName(id){return MT[id]?MT[id].name:id}
+/* ---- danh sách ---- */
+function fjRender(){var v=$('fj').value,o='<option value="">Tất cả nghề</option>';JOBS.forEach(function(j){o+='<option value="'+esc(j.id)+'">'+esc((j.icon||'')+' '+j.name)+'</option>'});$('fj').innerHTML=o;$('fj').value=v}
+function list(){var fj=$('fj').value,q=$('fq').value.trim().toLowerCase(),h='',n=0;
+ D.blueprints.forEach(function(b,i){if(fj&&b.job!=fj)return;if(q&&(b.name+' '+eqName(b.target)).toLowerCase().indexOf(q)<0)return;n++;
+  h+='<div class="li'+(i==cur?' sel':'')+' q'+b.rarity+'" data-i="'+i+'"><span><b>'+esc(b.name)+'</b><span class="tag">'+esc(jobName(b.job))+'</span><br><span class="mu">→ '+esc(eqName(b.target))+' · cấp nghề '+b.reqLv+'</span></span><span class="qtag">'+QN[b.rarity]+'</span></div>'});
+ $('list').innerHTML=h||'<div class="mu" style="padding:8px">'+(D.blueprints.length?'Không có bản vẽ phù hợp bộ lọc.':'Chưa có bản vẽ nào.')+'</div>'}
+/* ---- ô chọn vật phẩm ---- */
+function opts(kind,sel){var o='',seen={};function grp(l,arr){if(!arr.length)return;o+='<optgroup label="'+esc(l)+'">'+arr.map(function(e){seen[e.id]=1;return'<option value="'+esc(e.id)+'"'+(e.id==sel?' selected':'')+'>'+esc(e.name)+'</option>'}).join('')+'</optgroup>'}
+ var m=LIB.materials,by={};m.forEach(function(e){var k=e.branch||'khac';(by[k]=by[k]||[]).push(e)});
+ if(kind!='extra'){grp(BR.monster,by.monster||[]);Object.keys(by).forEach(function(k){if(k!='monster')grp(BR[k]||'Nguyên liệu khác',by[k])})}
+ else{Object.keys(by).forEach(function(k){grp(BR[k]||'Nguyên liệu khác',by[k])})}
+ grp('Vật phẩm',LIB.items);if(kind=='extra')grp('Trang bị',LIB.equips);
+ if(sel&&!seen[sel])o='<option value="'+esc(sel)+'" selected>⚠ '+esc(sel)+' (không có trong database)</option>'+o;
+ if(!sel)o='<option value="" selected disabled>— chọn vật phẩm —</option>'+o;return o}
+function lrows(b,k,title,hint,kind){var x='<div class="card"><h2>'+title+'</h2><div class="mu" style="margin-bottom:6px">'+hint+'</div>';
+ b[k].forEach(function(r,i){x+='<div class="sub"><div class="row"><div><label>Vật phẩm</label><select data-p="L|'+k+'|'+i+'|id">'+opts(kind,r.id)+'</select></div><div class="nw" style="width:90px"><label>Số lượng</label><input type="number" inputmode="numeric" min="1" data-p="L|'+k+'|'+i+'|q" value="'+r.q+'"></div><button class="btn r s fix" data-dl="'+k+'|'+i+'">Xóa</button></div></div>'});
+ if(!b[k].length)x+='<div class="mu" style="margin-bottom:6px">Chưa có vật phẩm nào.</div>';
+ return x+'<button class="btn" data-al="'+k+'">＋ Thêm vật phẩm</button></div>'}
+function render(){list();var b=D.blueprints[cur];if(!b){$('ed').innerHTML='<div class="card mu">Chọn một bản vẽ trong danh sách để chỉnh sửa, hoặc bấm “＋ Thêm bản vẽ”.</div>';return}
+ var eo='<option value=""'+(b.target?'':' selected')+' disabled>— chọn trang bị —</option>',jo='',ro='',has=false;
+ LIB.equips.forEach(function(e){if(e.id==b.target)has=true;eo+='<option value="'+esc(e.id)+'"'+(e.id==b.target?' selected':'')+'>'+esc(e.name)+' ('+esc(SLN[e.slot]||e.slot||'—')+')</option>'});
+ if(b.target&&!has)eo+='<option value="'+esc(b.target)+'" selected>⚠ '+esc(b.target)+' (không có trong database)</option>';
+ var hj=false;JOBS.forEach(function(j){if(j.id==b.job)hj=true;jo+='<option value="'+esc(j.id)+'"'+(j.id==b.job?' selected':'')+'>'+esc((j.icon||'')+' '+j.name)+'</option>'});
+ if(!hj)jo='<option value="'+esc(b.job)+'" selected>⚠ '+esc(b.job||'(chưa chọn)')+' (không có trong jobs.json)</option>'+jo;
+ for(var i=1;i<=5;i++)ro+='<option value="'+i+'"'+(i==b.rarity?' selected':'')+'>'+QN[i]+'</option>';
+ var x='<div class="card"><h2>Thông tin bản vẽ</h2><div class="row"><div><label>Tên bản vẽ</label><input data-p="f|name" value="'+esc(b.name)+'"></div></div>'+
+ '<div class="row" style="margin-top:6px"><div><label>Trang bị tạo ra</label><select data-p="f|target">'+eo+'</select></div><div><label>Nghề chế tạo</label><select data-p="f|job">'+jo+'</select></div></div>'+
+ '<div class="row" style="margin-top:6px"><div><label>Cấp nghề yêu cầu</label><input type="number" inputmode="numeric" min="1" data-p="f|reqLv" value="'+b.reqLv+'"></div><div><label>EXP nghề nhận được</label><input type="number" inputmode="numeric" min="0" data-p="f|exp" value="'+b.exp+'"></div><div><label>Phẩm chất</label><select data-p="f|rarity">'+ro+'</select></div></div>'+
+ '<label style="margin-top:6px">Mô tả</label><textarea rows="2" data-p="f|desc">'+esc(b.desc)+'</textarea><div class="mu" style="margin-top:4px">ID: '+esc(b.id)+'</div>'+
+ '<div class="row" style="margin-top:8px"><button class="btn r s fix" data-delbp="1">Xóa bản vẽ này</button></div></div>';
+ x+='<div class="card"><h2>Linh thạch</h2><div class="mu" style="margin-bottom:6px">Mỗi loại trừ riêng khi chế tạo (không tự quy đổi giữa các loại). Để 0 nếu không cần.</div><div class="row">'+STK.map(function(s){return'<div><label>'+s[1]+'</label><input type="number" inputmode="numeric" min="0" data-p="S|'+s[0]+'" value="'+b.stones[s[0]]+'"></div>'}).join('')+'</div></div>';
+ x+=lrows(b,'cores','Tinh hạch quái thú','Ưu tiên liệt kê nhóm “Tài liệu từ quái vật”. Thêm tinh hạch trong Mecha Studio (Nguyên liệu → Tài liệu từ quái vật) để chọn được ở đây.','core');
+ x+=lrows(b,'monmats','Vật liệu từ yêu thú','Da, xương, vuốt… từ yêu thú. Thêm / xóa tùy ý để cân bằng.','mon');
+ x+=lrows(b,'extra','Vật phẩm bổ sung','Bất kỳ vật phẩm / nguyên liệu / trang bị nào trong database (dùng để cân bằng thêm).','extra');
+ $('ed').innerHTML=x}
+function newBp(eqId){var e=EQ[eqId],j=JOBS[0];return{id:uid('bp_'),name:'Bản vẽ '+(e?e.name.trim():'mới'),target:eqId||'',job:j?j.id:'',reqLv:1,exp:20,rarity:e?ri(e.rarity||1,1,5):1,stones:{thuong:0,trung:0,cao:0,sieu:0},cores:[],monmats:[],extra:[],desc:''}}
+document.addEventListener('input',function(ev){var p=ev.target.dataset&&ev.target.dataset.p;if(p){var a=p.split('|'),b=D.blueprints[cur];if(!b)return;var v=ev.target.value,re=false;
+ if(a[0]=='f'){var k=a[1];if(['reqLv','exp','rarity'].indexOf(k)>=0)v=ri(v,k=='exp'?0:1,k=='rarity'?5:(k=='exp'?1e9:999));
+  if(k=='target'&&/^Bản vẽ /.test(b.name)&&EQ[v])b.name='Bản vẽ '+EQ[v].name.trim(),re=true;if(k=='target'||k=='job'||k=='rarity')re=true;b[k]=v}
+ else if(a[0]=='S')b.stones[a[1]]=ri(v,0,1e12);
+ else if(a[0]=='L'){var r=b[a[1]][+a[2]];if(a[3]=='q')r.q=ri(v,1,1e6);else r.id=v}
+ draft();list();if(re)render();return}
+ if(ev.target.id=='fq'||ev.target.id=='fj')list()});
+document.addEventListener('click',function(ev){var t=ev.target.closest('button,.li');if(!t)return;
+ if(t.classList.contains('li')){cur=+t.dataset.i;render();var e=$('ed');if(e.scrollIntoView)e.scrollIntoView({block:'start'});return}
+ var b=D.blueprints[cur];
+ if(t.dataset.al){if(!b)return;if(!confirm('Thêm một dòng vật phẩm mới vào mục này?'))return;b[t.dataset.al].push({id:'',q:1});draft();render();msg('Đã thêm dòng (hãy chọn vật phẩm, chưa lưu lên GitHub).',1)}
+ else if(t.dataset.dl){var a=t.dataset.dl.split('|');if(!confirm('Xóa dòng vật phẩm này?'))return;b[a[0]].splice(+a[1],1);draft();render();msg('Đã xóa dòng (chưa lưu lên GitHub).',1)}
+ else if(t.dataset.delbp){if(!confirm('Xóa bản vẽ “'+b.name+'”?'))return;D.blueprints.splice(cur,1);cur=-1;draft();render();msg('Đã xóa bản vẽ (chưa lưu lên GitHub).',1)}});
+$('bAdd').onclick=function(){if(!confirm('Thêm một bản vẽ mới?'))return;var used={};D.blueprints.forEach(function(b){used[b.target]=1});var f=LIB.equips.filter(function(e){return!used[e.id]})[0];
+ D.blueprints.push(newBp(f?f.id:(LIB.equips[0]?LIB.equips[0].id:'')));cur=D.blueprints.length-1;draft();render();msg('✔ Đã thêm bản vẽ mới (chưa lưu lên GitHub).',1)};
+$('bMiss').onclick=function(){var used={};D.blueprints.forEach(function(b){used[b.target]=1});var f=LIB.equips.filter(function(e){return!used[e.id]});
+ if(!libOK)return msg('✘ Chưa đọc được mecha-studio.json nên không biết trang bị nào còn thiếu.',0);
+ if(!f.length)return msg('Mọi trang bị trong database đều đã có bản vẽ.',1);
+ if(!confirm('Tạo '+f.length+' bản vẽ cho các trang bị chưa có bản vẽ?'))return;
+ f.forEach(function(e){D.blueprints.push(newBp(e.id))});draft();render();msg('✔ Đã tạo '+f.length+' bản vẽ (chưa lưu lên GitHub).',1)};
+function check(){var bad=[],ids={};D.blueprints.forEach(function(b){var n=b.name;if(ids[b.id])bad.push(n+': trùng ID '+b.id);ids[b.id]=1;
+ if(!b.target)bad.push(n+': chưa chọn trang bị tạo ra');else if(libOK&&!EQ[b.target])bad.push(n+': trang bị “'+b.target+'” không có trong database');
+ if(!b.job)bad.push(n+': chưa chọn nghề');else if(jobsOK){var j=null;JOBS.forEach(function(x){if(x.id==b.job)j=x});if(!j)bad.push(n+': nghề “'+b.job+'” không có trong jobs.json');else if(b.reqLv>(j.levels||[]).length)bad.push(n+': cấp nghề yêu cầu vượt số cấp của nghề '+j.name)}
+ ['cores','monmats','extra'].forEach(function(k){b[k].forEach(function(r){if(!r.id)bad.push(n+': có dòng vật phẩm chưa chọn');else if(libOK&&!MT[r.id])bad.push(n+': vật phẩm “'+r.id+'” không có trong database');if(!(r.q>=1))bad.push(n+': số lượng phải ≥ 1')})})});return bad}
+$('tk').value=VG.getToken();
+$('bUp').onclick=function(){var bad=check();if(bad.length)return msg('Không lưu được: '+bad[0]+(bad.length>1?' (+'+(bad.length-1)+' lỗi khác)':''),0);
+ var tk=$('tk').value.trim();if(!tk)return msg('Chưa nhập token GitHub.',0);if(!confirm('Ghi đè database/blueprints.json trên GitHub bằng dữ liệu đang sửa?'))return;
+ VG.setToken(tk);msg('Đang lưu lên GitHub…',1);
+ VG.save(PATH,D,'Cập nhật bản vẽ (AdminEditBlueprint)').then(function(){dirty=false;msg('✔ Thành công: đã lưu '+D.blueprints.length+' bản vẽ lên GitHub.',1)}).catch(function(e){msg('✘ Thất bại: '+e.message,0)})};
+$('bDn').onclick=function(){if(dirty&&!confirm('Có thay đổi chưa lưu. Lấy từ GitHub sẽ ghi đè bản đang sửa?'))return;
+ VG.fetchJSON(PATH).then(function(j){if(!j)throw Error('Chưa có database/blueprints.json trên GitHub');D=norm(j);cur=-1;draft();dirty=false;render();msg('✔ Thành công: đã lấy '+D.blueprints.length+' bản vẽ từ GitHub.',1)}).catch(function(e){msg('✘ Thất bại: '+e.message,0)})};
+$('bEx').onclick=function(){var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(D,null,1)],{type:'application/json'}));a.download='blueprints.json';a.click();msg('✔ Đã tải blueprints.json xuống máy.',1)};
+$('bIm').onclick=function(){var t=$('io');if(t.style.display=='none'){t.style.display='block';return}
+ try{var j=norm(JSON.parse(t.value));if(!confirm('Thay dữ liệu đang sửa bằng JSON vừa dán?'))return;D=j;cur=-1;draft();render();t.value='';t.style.display='none';msg('✔ Thành công: đã nhập '+D.blueprints.length+' bản vẽ (chưa lưu lên GitHub).',1)}catch(e){msg('✘ Thất bại: '+e.message,0)}};
+function setLib(db,city){var m=[],it=[],have={};(db&&db.materials||[]).forEach(function(e){if(e&&e.id){m.push(e);have[e.id]=1}});(db&&db.items||[]).forEach(function(e){if(e&&e.id){it.push(e);have[e.id]=1}});
+ (city&&city.materials||[]).forEach(function(e){if(e&&e.id&&!have[e.id]){m.push(e);have[e.id]=1}});(city&&city.items||[]).forEach(function(e){if(e&&e.id&&!have[e.id]){it.push(e);have[e.id]=1}});
+ LIB={equips:(db&&db.equips||[]).filter(function(e){return e&&e.id}),items:it,materials:m};EQ={};MT={};
+ LIB.equips.forEach(function(e){EQ[e.id]=e;MT[e.id]=e});m.concat(it).forEach(function(e){MT[e.id]=e})}
+function init(){var dr=null;try{dr=JSON.parse(localStorage.getItem(DK)||'null')}catch(e){}
+ Promise.all([ld('database/mecha-studio.json').catch(function(){return null}),ld('city-items.json').catch(function(){return null}),ld('database/jobs.json').catch(function(){return null}),ld(PATH).catch(function(){return null})]).then(function(r){
+  libOK=!!r[0];setLib(r[0],r[1]);if(r[2]&&Array.isArray(r[2].jobs)){JOBS=r[2].jobs;jobsOK=true}fjRender();
+  var s=[];s.push(libOK?'mecha-studio.json: '+LIB.equips.length+' trang bị':'⚠ không đọc được mecha-studio.json');s.push(jobsOK?JOBS.length+' nghề':'⚠ không đọc được jobs.json');
+  if(r[3]){D=norm(r[3]);$('src').textContent='Đã tải database/blueprints.json ('+D.blueprints.length+' bản vẽ) · '+s.join(' · ')+'.'}
+  else if(dr){try{D=norm(dr);$('src').textContent='Không có blueprints.json trên máy chủ. Đang dùng bản nháp trên máy này · '+s.join(' · ')+'.'}catch(x){}}
+  else $('src').textContent='Chưa có database/blueprints.json · '+s.join(' · ')+'. Bấm “＋ Tạo bản vẽ cho trang bị còn thiếu” để bắt đầu.';
+  render()})}
+init();
+})();
+</script></body></html>

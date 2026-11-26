@@ -83,5 +83,13 @@ Giữ nguyên trường cũ. Thêm (tùy chọn): `functions[]` (quest | shop | 
 `{n}` `{target}` `{from}` `{to}` `{item}` `{x}` `{y}` `{fn}` (của mục tiêu 1; mục tiêu k dùng `{ok.n}`, `{ok.target}`…), `{giver}` `{turnIn}` `{reward}` `{name}`. Tên lấy từ database (quái, NPC, địa điểm). `text` trống = tự sinh theo loại mục tiêu.
 Mục tiêu mới `deliver`: `{t:'deliver', from:<id địa điểm hoặc NPC>, to:<id>, itemName}` — tới `from` để nhận, tới `to` để giao (2 bước, lưu trong save).
 
-## `database/prime-mecha.json` — catalog Prime Mecha (schema `msl-prime-catalog/v1`)
-Catalog chung cho thư viện `prime-mecha-library.html`. Gồm `slots[]` (11 slot: id + tên hiển thị), `comparison_image`, `pages` và `models[]`. Mỗi model: `id`, `code` (PM-01…), `name`, `type` / `type_vi`, `role`, `design`, `slots[]`, `stats_model{triangles,parts,meshes,size_glb,bounds}`, `files{glb,concept,preview_front,preview_3quarter,preview_back}`, `lab` (link mở trong lab). Chỉ là dữ liệu hình/model, chưa có chỉ số chiến đấu; không ảnh hưởng `mecha-studio.json` hay save game.
+## Cơ chế chỉ số Mecha (MỚI)
+Chỉ số nhân vật (`ST.p`: max, atk, spd, shMax) = chỉ số cơ bản của Mecha. Trang bị chỉ cộng vào Mecha qua `ST.eqB` (tính lại mỗi lần mặc/tháo), KHÔNG ghi vào `ST.p`. Tháo trang bị thì chỉ số Mecha về lại chỉ số cơ bản. Túi đồ hiển thị 2 hàng: "Nhân vật = Mecha cơ bản" và "Mecha khi mặc trang bị"; bảng Nhân vật hiển thị chỉ số gốc + dòng tổng khi đang mặc. Trận đấu (`battle.html`) vẫn dùng chỉ số gốc + `eqB`.
+
+## Bộ Mecha cơ bản "Utopia" (MỚI) — trong `database/mecha-studio.json › equips[]`
+12 bộ phận, id `utopia_<ô>` (head, body, shoulder, arm, glove, leg, boot, weapon, backpack, wing, pet, drone), trường `set:"Utopia"`, phẩm chất 1. Chỉ số khởi điểm nhỏ, chỉnh trong Mecha Studio. Mỗi bản save được tặng bộ này vào túi đồ 1 lần (cờ `ST.starter`); túi đầy thì chưa đặt cờ và thử lại lần mở túi sau.
+
+## `database/blueprints.json` (v:1) — Bản vẽ chế tạo (MỚI)
+Tạo/sửa bằng `AdminEditBlueprint.html`. `{ v:1, blueprints:[ … ] }`. Mỗi bản vẽ: `id`, `name` ("Bản vẽ <tên trang bị>"), `target` (id trang bị trong `mecha-studio.json`), `job` (id nghề trong `jobs.json`), `reqLv` (cấp nghề), `exp` (EXP nghề nhận khi chế), `rarity` (1–5), `desc`,
+`stones{thuong,trung,cao,sieu}` (trừ riêng từng loại), `cores[{id,q}]` (Tinh hạch quái thú), `monmats[{id,q}]` (Vật liệu từ yêu thú), `extra[{id,q}]` (vật phẩm bổ sung để cân bằng). `id` nguyên liệu = id trong `mecha-studio.json` hoặc `city-items.json`.
+Trong game (bảng Nghề → mục "Bản vẽ chế tạo"): cần đã học nghề, đủ cấp nghề, đủ linh thạch + nguyên liệu trong túi (túi chính + túi Pet). Thành công: trừ nguyên liệu, thêm trang bị vào túi, cộng EXP nghề (lên cấp theo `jobs.json › levels`). Túi đầy: hủy chế tạo, không mất gì.

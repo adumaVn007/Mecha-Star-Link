@@ -72,7 +72,7 @@ html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none;backgrou
 .jb{border:1px solid #806b48;border-radius:9px;background:#213842;margin-bottom:8px}.jb>summary{list-style:none;cursor:pointer;padding:10px;min-height:48px;display:flex;align-items:center;gap:9px}.jb>summary::-webkit-details-marker{display:none}
 .jb .ji{font-size:24px;width:30px;text-align:center}.jb .jm{flex:1;min-width:0}.jb .jm b{color:var(--gold);font-size:14px}.jb .jm small{display:block;color:var(--mut);font-size:11px}
 .jb .jbar{height:6px;border-radius:4px;background:#0a1117;margin-top:4px;overflow:hidden}.jb .jbar i{display:block;height:100%;background:linear-gradient(90deg,#4f9a82,var(--gold))}
-.jb .jc{padding:0 10px 10px}.jb h5{margin:8px 0 3px;color:var(--gold);font-size:12px}.jb .jr{padding:5px 0;border-bottom:1px dotted #776644;font-size:12px;color:var(--txt)}.jb .jr small{display:block;color:var(--mut);font-size:11px}.jb .lk{opacity:.55}
+.jb .jc{padding:0 10px 10px}.jb h5{margin:8px 0 3px;color:var(--gold);font-size:12px}.jb .jr{padding:5px 0;border-bottom:1px dotted #776644;font-size:12px;color:var(--txt)}.jb .jr small{display:block;color:var(--mut);font-size:11px}.jb .lk{opacity:.55}.jb .cb{margin-top:5px;min-height:38px;padding:6px 10px;font-size:12px}
 .note{border:1px dashed var(--bronze);border-radius:8px;padding:8px 10px;color:var(--mut);font-size:12px;margin-top:8px}
 .sw{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px;border:1px solid #0006}
 #qtrack{max-width:100%;padding:5px 8px;font-size:10.5px;cursor:pointer;z-index:4;display:none}#qtrack b{display:block;color:var(--gold);font-size:11px}#qtrack span{color:var(--mut)}
@@ -112,10 +112,10 @@ html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none;backgrou
 <div class="hud" id="toast"></div>
 <div id="ov"><div class="box"><header><h2 id="oT"></h2><button class="x" id="oX" aria-label="Đóng">✕</button></header><div class="bd" id="oB"></div></div></div>
 
-<script src="vg-github.js?v=202611254"></script>
+<script src="vg-github.js?v=202611262"></script>
 <script src="vg-core.js?v=202611254"></script>
 <script src="vg-char.js?v=202611254"></script>
-<script src="vg-bag.js?v=202611261"></script>
+<script src="vg-bag.js?v=202611262"></script>
 <script src="vg-mapart.js?v=202611254"></script>
 <script src="vg-quest.js?v=202611261"></script>
 <script src="city-ui.js?v=3"></script>
@@ -477,7 +477,8 @@ const row=(a,b)=>`<div class="row"><span>${a}</span><span>${b}</span></div>`;
 const soon=d=>`<p>${d}</p><div class="note">⚠ Chưa kết nối hệ thống thật: mục này chưa có dữ liệu trong database nên chưa hoạt động. Không dùng số liệu giả.</div>`;
 function idRows(){const c=ST.char;if(!c)return'';const G=VG.char.GENDERS[c.gender];
  return row('Tên',esc(c.name))+row('Giới tính',G?G.n:'—')+row('Xuất thân',esc(c.originName||c.origin||'—'))+row('Quốc gia',esc((wmap&&wmap.names[c.country])||zone.name))}
-let JOBS=null;
+let JOBS=null,BPS=null,JOBOPEN='';
+function loadBps(){return fetch('database/blueprints.json?t='+Date.now()).then(r=>{if(!r.ok)throw 0;return r.json()}).catch(()=>VG.fetchJSON?VG.fetchJSON('database/blueprints.json'):null).then(j=>{BPS=j&&Array.isArray(j.blueprints)?j:null}).catch(()=>{BPS=null})}
 function loadJobs(){return fetch('database/jobs.json?t='+Date.now()).then(r=>{if(!r.ok)throw 0;return r.json()}).catch(()=>VG.fetchJSON?VG.fetchJSON('database/jobs.json'):null).then(j=>{JOBS=j&&Array.isArray(j.jobs)?j:null}).catch(()=>{JOBS=null})}
 function jobPanel(){
  if(!JOBS)return soon('Luyện khí, luyện đan, phù lục, trận pháp. Không đọc được database/jobs.json (chưa có hoặc lỗi mạng).');
@@ -485,20 +486,56 @@ function jobPanel(){
  const sj=ST.jobs||{};
  return JOBS.jobs.map(b=>{const lvs=b.levels||[],n=lvs.length,pr=sj[b.id]||{},lv=Math.max(1,Math.min(n||1,pr.lv|0||1)),xp=Math.max(0,pr.xp|0),L=lvs[lv-1]||{},nd=+L.exp||0,max=lv>=n||nd<=0;
   const rc=b.recipes||[],un=rc.filter(r=>(+r.reqLv||1)<=lv),lk=rc.filter(r=>(+r.reqLv||1)>lv),eq=b.equips||[];
-  return`<details class="jb"><summary><span class="ji">${esc(b.icon||'⚒')}</span><span class="jm"><b>${esc(b.name)}</b><small>${esc(L.name||'Cấp '+lv)} · Cấp ${lv}/${n} · EXP ${max?'Tối đa':xp+'/'+nd}</small><div class="jbar"><i style="width:${max?100:Math.min(100,xp/nd*100)}%"></i></div></span><span>▾</span></summary><div class="jc">`+
+  const bps=(BPS?BPS.blueprints:[]).filter(x=>x.job===b.id),learned=!!sj[b.id];
+   return`<details class="jb"${JOBOPEN===b.id?' open':''}><summary><span class="ji">${esc(b.icon||'⚒')}</span><span class="jm"><b>${esc(b.name)}</b><small>${esc(L.name||'Cấp '+lv)} · Cấp ${lv}/${n} · EXP ${max?'Tối đa':xp+'/'+nd}</small><div class="jbar"><i style="width:${max?100:Math.min(100,xp/nd*100)}%"></i></div></span><span>▾</span></summary><div class="jc">`+
    (b.desc?`<p>${esc(b.desc)}</p>`:'')+`<h5>Công thức đã mở khóa (${un.length}/${rc.length})</h5>`+
    (un.map(r=>`<div class="jr">${esc(r.name)}<small>${esc(r.mats||'')}${r.out?' → '+esc(r.out):''} · +${+r.exp||0} EXP</small></div>`).join('')||'<div class="jr"><small>Chưa mở khóa công thức nào.</small></div>')+
    lk.map(r=>`<div class="jr lk">🔒 ${esc(r.name)}<small>Mở ở cấp nghề ${+r.reqLv||1}</small></div>`).join('')+
    `<h5>Trang bị của nghề (${eq.length})</h5>`+(eq.map(e=>`<div class="jr ${(+e.reqLv||1)>lv?'lk':''}">${(+e.reqLv||1)>lv?'🔒 ':''}${esc(e.name)}<small>${esc(e.slot||'')}${(+e.reqLv||1)>1?' · yêu cầu cấp '+(+e.reqLv):''}</small></div>`).join('')||'<div class="jr"><small>Chưa có.</small></div>')+
-   `</div></details>`}).join('')+`<div class="note">Cấp bậc và kinh nghiệm nghề lưu trong bản save của bạn. Chế tạo thật (nhận EXP nghề) chưa nối vào game.</div>`}
+   `<h5>Bản vẽ chế tạo (${bps.length})</h5>`+(bps.map(x=>bpRow(x,b,lv,learned)).join('')||`<div class="jr"><small>${BPS?'Nghề này chưa có bản vẽ.':'Không đọc được database/blueprints.json.'}</small></div>`)+
+    `</div></details>`}).join('')+`<div class="note">Cấp bậc và kinh nghiệm nghề lưu trong bản save của bạn. Chế tạo cần đã học nghề (tìm NPC dạy nghề), đủ cấp nghề, linh thạch và nguyên liệu trong túi; thành công nhận EXP nghề.</div>`}
+const STN={thuong:'Thường',trung:'Trung',cao:'Cao',sieu:'Siêu'};
+const bpName=id=>VG.bag.nameOf(id)||id;
+const bpHave=id=>(ST.inv&&ST.inv[id]|0)+(ST.petBag&&ST.petBag[id]|0);
+function bpMats(bp){const m={};['cores','monmats','extra'].forEach(k=>(bp[k]||[]).forEach(x=>{if(x&&x.id&&+x.q>0)m[x.id]=(m[x.id]||0)+Math.floor(+x.q)}));return m}
+function bpRow(x,b,lv,learned){const req=+x.reqLv||1,lock=req>lv,st=x.stones||{},mt=bpMats(x),
+  sc=Object.keys(STN).filter(k=>+st[k]>0).map(k=>`<span style="color:${(ST.stones[k]|0)>=+st[k]?'inherit':'#e07a6a'}">${GM.fmt(+st[k])} LT ${STN[k]}</span>`),
+  mc=Object.keys(mt).map(id=>`<span style="color:${bpHave(id)>=mt[id]?'inherit':'#e07a6a'}">${esc(bpName(id))} ${bpHave(id)}/${mt[id]}</span>`);
+ return`<div class="jr ${lock?'lk':''}">${lock?'🔒 ':''}${esc(x.name)}<small>→ ${esc(bpName(x.target))}${req>1?' · yêu cầu cấp nghề '+req:''} · +${+x.exp||0} EXP</small><small>${sc.concat(mc).join(' · ')||'Không tốn nguyên liệu'}</small>`+
+  (lock?'':`<button class="btn cb" data-a="craft:${esc(x.id)}">⚒ Chế tạo${learned?'':' (cần học nghề)'}</button>`)+`</div>`}
+function craftBp(id){
+ const bp=BPS&&BPS.blueprints.find(x=>x.id===id);if(!bp)return toast('Không tìm thấy bản vẽ trong database.');
+ const job=JOBS&&JOBS.jobs.find(j=>j.id===bp.job);if(!job)return toast('Nghề của bản vẽ này không tồn tại trong database/jobs.json.');
+ ST.jobs=ST.jobs||{};const pr=ST.jobs[job.id];
+ if(!pr)return toast('Chưa thể chế tạo: bạn chưa học nghề '+job.name+'. Hãy tìm NPC dạy nghề.');
+ const lvs=job.levels||[],lv=Math.max(1,Math.min(lvs.length||1,pr.lv|0||1)),req=+bp.reqLv||1;
+ if(lv<req)return toast('Chưa thể chế tạo: cần cấp nghề '+req+' (hiện cấp '+lv+').');
+ if(!VG.bag.nameOf(bp.target))return toast('Chưa thể chế tạo: trang bị đích chưa có trong database (hoặc dữ liệu đang tải, thử lại sau giây lát).');
+ VG.bag.init(ST);const st=bp.stones||{},mt=bpMats(bp);
+ const lackS=Object.keys(STN).filter(k=>(ST.stones[k]|0)<(+st[k]||0));
+ if(lackS.length)return toast('Không đủ linh thạch: '+lackS.map(k=>'cần '+GM.fmt(+st[k])+' '+STN[k]+' (có '+GM.fmt(ST.stones[k]|0)+')').join('; ')+'.');
+ const lackM=Object.keys(mt).filter(i=>bpHave(i)<mt[i]);
+ if(lackM.length)return toast('Thiếu nguyên liệu: '+lackM.map(i=>bpName(i)+' '+bpHave(i)+'/'+mt[i]).join(', ')+'.');
+ const snap=JSON.stringify({inv:ST.inv,petBag:ST.petBag,items:ST.items,stones:ST.stones,jobs:ST.jobs});
+ Object.keys(STN).forEach(k=>{if(+st[k]>0)ST.stones[k]=(ST.stones[k]|0)-Math.floor(+st[k])});
+ Object.keys(mt).forEach(i=>{let n=mt[i];['inv','petBag'].forEach(k=>{if(n>0&&ST[k][i]){const d=Math.min(n,ST[k][i]);ST[k][i]-=d;n-=d;if(ST[k][i]<=0)delete ST[k][i]}})});
+ const r=VG.bag.add(ST,bp.target,1);
+ if(!r.ok){const o=JSON.parse(snap);ST.inv=o.inv;ST.petBag=o.petBag;ST.items=o.items;ST.stones=o.stones;ST.jobs=o.jobs;return toast('Chế tạo thất bại, không mất nguyên liệu: '+(r.msg||'túi đầy.'))}
+ pr.lv=lv;pr.xp=(pr.xp|0)+(+bp.exp||0);
+ while(pr.lv<lvs.length&&(+lvs[pr.lv-1].exp>0)&&pr.xp>=+lvs[pr.lv-1].exp){pr.xp-=+lvs[pr.lv-1].exp;pr.lv++}
+ if(pr.lv>=lvs.length)pr.xp=0;
+ persist();renderHUD();JOBOPEN=job.id;
+ toast('Chế tạo thành công: '+bpName(bp.target)+' · +'+(+bp.exp||0)+' EXP '+job.name+(pr.lv>lv?' · Lên cấp nghề '+pr.lv+'!':'')+(r.msg?' '+r.msg:''));
+ openPanel('craft')}
+function ensureLib(){if(libSet)return;libSet=true;libMerged().then(l=>{if(l){VG.bag.setLib(l);if($('#ov').classList.contains('show')&&$('#oT').textContent==='Nghề')openPanel('craft')}}).catch(()=>{libSet=false})}
 function panel(k){
  const p=ST.p;
  if(k==='char')return['Nhân vật',idRows()+`<div class="grid"><div class="tile"><b>Cảnh giới</b>${esc(GM.rankName(p.lv))}</div><div class="tile"><b>Kinh nghiệm</b>${p.lv>=GM.MAXR?'Tối cao':p.xp+' / '+GM.need(p.lv)}</div></div>`+
-  row('HP',Math.round(p.hp)+' / '+EM())+row('Năng lượng (Linh lực)',Math.round(p.en)+' / '+p.enMax+' · +'+p.reg+'/lượt')+row('Hồn lực',Math.round(p.soul)+' / '+p.soulMax)+row('Giáp cơ giới (lá chắn)',p.gear?VG.bag.eff(ST).sh:'Không mang')+row('Công kích',VG.bag.eff(ST).atk)+row('Tốc độ',VG.bag.eff(ST).spd)+row('Dị thú đã hạ',ST.kills)+row('Sự kiện hoàn thành',ST.cleared)+
+  row('HP hiện tại',Math.round(p.hp)+' / '+EM())+row('HP gốc (Mecha)',p.max)+row('Năng lượng (Linh lực)',Math.round(p.en)+' / '+p.enMax+' · +'+p.reg+'/lượt')+row('Hồn lực',Math.round(p.soul)+' / '+p.soulMax)+row('Giáp gốc (lá chắn)',p.gear?p.shMax:'Không mang')+row('Công kích gốc',p.atk)+row('Tốc độ gốc',p.spd)+mechaRow()+row('Dị thú đã hạ',ST.kills)+row('Sự kiện hoàn thành',ST.cleared)+
   `<div class="note">Điều kiện đột phá theo nghề / đan dược chưa được nối: hiện cảnh giới tăng khi đủ kinh nghiệm (hệ thống chiến đấu gốc).</div>`+`<button class="btn" data-a="equip">🛡 Trang bị<small>Mặc / tháo trang bị, xem chỉ số.</small></button><button class="btn" data-a="savefile">💾 Xuất file save<small>Tải bản sao tiến trình về máy để dự phòng.</small></button><button class="btn" data-a="loadfile">📂 Nạp file save<small>Khôi phục từ file đã xuất (ghi đè bản hiện tại).</small></button>`];
  if(k==='tinhchu')return['Hệ thống Tinh Chủ',soon('Star General System: chỉ điểm yếu, dẫn đường, auto battle. Dành cho người ủng hộ (donate / nạp).')];
  if(k==='sect')return['Tông môn',soon('Gia nhập tông môn, nhiệm vụ tông môn, cống hiến.')];
- if(k==='craft')return['Nghề',jobPanel()];
+ if(k==='craft'){ensureLib();return['Nghề',jobPanel()]}
  if(k==='quest')return VG.quest.panel('country');
  if(k==='ach')return VG.quest.achPanel('combat');
  if(k==='qs')return VG.quest.panel('sect');
@@ -509,6 +546,7 @@ function panel(k){
   return['Bản đồ',`<p><b style="color:var(--gold)">${esc(zone.name)}</b> · ${zone.w}×${zone.h} ô</p>`+ev+cn+lg+`<h2 style="font-size:13px;margin:12px 0 4px">Nhật ký hành trình</h2>`+(ST.log.slice(0,15).map(l=>`<div class="row"><span style="color:var(--txt)">${esc(l)}</span></div>`).join('')||'<p>Chưa có.</p>')+`<button class="btn" style="margin-top:12px" data-a="reset">Làm lại từ đầu (xóa bản lưu)</button>`]}
  return['','']}
 const EM=()=>VG.bag.eff(ST).max;
+function mechaRow(){const E=VG.bag.eff(ST),p=ST.p;if(E.max===p.max&&E.atk===p.atk&&E.spd===p.spd&&(!p.gear||E.sh===p.shMax))return'';return row('Mecha khi mặc trang bị','HP '+E.max+' · ATK '+E.atk+' · SPD '+E.spd+' · Giáp '+(p.gear?E.sh:0))}
 VG.bag.setLegacy(IT);
 /* ===== Nối City UI (city-ui.js) với dữ liệu game ===== */
 const CTY=()=>{const c=ST.city=ST.city||{};return c};
@@ -619,6 +657,7 @@ $('#ov').addEventListener('click',e=>{
   if(a.indexOf('q:')===0||a.indexOf('n:')===0){VG.quest.act(a);return}
  if(a==='close')closeModal();else if(a==='fight')fight();else if(a==='restfull'){rest(true);closeModal()}
  else if(a.indexOf('use:')===0)useItem(a.slice(4));
+  else if(a.indexOf('craft:')===0)craftBp(a.slice(6));
  else if(a==='savefile'){const n=VG.char.exportSave(ST);toast('Đã xuất file: '+n)}
  else if(a==='loadfile'){if(!confirm('Nạp file sẽ ghi đè bản save hiện tại. Tiếp tục?'))return;const i=document.createElement('input');i.type='file';i.accept='.json,application/json';
   i.onchange=()=>{const f=i.files&&i.files[0];if(!f)return;VG.char.importSave(f).then(sv=>{GM.setSave(sv);location.reload()}).catch(e=>toast(e.message))};i.click()}
@@ -644,13 +683,12 @@ function buildTaskbar(){
  const tb=$('#tb');
  tb.innerHTML=FUNCS.map(f=>`<button data-f="${f[0]}" title="${f[2]}"><em>${f[1]}</em><small>${f[2]}</small></button>`).join('')+
   SKILLS.map(s=>`<button class="sk" data-sk="${s.id}" title="${s.n} · ${s.d}"><em>${s.ic}</em><small>${s.n}</small></button>`).join('')+
-  `<button id="bSolomonHangar" title="Xưởng 3D · 10 Cơ Giới Solomon (test)"><em>⚙</em><small>Solomon 3D</small></button><button id="bAuto" title="Tự động chiến đấu (áp dụng khi giao chiến)"><em>○</em><small>AUTO</small></button><button class="pri" id="bRest" title="Nghỉ ngơi"><em>🏕</em><small>Nghỉ ngơi</small></button><button class="fsb" id="bFs" title="Toàn màn hình"><em>⛶</em><small>Toàn màn hình</small></button>`;
+  `<button id="bAuto" title="Tự động chiến đấu (áp dụng khi giao chiến)"><em>○</em><small>AUTO</small></button><button class="pri" id="bRest" title="Nghỉ ngơi"><em>🏕</em><small>Nghỉ ngơi</small></button><button class="fsb" id="bFs" title="Toàn màn hình"><em>⛶</em><small>Toàn màn hình</small></button>`;
  tb.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||modal||!ST)return;
   if(b.dataset.f)openPanel(b.dataset.f);
   else if(b.dataset.sk)skillTap(SKILLS.find(s=>s.id===b.dataset.sk));
   else if(b.id==='bAuto'){ST.auto=!ST.auto;ST.autoSet=1;persist();renderHUD();toast('Auto chiến đấu: '+(ST.auto?'BẬT':'TẮT')+' (ưu tiên, áp dụng mọi trận)')}
-  else if(b.id==='bRest')rest(false)
-  else if(b.id==='bSolomonHangar')window.open('solomon-hangar.html','_blank','noopener');
+  else if(b.id==='bRest')rest(false);
    else if(b.id==='bFs')toggleFS()})}
 $('#tbhead').onclick=()=>{const w=$('#tbwrap');w.classList.toggle('off');$('#tbarrow').textContent=w.classList.contains('off')?'▸':'▾'};
 $('#idrow').onclick=()=>$('#stat').classList.toggle('mini');
@@ -690,8 +728,9 @@ function init(w){
  world=w;monById=new Map((w.monsters||[]).map(m=>[m.id,m]));zone=wmap?wmap.zone:w.zones[0];zone.eventCount=Math.round((zone.eventCount||0)*MCFG.mult);pmap={};zone.places.forEach(p=>{pmap[p.x*1000+p.y]=p});
  tiles=[];for(let x=0;x<zone.w;x++){tiles[x]=[];for(let y=0;y<zone.h;y++)tiles[x][y]=typ(x,y)}
  ST=GM.load(zone);
- if(ST.zone!==zone.id){const k=ST;ST=GM.defaults(zone);ST.char=k.char;ST.p=k.p;ST.items=k.items;ST.stones=k.stones;ST.auto=k.auto;ST.autoSet=k.autoSet;ST.day=k.day;ST.kills=k.kills;ST.cleared=k.cleared;if(k.jobs)ST.jobs=k.jobs;['inv','eq','petBag','eqB','q','city'].forEach(x=>{if(k[x])ST[x]=k[x]})}
+ if(ST.zone!==zone.id){const k=ST;ST=GM.defaults(zone);ST.char=k.char;ST.p=k.p;ST.items=k.items;ST.stones=k.stones;ST.auto=k.auto;ST.autoSet=k.autoSet;ST.day=k.day;ST.kills=k.kills;ST.cleared=k.cleared;if(k.jobs)ST.jobs=k.jobs;['inv','eq','petBag','eqB','q','city','starter'].forEach(x=>{if(k[x])ST[x]=k[x]})}
  VG.quest.ensure(ST);
+ if(VG.bag.grantStarter(ST))GM.save(ST);
  if(!ST.char)return startCreate();
  boot()}
 function startCreate(){
@@ -739,7 +778,7 @@ window.addEventListener('resize',resize);window.addEventListener('orientationcha
 window.addEventListener('pageshow',e=>{if(e.persisted)location.reload()});
 VG.quest.init({ST:()=>ST,GM,IT,monName:id=>{const m=world&&world.monsters.find(v=>v.id===id);return m?m.name:''},placeName:id=>{const p=zone&&zone.places.find(v=>v.id===id);return p?p.name:''},placeHere:()=>{const p=ST&&zone?placeAt(ST.pos.x,ST.pos.y):null;return p?p.id:''},openModal,closeModal,toast,say,persist,renderHUD,rest,jobName:id=>{const b=JOBS&&JOBS.jobs&&JOBS.jobs.find(j=>j.id===id);return b?b.name:''}});
 $('#qtrack').onclick=()=>{if(modal||!ST||!ST.q||!ST.q.pin)return;const d=VG.quest.detail(ST.q.pin);openModal(d[0],d[1])};
-loadJobs();GM.restore().catch(()=>0).then(()=>GM.loadWorld()).then(w=>(typeof GM.loadMonsters==='function'?Promise.resolve().then(()=>GM.loadMonsters(w)):Promise.resolve(w)).catch(()=>w).then(()=>w)).then(w=>loadMap().then(()=>VG.quest.load().catch(()=>0)).then(()=>init(w))).catch(e=>fail(e.message||String(e)));
+loadJobs();loadBps();GM.restore().catch(()=>0).then(()=>GM.loadWorld()).then(w=>(typeof GM.loadMonsters==='function'?Promise.resolve().then(()=>GM.loadMonsters(w)):Promise.resolve(w)).catch(()=>w).then(()=>w)).then(w=>loadMap().then(()=>VG.quest.load().catch(()=>0)).then(()=>init(w))).catch(e=>fail(e.message||String(e)));
 requestAnimationFrame(loop);
 window.__vg={get ST(){return ST},get zone(){return zone},hit,onTap,get mv(){return mv},get route(){return route},wx,wy,toSX,toSY,get zoom(){return zoom},get modal(){return modal}};
 })();
