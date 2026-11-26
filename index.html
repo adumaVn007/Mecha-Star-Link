@@ -644,12 +644,13 @@ function buildTaskbar(){
  const tb=$('#tb');
  tb.innerHTML=FUNCS.map(f=>`<button data-f="${f[0]}" title="${f[2]}"><em>${f[1]}</em><small>${f[2]}</small></button>`).join('')+
   SKILLS.map(s=>`<button class="sk" data-sk="${s.id}" title="${s.n} · ${s.d}"><em>${s.ic}</em><small>${s.n}</small></button>`).join('')+
-  `<button id="bAuto" title="Tự động chiến đấu (áp dụng khi giao chiến)"><em>○</em><small>AUTO</small></button><button class="pri" id="bRest" title="Nghỉ ngơi"><em>🏕</em><small>Nghỉ ngơi</small></button><button class="fsb" id="bFs" title="Toàn màn hình"><em>⛶</em><small>Toàn màn hình</small></button>`;
+  `<button id="bSolomonHangar" title="Xưởng 3D · 10 Cơ Giới Solomon (test)"><em>⚙</em><small>Solomon 3D</small></button><button id="bAuto" title="Tự động chiến đấu (áp dụng khi giao chiến)"><em>○</em><small>AUTO</small></button><button class="pri" id="bRest" title="Nghỉ ngơi"><em>🏕</em><small>Nghỉ ngơi</small></button><button class="fsb" id="bFs" title="Toàn màn hình"><em>⛶</em><small>Toàn màn hình</small></button>`;
  tb.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||modal||!ST)return;
   if(b.dataset.f)openPanel(b.dataset.f);
   else if(b.dataset.sk)skillTap(SKILLS.find(s=>s.id===b.dataset.sk));
   else if(b.id==='bAuto'){ST.auto=!ST.auto;ST.autoSet=1;persist();renderHUD();toast('Auto chiến đấu: '+(ST.auto?'BẬT':'TẮT')+' (ưu tiên, áp dụng mọi trận)')}
-  else if(b.id==='bRest')rest(false);
+  else if(b.id==='bRest')rest(false)
+  else if(b.id==='bSolomonHangar')window.open('solomon-hangar.html','_blank','noopener');
    else if(b.id==='bFs')toggleFS()})}
 $('#tbhead').onclick=()=>{const w=$('#tbwrap');w.classList.toggle('off');$('#tbarrow').textContent=w.classList.contains('off')?'▸':'▾'};
 $('#idrow').onclick=()=>$('#stat').classList.toggle('mini');

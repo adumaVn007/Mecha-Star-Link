@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mecha-Star-Link | Modular Mecha Lab v0.2</title>
+<style>
+:root{color-scheme:dark;--bg:#090d19;--panel:#141c30;--line:#344568;--accent:#8e7bff;--text:#edf1ff;--muted:#aab5d2}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 45% 35%,#1b2b50,#090d19 70%);color:var(--text);font:14px system-ui,sans-serif}
+header{height:62px;padding:12px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;background:#0c1324dd}
+header strong{font-size:18px;letter-spacing:.4px}header span{color:var(--muted)}
+main{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:14px;padding:14px;height:calc(100vh - 62px)}
+#stage{position:relative;min-height:420px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:linear-gradient(#111d35,#090f1e)}
+#view{width:100%;height:100%;display:block}
+.hint{position:absolute;left:16px;bottom:14px;color:#b9c6e8;background:#0b1226bb;padding:8px 11px;border-radius:8px}
+aside{background:#111a2d;border:1px solid var(--line);border-radius:14px;padding:16px;overflow:auto}
+h2{font-size:16px;margin:0 0 12px}h3{font-size:13px;color:#c9d2ef;margin:17px 0 8px}
+label{display:block;color:var(--muted);font-size:12px;margin:9px 0 5px}
+select,input,button{width:100%;border:1px solid #3a4b70;background:#0b1326;color:var(--text);padding:10px;border-radius:8px}
+input{height:40px;padding:5px}button{cursor:pointer;background:#5546bc;border:0;font-weight:650;margin-top:12px}
+small{color:var(--muted);line-height:1.5;display:block;margin-top:10px}
+.stat{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.stat div{background:#0b1326;border:1px solid #293958;border-radius:8px;padding:9px}.stat b{display:block;font-size:11px;color:var(--muted)}.stat span{font-weight:700}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}.actions button{font-size:12px;margin-top:4px;min-height:42px}.picked{outline:2px solid #91ccf8}#exportStatus{font-size:12px;color:#a9d7fc;min-height:22px;padding-top:9px;line-height:1.5}aside a{color:#a9d7fc}
+@media(max-width:760px){main{height:auto;grid-template-columns:1fr}#stage{height:58vh;min-height:360px}aside{overflow:visible}}
+</style>
+</head>
+<body>
+<header><strong>✦ MECHA-STAR-LINK / MODULAR LAB</strong><span>Prototype 0.2 · Three.js</span></header>
+<div style="padding:10px 16px;background:#15243d;border-bottom:1px solid #476185"><a style="color:#96e7ff;font-weight:700" href="solomon-hangar.html">✦ 10 SOLOMON MECHA v0.4 (3D modular · 4 góc) →</a> · <a href="prime-mecha-lab.html">✦ MỚI: Thử 2 Prime Mecha (Vân Kiếm / Thiên Vân Pháo Cơ) — xoay 3D, ghép giáp, xuất 4 góc 2.5D →</a></div>
+<main>
+<section id="stage"><canvas id="view"></canvas><div class="hint">Kéo để xoay · Cuộn để zoom · Chọn bộ phận ở bảng bên phải</div></section>
+<aside>
+<h2>Thiết kế Mecha</h2>
+<label>Đầu</label><select id="head"><option value="vanguard">Vanguard</option><option value="sensor">Sensor Crown</option><option value="horn">Horn Type</option></select>
+<label>Thân</label><select id="torso"><option value="standard">Standard Core</option><option value="heavy">Heavy Armor</option><option value="agile">Agile Frame</option></select>
+<label>Tay</label><select id="arms"><option value="standard">Standard Arms</option><option value="heavy">Heavy Arms</option><option value="blade">Blade Arms</option></select>
+<label>Chân</label><select id="legs"><option value="standard">Standard Legs</option><option value="heavy">Heavy Legs</option><option value="reverse">Reverse-Joint</option></select>
+<label>Ba lô</label><select id="backpack"><option value="none">Không trang bị</option><option value="thruster">Twin Thrusters</option><option value="wings">Wing Pack</option></select>
+<label>Vũ khí</label><select id="weapon"><option value="rifle">Beam Rifle</option><option value="sword">Energy Blade</option><option value="cannon">Shoulder Cannon</option></select>
+<h3>Màu sơn</h3><input id="paint" type="color" value="#d8e3f8">
+<label>Tên Mecha</label><input id="mechaName" type="text" maxlength="70" value="MSL-01 Vanguard" autocomplete="off">
+<h3>Góc nhìn</h3>
+<div class="actions"><button id="view3d" class="picked" type="button">3D tự do</button><button id="view25d" type="button">2.5D isometric</button></div>
+<h3>Xuất tài nguyên</h3>
+<div class="actions"><button id="exportPng" type="button">Ảnh PNG trong suốt</button><button id="exportGlb" type="button">Model 3D (.glb)</button></div>
+<div class="actions"><button id="exportConfig" type="button">Xuất thiết kế (.json)</button><button id="importConfig" type="button">Nhập thiết kế</button></div>
+<input id="configFile" type="file" accept=".json,application/json" hidden>
+<button id="exportGame" type="button">Xuất bộ phận cho game (JSON)</button>
+<div id="exportStatus" role="status" aria-live="polite"></div>
+<button id="reset" type="button">Khôi phục cấu hình mặc định</button>
+<div class="stat"><div><b>KHUNG</b><span>MSL-01</span></div><div><b>KIỂU LẮP</b><span>Modular</span></div><div><b>ĐỘ PHỨC TẠP</b><span>Prototype</span></div><div><b>ĐỊNH DẠNG ĐÍCH</b><span>GLB</span></div></div>
+<small>Mô hình blockout 3D để kiểm tra cơ chế tháo lắp; có thể xuất PNG góc 2.5D và GLB thật. Xuất JSON trang bị theo game khi đã chọn <b>Wing Pack</b> (đủ backpack và wing). JSON là phần dữ liệu bổ sung, <b>không ghi đè</b> dữ liệu game.</small>
+<small><a href="index.html">← Quay về game</a> · Xưởng dùng khóa lưu riêng, không thay đổi save chiến đấu.</small>
+</aside>
+</main>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {GLTFExporter} from 'three/addons/exporters/GLTFExporter.js';
+const canvas=document.querySelector('#view');
+const scene=new THREE.Scene(); scene.background=new THREE.Color('#0c1427');
+const camera=new THREE.PerspectiveCamera(42,1,.1,100);camera.position.set(7,5.5,9);
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;
+const controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,2.3,0);controls.enableDamping=true;
+const camera25=new THREE.OrthographicCamera(-4,4,4,-4,.1,150);camera25.position.set(6,6.5,10);camera25.lookAt(0,2.3,0);
+let activeCamera=camera,is25d=false;
+
+scene.add(new THREE.HemisphereLight(0xbfd8ff,0x26304a,2));
+const key=new THREE.DirectionalLight(0xffffff,3);key.position.set(5,9,6);key.castShadow=true;scene.add(key);
+const rim=new THREE.PointLight(0x7668ff,22,18);rim.position.set(-5,4,-3);scene.add(rim);
+const grid=new THREE.GridHelper(14,28,0x465b91,0x24314d);grid.position.y=-.03;scene.add(grid);
+const materialCache=new Map();
+const mat=(color,metalness=.45,roughness=.32)=>{const key=color+'|'+metalness+'|'+roughness;if(!materialCache.has(key))materialCache.set(key,new THREE.MeshStandardMaterial({color,metalness,roughness}));return materialCache.get(key)};
+let armor=mat('#d8e3f8',.55,.28), dark=mat('#26324b',.7,.32), glow=new THREE.MeshStandardMaterial({color:'#37d9ff',emissive:'#087bba',emissiveIntensity:2,metalness:.2});
+const root=new THREE.Group();scene.add(root);const slots={};
+function box(parent,name,pos,size,material,bevel=0){const g=new THREE.Group();g.name=name;g.position.set(...pos);const geo=new THREE.BoxGeometry(...size);const mesh=new THREE.Mesh(geo,material);mesh.castShadow=true;mesh.receiveShadow=true;g.add(mesh);parent.add(g);return g}
+function sphere(parent,pos,scale,material){const m=new THREE.Mesh(new THREE.SphereGeometry(1,20,16),material);m.position.set(...pos);m.scale.set(...scale);m.castShadow=true;parent.add(m);return m}
+function cyl(parent,pos,r1,r2,h,material){const m=new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,h,12),material);m.position.set(...pos);m.castShadow=true;parent.add(m);return m}
+function clearSlot(name){if(slots[name]){root.remove(slots[name]);slots[name].traverse(o=>{if(o.geometry)o.geometry.dispose()});}slots[name]=new THREE.Group();slots[name].name=name;root.add(slots[name]);return slots[name]}
+function build(){
+  Object.keys(slots).forEach(n=>{const old=slots[n];root.remove(old);old.traverse(o=>{if(o.geometry)o.geometry.dispose()});delete slots[n]});
+  let g=clearSlot('legs'), legType=document.querySelector('#legs').value;
+  for(const x of [-.58,.58]){box(g,'hip',[x,2.05,0],[.5,.38,.55],dark);box(g,'thigh',[x,1.55,0],[legType==='heavy'?.55:.38,.85,.48],armor);sphere(g,[x,1.1,0],[.28,.28,.3],dark);box(g,'shin',[x,.62,0],[legType==='heavy'?.5:.34,.85,.48],armor);box(g,'foot',[x,.13,.18],[.48,.22,.78],dark);box(g,'knee-light',[x,1.12,.29],[.12,.12,.05],glow)}
+  if(legType==='reverse') for(const x of [-.58,.58]){cyl(g,[x,1.42,-.25],.12,.12,.7,dark)}
+  g=clearSlot('torso');const tt=document.querySelector('#torso').value;
+  box(g,'pelvis',[0,2.25,0],[1.05,.48,.62],dark);box(g,'abdomen',[0,2.75,0],[.65,.65,.48],armor);box(g,'chest',[0,3.35,0],[tt==='heavy'?1.65:1.35,.85,.72],armor);box(g,'chest-core',[0,3.35,.38],[.34,.34,.08],glow);
+  for(const x of [-.48,.48])box(g,'chest-vent',[x,3.15,.39],[.16,.1,.06],dark);
+  g=clearSlot('head');const ht=document.querySelector('#head').value;
+  sphere(g,[0,4.12,0],[.42,.48,.4],dark);box(g,'helmet',[0,4.18,.03],[.66,.56,.62],armor);box(g,'visor',[0,4.12,.35],[.48,.12,.06],glow);
+  if(ht==='vanguard'){for(const x of [-1,1]){const horn=cyl(g,[x*.3,4.58,0],.025,.13,.5,mat('#e6c66e'));horn.rotation.z=-x*.45}}
+  if(ht==='sensor'){for(const x of [-.25,.25])cyl(g,[x,4.62,-.03],.04,.04,.5,glow)}
+  if(ht==='horn'){for(const x of [-1,1]){const h=cyl(g,[x*.38,4.55,0],.02,.11,.65,mat('#b9a6ff'));h.rotation.z=-x*.55}}
+  g=clearSlot('arms');const at=document.querySelector('#arms').value;
+  for(const x of [-1,1]){sphere(g,[x*.92,3.52,0],[.32,.34,.34],dark);box(g,'shoulder',[x*1.03,3.48,0],[.65,.58,.68],armor);box(g,'upper-arm',[x*1.05,2.98,0],[.34,.68,.38],dark);sphere(g,[x*1.05,2.6,0],[.23,.23,.23],dark);box(g,'forearm',[x*1.05,2.22,.03],[at==='heavy'?.5:.38,.58,.43],armor);box(g,'hand',[x*1.05,1.82,.08],[.3,.28,.3],dark);box(g,'arm-light',[x*1.05,2.3,.26],[.12,.22,.04],glow)}
+  g=clearSlot('backpack');const bp=document.querySelector('#backpack').value;
+  if(bp!=='none'){box(g,'backpack',[0,3.25,-.55],[.85,.95,.42],dark);for(const x of [-1,1]){if(bp==='thruster'){cyl(g,[x*.48,3.05,-.9],.18,.26,.95,mat('#687da5'));sphere(g,[x*.48,2.55,-.9],[.17,.17,.17],glow)}else{box(g,'wing-root',[x*.75,3.65,-.65],[.3,.35,.35],dark);const w=box(g,'wing',[x*1.15,3.75,-.85],[.65,.12,1.3],armor);w.rotation.y=x*.5;}}}
+  g=clearSlot('weapon');const wp=document.querySelector('#weapon').value;
+  if(wp==='rifle'){box(g,'rifle-body',[1.65,2.3,.15],[.28,.3,1.3],dark);box(g,'rifle-barrel',[1.65,2.34,.88],[.12,.12,.55],glow)}
+  if(wp==='sword'){const blade=box(g,'blade',[1.7,2.65,.15],[.12,1.65,.16],glow);blade.rotation.z=-.15;box(g,'hilt',[1.7,1.8,.15],[.42,.12,.18],mat('#e6c66e'))}
+  if(wp==='cannon'){box(g,'cannon-mount',[.75,3.95,-.25],[.55,.45,.6],dark);cyl(g,[.75,4.35,.1],.16,.22,1.2,glow); }
+  const paint=document.querySelector('#paint').value;armor.color.set(paint);
+}
+function resize(){const w=Math.max(1,canvas.clientWidth),h=Math.max(1,canvas.clientHeight);renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();const half=3.25;camera25.left=-half*w/h;camera25.right=half*w/h;camera25.top=half;camera25.bottom=-half;camera25.updateProjectionMatrix()}
+new ResizeObserver(resize).observe(document.querySelector('#stage'));resize();
+['head','torso','arms','legs','backpack','weapon','paint'].forEach(id=>document.getElementById(id).addEventListener('change',build));
+document.querySelector('#reset').onclick=()=>{document.querySelector('#head').value='vanguard';document.querySelector('#torso').value='standard';document.querySelector('#arms').value='standard';document.querySelector('#legs').value='standard';document.querySelector('#backpack').value='none';document.querySelector('#weapon').value='rifle';document.querySelector('#paint').value='#d8e3f8';build();};
+build();
+function animate(){requestAnimationFrame(animate);if(document.hidden)return;controls.update();renderer.render(scene,activeCamera)}animate();
+
+/* v0.2 — 2.5D framing, GLB export, transparent snapshots and safe game-data additions.
+   No writes to VG, GM, database JSON or the game's localStorage. */
+const $=s=>document.querySelector(s);
+const $status=$('#exportStatus');
+const slotIds=['head','torso','arms','legs','backpack','weapon'];
+const allowed={head:['vanguard','sensor','horn'],torso:['standard','heavy','agile'],arms:['standard','heavy','blade'],legs:['standard','heavy','reverse'],backpack:['none','thruster','wings'],weapon:['rifle','sword','cannon']};
+function notice(msg,error=false){$status.textContent=msg;$status.style.color=error?'#ffa89f':'#b6e9ca'}
+function getPreset(){const parts={};for(const key of slotIds)parts[key]=$('#'+key).value;
+ return {schema:'msl-modular-lab/v0.2',name:$('#mechaName').value.trim()||'MSL-01',parts,paint:$('#paint').value,view:is25d?'2.5d':'3d'};}
+function loadPreset(p){if(!p||typeof p!=='object'||!p.parts)throw Error('JSON thiếu parts');
+ for(const key of slotIds){const v=p.parts[key];if(!allowed[key].includes(v))throw Error('Bộ phận không hợp lệ: '+key)}
+ if(!/^#[0-9a-fA-F]{6}$/.test(p.paint))throw Error('Màu sơn không hợp lệ');
+ for(const key of slotIds)$('#'+key).value=p.parts[key];$('#paint').value=p.paint;
+ $('#mechaName').value=String(p.name||'MSL-01').slice(0,70);build();setView(p.view==='2.5d');}
+function saveLab(){try{localStorage.setItem('msl_modular_lab_v02',JSON.stringify(getPreset()))}catch(e){}}
+function setView(v){is25d=!!v;activeCamera=is25d?camera25:camera;controls.object=activeCamera;
+ controls.target.set(0,2.3,0);controls.enablePan=!is25d;controls.enableRotate=true;
+ controls.minPolarAngle=is25d?.88:0;controls.maxPolarAngle=is25d?1.32:Math.PI;
+ controls.minAzimuthAngle=is25d?.25:-Infinity;controls.maxAzimuthAngle=is25d?1.05:Infinity;
+ $('#view3d').classList.toggle('picked',!is25d);$('#view25d').classList.toggle('picked',is25d);
+ controls.update();saveLab();notice(is25d?'Chế độ 2.5D: góc nhìn isometric giới hạn, model vẫn là 3D thật.':'Chế độ 3D tự do.');}
+function slug(s){return String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9_-]+/g,'-').replace(/^-|-$/g,'').slice(0,45)||'msl-mecha'}
+function download(blob,filename){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000)}
+function fileJSON(data,filename){download(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),filename)}
+function randomId(){return 'msl'+(globalThis.crypto?.randomUUID?.().replace(/-/g,'')||Math.random().toString(36).slice(2)).slice(0,15)}
+let snapshotRenderer=null;
+function imageScene(object,size=512){if(!object.children.length)throw Error('Nhóm bộ phận rỗng, không thể xuất ảnh');
+ const world=new THREE.Scene(),m=object.clone(true);world.add(m);
+ world.add(new THREE.HemisphereLight(0xd9e9ff,0x273451,2.1));
+ const sun=new THREE.DirectionalLight(0xffffff,3);sun.position.set(5,10,8);world.add(sun);
+ const box=new THREE.Box3().setFromObject(m);if(box.isEmpty())throw Error('Nhóm không có hình học');
+ const center=box.getCenter(new THREE.Vector3()),ext=box.getSize(new THREE.Vector3());
+ const radius=Math.max(ext.length(),1);const cam=new THREE.OrthographicCamera(-1,1,1,-1,.1,300);
+ cam.position.copy(center).add(new THREE.Vector3(7,5.5,10).normalize().multiplyScalar(20+radius*3));cam.lookAt(center);cam.updateMatrixWorld();
+ const points=[];for(const x of [box.min.x,box.max.x])for(const y of [box.min.y,box.max.y])for(const z of [box.min.z,box.max.z])points.push(new THREE.Vector3(x,y,z).applyMatrix4(cam.matrixWorldInverse));
+ const width=Math.max(...points.map(p=>p.x))-Math.min(...points.map(p=>p.x)),height=Math.max(...points.map(p=>p.y))-Math.min(...points.map(p=>p.y));
+ const half=Math.max(width,height,0.5)*.64;cam.left=-half;cam.right=half;cam.top=half;cam.bottom=-half;cam.updateProjectionMatrix();
+ if(!snapshotRenderer)snapshotRenderer=new THREE.WebGLRenderer({alpha:true,antialias:true,preserveDrawingBuffer:true});
+ const off=snapshotRenderer;off.setPixelRatio(1);off.setSize(size,size);off.setClearColor(0,0);off.render(world,cam);
+ return off.domElement.toDataURL('image/png');
+}
+function captureAll(){const group=new THREE.Group();for(const name of slotIds)if(slots[name])group.add(slots[name].clone(true));return group}
+function pickChildren(group,names){const out=new THREE.Group();if(!group)return out;
+ for(const c of group.children)if(names.includes(c.name))out.add(c.clone(true));return out}
+function gamePart(slot){switch(slot){
+ case 'head':return slots.head.clone(true);
+ case 'body':return slots.torso.clone(true);
+ case 'shoulder':return pickChildren(slots.arms,['shoulder']);
+ case 'arm':return pickChildren(slots.arms,['upper-arm','forearm','arm-light']);
+ case 'glove':return pickChildren(slots.arms,['hand']);
+ case 'leg':return pickChildren(slots.legs,['hip','thigh','shin','knee-light']);
+ case 'boot':return pickChildren(slots.legs,['foot']);
+ case 'backpack':return pickChildren(slots.backpack,['backpack']);
+ case 'wing':return pickChildren(slots.backpack,['wing-root','wing']);
+ case 'weapon':return slots.weapon.clone(true);
+ default:throw Error('Slot không xác định');
+}}
+function hasGeometry(obj){let found=false;obj.traverse(o=>{if(o.isMesh)found=true});return found}
+async function perform(fn){try{notice('Đang xử lý tài nguyên…');await new Promise(r=>setTimeout(r,40));await fn()}catch(e){console.error(e);notice('Lỗi: '+e.message,true)}}
+$('#view3d').onclick=()=>setView(false);
+$('#view25d').onclick=()=>setView(true);
+$('#exportConfig').onclick=()=>perform(async()=>{const p=getPreset();fileJSON(p,slug(p.name)+'-preset.json');notice('Đã xuất file thiết kế JSON.');});
+$('#importConfig').onclick=()=>$('#configFile').click();
+$('#configFile').onchange=async e=>{const file=e.target.files?.[0];if(!file)return;try{const p=JSON.parse(await file.text());loadPreset(p);saveLab();notice('Đã nhập cấu hình từ '+file.name)}catch(err){notice('Không đọc được thiết kế: '+err.message,true)}e.target.value=''};
+$('#exportPng').onclick=()=>perform(async()=>{const name=slug(getPreset().name);const data=imageScene(captureAll(),1024);const b=await (await fetch(data)).blob();download(b,name+'-transparent.png');notice('Đã xuất PNG 1024×1024, nền trong suốt.');});
+$('#exportGlb').onclick=()=>perform(async()=>{const exporter=new GLTFExporter();const buffer=await new Promise((ok,fail)=>exporter.parse(root,ok,fail,{binary:true,onlyVisible:true,trs:true}));
+ download(new Blob([buffer],{type:'model/gltf-binary'}),slug(getPreset().name)+'.glb');notice('Đã xuất model GLB 3D. Mở bằng Blender hoặc trình xem glTF.');});
+$('#exportGame').onclick=()=>perform(async()=>{if($('#backpack').value!=='wings')throw Error('Chọn Wing Pack để có cả ảnh backpack và wing bắt buộc theo admin.html.');
+ const tags=['head','body','shoulder','arm','glove','leg','boot','backpack','wing'],preset=getPreset(),mecha={id:randomId(),name:preset.name,pilot:'',hp:400,atk:40,en:100,reg:8,spd:600},equips=[];
+ for(const tag of tags){const obj=gamePart(tag);if(!hasGeometry(obj))throw Error('Thiếu mesh cho slot '+tag);
+ const id=randomId();equips.push({id,name:preset.name+' / '+tag,slot:tag,img:imageScene(obj,256),hp:0,atk:0,spd:0,shield:0,wtype:'',mastery:0,move:0,dtype:''});mecha[tag]=id;}
+ // Optional equipped weapon is separate from the required 9-piece body.
+ const w=gamePart('weapon');if(hasGeometry(w))equips.push({id:randomId(),name:preset.name+' / '+preset.parts.weapon,slot:'weapon',img:imageScene(w,256),hp:0,atk:0,spd:0,shield:0,wtype:'',mastery:0,move:0,dtype:''});
+ const data={schema:'msl-modular-lab/db-additions-v0.2',warning:'CHỈ LÀ PHẦN BỔ SUNG; không thay thế database/mecha-studio.json. Sao lưu trước khi ghép. Không tự cấp quyền ghi.',preset,mechas:[mecha],equips};
+ fileJSON(data,slug(preset.name)+'-game-additions.json');notice('Đã xuất '+equips.length+' trang bị và 1 nguyên mẫu Mecha (additions JSON, chưa nhập game).');});
+const originalReset=$('#reset').onclick;
+$('#reset').onclick=()=>{originalReset();$('#mechaName').value='MSL-01 Vanguard';setView(false);saveLab()};
+for(const id of [...slotIds,'paint'])$('#'+id).addEventListener('change',saveLab);
+$('#mechaName').addEventListener('change',saveLab);
+try{const p=JSON.parse(localStorage.getItem('msl_modular_lab_v02')||'null');if(p)loadPreset(p)}catch(e){console.warn('Không nạp được preset',e)}
+notice('Sẵn sàng. Có thể xuất PNG/GLB hoặc JSON bộ phận. Không thay đổi dữ liệu game.');
+
+</script>
+</body></html>
