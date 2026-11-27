@@ -101,7 +101,8 @@
         "preview_3quarter": "assets/prime_mecha/van-kiem/van-kiem-preview-3quarter.png",
         "preview_back": "assets/prime_mecha/van-kiem/van-kiem-preview-back.png"
       },
-      "lab": "prime-mecha-lab.html?base=van-kiem"
+      "lab": "prime-mecha-lab.html?base=van-kiem",
+      "rarity": 5
     },
     {
       "id": "thien-van-phao-co",
@@ -149,7 +150,8 @@
         "preview_3quarter": "assets/prime_mecha/thien-van-phao-co/thien-van-phao-co-preview-3quarter.png",
         "preview_back": "assets/prime_mecha/thien-van-phao-co/thien-van-phao-co-preview-back.png"
       },
-      "lab": "prime-mecha-lab.html?base=thien-van-phao-co"
+      "lab": "prime-mecha-lab.html?base=thien-van-phao-co",
+      "rarity": 5
     }
   ]
 }

@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Mecha Studio – Dữ liệu game</title>
 <link rel="stylesheet" href="vg-admin.css?v=202611261">
+<script src="vg-skill.js?v=202611271"></script>
 <script src="vg-admin.js?v=202611262" defer></script>
 <style>
 *{box-sizing:border-box}html,body{height:100%}
@@ -67,7 +68,7 @@ function saveLocal(){const j=JSON.stringify(D);$("#sz").textContent=Math.round(j
 function save(){const ok=saveLocal();ver++;sD(true);if(ok)ghSchedule();return ok}
 function go(t){tab=t;armed=-1;render()}
 /* ===== 5 phẩm chất (thấp → cao): 1 Phổ thông · 2 Tốt · 3 Hiếm · 4 Sử thi · 5 Truyền thuyết ===== */
-const RQN=["","Phổ thông","Tốt","Hiếm","Sử thi","Truyền thuyết"],RQC=["","#a89f8d","#4fa86a","#3d7fd6","#8c52d6","#d9a21b"];
+const RQN=["","Phổ thông","Tốt","Hiếm","Sử thi","Truyền thuyết"],RQC=["","#a89f8d","#4fa86a","#3d7fd6","#8c52d6","#d6342c"];
 const rq=o=>{const r=Math.round(+(o&&o.rarity)||1);return r<1?1:r>5?5:r};
 let qf=0;
 function normQ(){["equips","items","materials"].forEach(k=>(Array.isArray(D[k])?D[k]:[]).forEach(o=>{if(o&&+o.rarity>5)o.rarity="5"}))}
@@ -81,7 +82,7 @@ function render(){
  const gl=D[tab].map((o,i)=>[o,i]),isQ=tab==="items";
  $("#main").innerHTML=`<button class="pri" onclick="add()">+ Thêm ${T[tab].l.toLowerCase()}</button>`+(isQ?qBar(gl):"")+(isQ?qApply(gl):gl).map(([o,i])=>card(o,i)).join("");}
 function card(o,i){const qa=("rarity" in o||["equips","items","materials"].includes(tab));return `<div class="card"${qa?` style="border-left:5px solid ${RQC[rq(o)]}"`:""}>${qa?`<div class="mut" style="color:${RQC[rq(o)]};font-weight:700">◆ ${RQN[rq(o)]}</div>`:""}<div class="row"><label class="im">${o.img?`<img src="${o.img}">`:"Chạm để chọn ảnh"}<input type="file" accept="image/*" hidden onchange="pic(${i},this.files[0])"></label><div class="fl">${visFields(o).map(f=>fld(o,i,f)).join("")}</div></div>
-<div style="margin-top:6px"><button onclick="del(${i})">${armed===i?"Bấm lần nữa để xóa":"Xóa"}</button></div></div>`}
+${tab==="equips"?skEd(o,i):""}<div style="margin-top:6px"><button onclick="del(${i})">${armed===i?"Bấm lần nữa để xóa":"Xóa"}</button></div></div>`}
 function fld(o,i,[k,l,ty]){const v=o[k]??"";let c;
  if(ty==="t")c=`<input value="${esc(v)}" oninput="ed(${i},'${k}',this.value)">`;
  else if(ty==="n")c=`<input type="number" value="${v}" oninput="ed(${i},'${k}',+this.value)">`;
@@ -94,6 +95,27 @@ function fld(o,i,[k,l,ty]){const v=o[k]??"";let c;
  else if(ty[0]==="q")c=(Array.isArray(v)?v:[]).map((x,j)=>`<div style="display:flex;gap:6px;margin-top:4px"><select onchange="rcSet(${i},${j},'m',this.value)"><option value="">Chọn nguyên liệu</option>${D.materials.filter(m=>m.branch!=="skill").map(m=>`<option value="${m.id}" ${x.m===m.id?"selected":""}>${esc(m.name)}</option>`).join("")}</select><input type="number" min="1" style="width:70px" value="${x.q||1}" onchange="rcSet(${i},${j},'q',+this.value)"><button onclick="rcDel(${i},${j})">✕</button></div>`).join("")+`<button style="margin-top:6px" onclick="rcAdd(${i})">+ Thêm nguyên liệu</button>`;
  else c=D[ty.slice(2)].map(x=>`<label class="ck"><input type="checkbox" ${(o[k]||[]).includes(x.id)?"checked":""} onchange="tg(${i},'${k}','${x.id}',this.checked)">${esc(x.name)}</label>`).join("")||'<span class="mut">Chưa có trang bị nào</span>';
  return `<div class="${ty[0]==="m"||ty[0]==="q"?"w":""}"><span class="mut">${l}</span>${c}</div>`}
+
+/* ===== Skill trên trang bị (equips[].skills) — schema: xem vg-skill.js ===== */
+function skEd(o,i){const L=Array.isArray(o.skills)?o.skills:[];
+ return `<div class="w" style="margin-top:8px;border-top:1px dashed #8886;padding-top:6px"><b>Skill của trang bị (${L.length})</b><div class="mut">Chỉ có hiệu lực khi Mecha đang mặc trang bị này.</div>`+L.map((s,j)=>skRow(i,j,s)).join("")+`<button style="margin-top:6px" onclick="skAdd(${i})">+ Thêm skill</button></div>`}
+function skRow(i,j,r){const s=VG.skill.norm(r),T=VG.skill.TYPES,ac=VG.skill.act(s);
+ const n=(k,l,st)=>`<label style="flex:1;min-width:84px"><span class="mut">${l}</span><input type="number" step="${st||1}" value="${s[k]}" onchange="skSet(${i},${j},'${k}',+this.value)"></label>`;
+ const sel=(k,l,op,cur)=>`<label style="flex:1;min-width:120px"><span class="mut">${l}</span><select onchange="skSet(${i},${j},'${k}',this.value,1)">${op.map(([v,t])=>`<option value="${v}" ${String(cur)===String(v)?"selected":""}>${t}</option>`).join("")}</select></label>`;
+ let f=sel("type","Loại skill",Object.keys(T).map(k=>[k,k+" · "+T[k].n]),s.type);
+ if(VG.skill.EFFS[s.type].length>1)f+=sel("eff","Hiệu ứng",VG.skill.EFFS[s.type].map(k=>[k,VG.skill.EFFN[k]]),s.eff);
+ if(ac)f+=n("en","NL tốn")+n("so","Hồn lực tốn");
+ if(s.eff==="dmg")f+=n("mul","Sát thương ×",0.1)+n("hits","Số đòn");
+ if(s.eff==="heal")f+=n("pct","Hồi % HP tối đa");
+ if(s.eff==="shield"||s.eff==="en"||s.eff==="soul")f+=n("val","Giá trị");
+ if(s.eff==="stat"||s.eff==="buff")f+=sel("stat","Chỉ số",Object.keys(VG.skill.STATS).map(k=>[k,VG.skill.STATS[k]]),s.stat)+n("pct","Cộng %");
+ if(s.eff==="buff")f+=n("turns","Số lượt");
+ return `<div style="margin-top:6px;padding:6px;border:1px solid #8886;border-radius:6px"><div style="display:flex;gap:6px;flex-wrap:wrap"><label style="width:54px"><span class="mut">Icon</span><input value="${esc(s.ic)}" onchange="skSet(${i},${j},'ic',this.value)"></label><label style="flex:2;min-width:140px"><span class="mut">Tên skill</span><input value="${esc(s.name)}" oninput="skSet(${i},${j},'name',this.value)"></label>${f}</div><label><span class="mut">Mô tả</span><input value="${esc(s.desc)}" oninput="skSet(${i},${j},'desc',this.value)"></label><div class="mut" style="margin-top:3px">▶ ${esc(T[s.type].n)}: ${esc(VG.skill.effText(s))} · ${esc(VG.skill.costText(s))}</div><button style="margin-top:4px" onclick="skDel(${i},${j})">Xóa skill</button></div>`}
+function skAdd(i){const o=D.equips[i];if(!Array.isArray(o.skills))o.skills=[];o.skills.push(VG.skill.blank());save();render()}
+function skDel(i,j){const o=D.equips[i];if(!Array.isArray(o.skills))return;if(!confirm("Xóa skill này khỏi trang bị?"))return;o.skills.splice(j,1);save();render()}
+function skSet(i,j,k,v,re){const o=D.equips[i];if(!o||!Array.isArray(o.skills)||!o.skills[j])return;const s=o.skills[j];s[k]=v;
+ if(k==="type"){s.type=+v;const ok=VG.skill.EFFS[s.type];if(ok.indexOf(s.eff)<0)s.eff=ok[0]}
+ save();if(re)render()}
 function newObj(t,extra){const o={id:uid()};
  T[t].f.forEach(([k,,ty,d])=>{o[k]=d!==undefined?d:ty==="t"?"":ty==="n"?0:ty[0]==="s"?opt(ty.slice(2).split("|")[0])[1]:ty[0]==="m"||ty[0]==="q"?[]:""});
  o.name="Mới";return Object.assign(o,extra||{})}

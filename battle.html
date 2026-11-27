@@ -38,7 +38,7 @@ main{display:flex;flex-direction:column;gap:8px;min-width:0}
 #skills button{padding:6px 2px;min-height:78px}
 button{font:inherit;color:var(--tx);background:var(--card);border:1px solid var(--bd);border-radius:6px;padding:9px 10px;cursor:pointer}
 button:disabled{opacity:.4;cursor:default}button.pri{background:var(--red);color:#fff;border-color:var(--red)}
-.sk b{display:block;font-size:11.5px;line-height:1.15;margin:1px 0}.sk span{display:block;font-size:10px;color:var(--mut);line-height:1.2}.sk em{font-style:normal;font-size:19px}
+.sk i{display:block;font-style:normal;font-size:9px;color:var(--atb);line-height:1.1}.sk b{display:block;font-size:11.5px;line-height:1.15;margin:1px 0}.sk span{display:block;font-size:10px;color:var(--mut);line-height:1.2}.sk em{font-style:normal;font-size:19px}
 #bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center}#bar .gap{flex:1}
 #log{font-size:12.5px;max-height:130px;overflow:auto}
 @media(min-width:860px){#log{max-height:none;height:100%;min-height:400px}}
@@ -81,6 +81,7 @@ button:disabled{opacity:.4;cursor:default}button.pri{background:var(--red);color
 <div class="panels"><div class="card panel" id="pp"></div><div class="card panel e" id="ep"></div></div>
 <div class="card" id="dp" style="display:none"></div>
 <div id="skills"></div>
+<div class="card" id="pasv" style="display:none;font-size:12px"></div>
 <div id="bar">
 <button id="bBag">Hành trang</button><button id="bSum">Triệu hồi</button><button id="bRun">Chạy</button>
 <span class="gap"></span>
@@ -93,13 +94,14 @@ button:disabled{opacity:.4;cursor:default}button.pri{background:var(--red);color
 <div id="modal"></div>
 <script src="vg-github.js?v=202611254"></script>
 <script src="vg-core.js?v=202611254"></script>
+<script src="vg-skill.js?v=202611271"></script>
 <script>
 const GM=VG.game;let SV,EV,PRACTICE=false;
 const $=s=>document.querySelector(s);
 const rnd=a=>a[Math.floor(Math.random()*a.length)],ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
 const BEASTS=["Xích Lang Cơ","Thiết Giáp Quy","Hư Ảnh Hổ","Ma Tượng Cơ","Kim Cương Sư","Sương Phách Lang"];
-const DR={sentry:{n:"Sentry Drone",ic:"🛸",d:"Tự bắn địch mỗi nhịp."},repair:{n:"Repair Pet",ic:"🐕",d:"Tự hồi HP cho mecha."},shield:{n:"Shield Orb",ic:"🔰",d:"Tự nạp lá chắn tạm."}};
-let G;
+const DR={pet:{n:"Pet",ic:"🐾",d:"Đồng hành, tự hỗ trợ."},sentry:{n:"Sentry Drone",ic:"🛸",d:"Tự bắn địch mỗi nhịp."},repair:{n:"Repair Pet",ic:"🐕",d:"Tự hồi HP cho mecha."},shield:{n:"Shield Orb",ic:"🔰",d:"Tự nạp lá chắn tạm."}};
+let G,SK=[],PAS=[],LIB=null;
 /* Cảnh giới chính thức: G.lv là số thứ tự cảnh giới 0–48 (bậc cũ N = cảnh giới số N, không đổi công thức chiến đấu).
    0–11: Hoàng/Huyền/Địa/Thiên Giai (mỗi giai Sơ/Trung/Hậu kỳ) · 12–47: Thánh Giai 12 tầng × Sơ/Trung/Hậu · 48: Thần Giai (tối cao). */
 const GR=["Hoàng Giai","Huyền Giai","Địa Giai","Thiên Giai"],PH=["Sơ kỳ","Trung kỳ","Hậu kỳ"],RK=[],RS=[],MAXR=48;
@@ -110,7 +112,7 @@ function SHP(m){const S=["wolf","turtle","tiger"];if(S.indexOf(m.shape)>=0)retur
 function newGame(){
  const p=SV.p,B=SV.eqB||{};
  G={b:{max:+B.max||0,atk:+B.atk||0,spd:+B.spd||0,sh:+B.sh||0},lv0:p.lv,lv:p.lv,xp:p.xp,hp:p.hp,max:p.max+(+B.max||0),atk:p.atk+(+B.atk||0),en:p.en,enMax:p.enMax,reg:p.reg,soul:p.soul,soulMax:p.soulMax,sh:p.gear?p.shMax+(+B.sh||0):0,shMax:p.gear?p.shMax+(+B.sh||0):0,gear:p.gear,spd:p.spd+(+B.spd||0),atb:650,
- items:Object.assign({},SV.items),drone:null,spdX:5,auto:SV.autoSet?!!SV.auto:true,turn:false,over:false,lock:false,modal:false,od:false,round:0,log:[]};
+ items:Object.assign({},SV.items),drone:null,pet:null,buffs:[],passRed:0,spdX:5,auto:SV.autoSet?!!SV.auto:true,turn:false,over:false,lock:false,modal:false,od:false,round:0,log:[]};
  spawn();say(PRACTICE?"Chế độ luyện tập: kết quả không được lưu.":"Chiến đấu bắt đầu. Vân Giáp sẵn sàng.");}
 function spawn(){
  const d=EV.def,m=EV.mon,own=m.rank!=null,lv=own?Math.min(MAXR,Math.max(0,m.rank)):Math.min(MAXR,Math.max(0,G.lv+(d.lvDelta||0))),i=own?0:lv-12,f=k=>Math.max(.5,1+k*i),hm=own?1:(d.hpMul||1),am=own?1:(d.atkMul||1);
@@ -120,22 +122,37 @@ function spawn(){
 function say(t){G.log.push(t);if(G.log.length>60)G.log.shift();const l=$("#log");if(l){l.innerHTML="<h4>NHẬT KÝ</h4>"+G.log.map(x=>`<div>${x}</div>`).join("");l.scrollTop=l.scrollHeight}}
 function pop(t,side,g){const d=document.createElement("div");d.className="pop"+(g?" g":"");d.textContent=t;d.style[side==="p"?"left":"right"]="18%";$("#stage").appendChild(d);setTimeout(()=>d.remove(),900)}
 function flash(id){const g=$("#"+id);g.classList.remove("hit");void g.getBoundingClientRect();g.classList.add("hit")}
-const dmg=m=>{let d=G.atk*m*(.9+Math.random()*.2);if(G.soul<G.soulMax*.25)d*=.7;if(G.od)d*=1.5;return Math.round(d)};
+const bp=k=>G.buffs.reduce((a,b)=>a+(b.stat===k?b.pct:0),0);
+const redc=d=>Math.max(1,Math.round(d*(1-Math.min(60,bp("dmgRed")+G.passRed)/100)));
+const dmg=m=>{let d=G.atk*(1+bp("atk")/100)*m*(.9+Math.random()*.2);if(G.soul<G.soulMax*.25)d*=.7;return Math.round(d)};
 function heal(p){const h=Math.round(G.max*p);G.hp=Math.min(G.max,G.hp+h);say(`Hồi ${h} HP.`);pop("+"+h,"p",1)}
 function hitE(d,n){const e=G.e;if(e.dead)return;const ab=Math.min(e.sh,d);e.sh-=ab;e.hp-=d-ab;say(`${n}: ${d} sát thương.`);pop(d,"e");flash("em");if(e.hp<=0){e.hp=0;e.dead=true;win()}}
 function hitP(d){const ab=Math.min(G.sh,d);G.sh-=ab;G.hp-=d-ab;pop(d,"p");flash("pm");return ab}
-const SK=[
-{n:"Súng Beam",ic:"🔫",lv:12,en:8,so:3,d:"×1.0",run:()=>hitE(dmg(1),"Súng Beam")},
-{n:"Chém Saber",ic:"⚔️",lv:12,en:15,so:5,d:"×1.6",run:()=>hitE(dmg(1.6),"Chém Saber")},
-{n:"Core Burst",ic:"💥",lv:12,en:35,so:10,d:"×2.8",run:()=>hitE(dmg(2.8),"Core Burst")},
-{n:"Tên lửa chùm",ic:"🚀",lv:13,en:25,so:8,d:"3 × 0.8",run:()=>{for(let i=0;i<3;i++)hitE(dmg(.8),"Tên lửa")}},
-{n:"Thủ thế",ic:"🛡️",lv:14,en:10,so:2,d:"+60 khiên",run:()=>{G.sh=Math.min(G.sh+60,250);say("Thủ thế: +60 lá chắn.");pop("+60","p",1)}},
-{n:"Overdrive",ic:"⚡",lv:14,en:20,so:6,d:"đòn sau ×1.5",run:()=>{G.od=true;say("Overdrive: đòn kế tiếp mạnh ×1.5.")}},
-{n:"Nano sửa chữa",ic:"🔧",lv:15,en:25,so:6,d:"+25% HP",run:()=>heal(.25)},
-{n:"Pháo Hư Không",ic:"🌑",lv:16,en:60,so:18,d:"×4.5",run:()=>hitE(dmg(4.5),"Pháo Hư Không")}];
-const can=s=>G.turn&&!G.over&&!G.modal&&G.lv>=s.lv&&G.en>=s.en&&G.soul>=s.so;
-function use(i){const s=SK[i];if(!can(s))return;G.en-=s.en;G.soul-=s.so;const od=G.od;s.run();if(od&&s.n!=="Overdrive")G.od=false;endAct()}
-function endAct(){G.turn=false;G.atb-=1000;renderAll()}
+/* Skill: cơ bản (VG.skill.BASIC, luôn có) + skill của trang bị đang mặc (database equips[].skills). Pet/Drone chạy theo nhịp riêng. */
+function buildSkills(){
+ const all=VG.skill.collect(SV,LIB),own=all.filter(s=>s.slot!=="pet"&&s.slot!=="drone");
+ SK=VG.skill.BASIC.map(s=>Object.assign({},s)).concat(own.filter(s=>VG.skill.act(s)));
+ SK.forEach(s=>{s.d=VG.skill.effText(s)});
+ PAS=own.filter(s=>!VG.skill.act(s));
+ G.passRed=PAS.reduce((a,s)=>a+(s.type===3&&s.stat==="dmgRed"?s.pct:0),0);
+ G.drone=comp("drone");G.pet=comp("pet")}
+function comp(slot){const id=SV.eq&&SV.eq[slot],q=id&&LIB&&(LIB.equips||[]).find(x=>x.id===id);if(!q)return null;const hp=Math.max(1,+q.hp||60);
+ return{t:String(q.dtype||"").toLowerCase()||(slot==="pet"?"pet":"sentry"),slot,eq:q.id,name:q.name,hp,max:hp,atb:300,spd:520,dmg:+q.dmg||0,acc:+q.acc||100,sk:VG.skill.collect(SV,LIB).filter(s=>s.slot===slot)}}
+const comps=()=>[G.drone,G.pet].filter(Boolean);
+const cName=d=>d.name||(DR[d.t]||DR.sentry).n,cIc=d=>(DR[d.t]||DR.pet).ic;
+function addBuff(s){G.buffs=G.buffs.filter(b=>b.id!==s.id);G.buffs.push({id:s.id,name:s.name,stat:s.stat,pct:s.pct,t:s.turns+1});say(`${s.name}: ${VG.skill.effText(s)}.`);pop("↑","p",1)}
+function supEff(s,who){const n=who||s.name;
+ if(s.eff==="heal")heal(s.pct/100);
+ else if(s.eff==="shield"){if(!G.gear)return;G.sh=Math.min(Math.max(250,G.shMax),G.sh+s.val);say(`${n}: +${s.val} lá chắn.`);pop("+"+s.val,"p",1)}
+ else if(s.eff==="en"){G.en=Math.min(G.enMax,G.en+s.val);say(`${n}: +${s.val} năng lượng.`)}
+ else if(s.eff==="soul"){G.soul=Math.min(G.soulMax,G.soul+s.val);say(`${n}: +${s.val} hồn lực.`)}
+ else if(s.eff==="buff")addBuff(s)}
+function runSk(s){
+ if(s.eff==="dmg"){for(let i=0;i<s.hits;i++)hitE(dmg(s.mul),s.name)}
+ else supEff(s,s.name)}
+const can=s=>G.turn&&!G.over&&!G.modal&&G.lv>=(s.lv||0)&&G.en>=s.en&&G.soul>=s.so;
+function use(i){const s=SK[i];if(!s||!can(s))return;G.en-=s.en;G.soul-=s.so;runSk(s);endAct()}
+function endAct(){G.buffs.forEach(b=>b.t--);G.buffs=G.buffs.filter(b=>b.t>0);G.turn=false;G.atb-=1000;renderAll()}
 function endTurn(){if(!G.turn||G.modal)return;G.soul=Math.min(G.soulMax,G.soul+12);G.en=Math.min(G.enMax,G.en+10);say("Kết lượt: nghỉ ngơi, hồi 10 năng lượng và 12 hồn lực.");endAct()}
 function win(){const e=G.e,d=EV.def,g=EV.mon.xp||d.xp||40;G.xp+=g;say(`${e.name} bị hạ. +${g} kinh nghiệm.`);
  while(G.lv<MAXR&&G.xp>=need()){G.xp-=need();lvUp()}if(G.lv>=MAXR)G.xp=0;
@@ -154,33 +171,39 @@ function finish(type,xp,st){
 function box(t,h,b){$("#modal").innerHTML=`<div class="ov"><div class="box"><h3>${t}</h3><div class="mut">${h}</div><button class="pri" onclick="toMap()">${b}</button></div></div>`}
 function toMap(){GM.nav("index.html")}
 function lvUp(){G.lv++;G.max=Math.round(G.max*1.1);G.hp=Math.min(G.max,G.hp+Math.round(G.max*.4));G.atk=Math.round(G.atk*1.08);G.enMax+=8;G.reg+=1;G.soulMax+=4;G.spd+=8;
- if(G.gear)G.shMax+=15;say(`ĐỘT PHÁ: ${rankName(G.lv)}!`);SK.filter(s=>s.lv===G.lv).forEach(s=>say(`Mở khóa kỹ năng: ${s.n}.`))}
+ if(G.gear)G.shMax+=15;say(`ĐỘT PHÁ: ${rankName(G.lv)}!`);SK.filter(s=>s.lv===G.lv).forEach(s=>say(`Mở khóa kỹ năng: ${s.name}.`))}
 function lose(){G.over=true;finish("lose");box("Mecha bị hạ gục","Bạn giữ nguyên cấp và kinh nghiệm. Hồi sinh tại điểm xuất phát.","Hồi sinh &amp; về bản đồ")}
 function pace(){G.lock=true;setTimeout(()=>{G.lock=false},420/G.spdX)}
-function startTurn(){G.turn=true;G.round++;G.en=Math.min(G.enMax,G.en+G.reg);G.soul=Math.min(G.soulMax,G.soul+3);if(G.gear)G.sh=Math.min(G.shMax,G.sh+8);renderAll();if(G.auto)setTimeout(autoAct,600/G.spdX)}
+function startTurn(){G.turn=true;G.round++;G.en=Math.min(G.enMax,G.en+G.reg);G.soul=Math.min(G.soulMax,G.soul+3);if(G.gear)G.sh=Math.min(G.shMax,G.sh+8);PAS.filter(s=>s.type===6).forEach(s=>supEff(s,s.name));renderAll();if(G.auto)setTimeout(autoAct,600/G.spdX)}
 function enemyAct(){const e=G.e;e.atb-=1000;e.en=Math.min(e.enMax,e.en+6);
  const hv=e.en>=30&&Math.random()<.4;if(hv)e.en-=30;
- const d=Math.round(e.atk*(hv?1.9:1)*(.9+Math.random()*.2));
+ const d=redc(Math.round(e.atk*(hv?1.9:1)*(.9+Math.random()*.2)));
  if(G.drone&&Math.random()<.25){G.drone.hp-=d;say(`${e.name} bắn trúng drone: ${d}.`);if(G.drone.hp<=0){say("Drone bị phá hủy.");G.drone=null}}
  else{const ab=hitP(d);say(`${e.name} ${hv?"tung đòn nặng":"tấn công"}: ${d} sát thương${ab?` (khiên chặn ${ab})`:""}.`);if(G.hp<=0){G.hp=0;pace();renderAll();return lose()}}
  pace();renderAll()}
-function droneAct(){const d=G.drone;d.atb-=1000;
- if(d.t==="sentry")hitE(25+3*(G.lv-12),"Sentry Drone");
- if(d.t==="repair"){const h=Math.round(G.max*.07);G.hp=Math.min(G.max,G.hp+h);say(`Repair Pet hồi ${h} HP.`);pop("+"+h,"p",1)}
- if(d.t==="shield"){G.sh=Math.min(G.sh+35,250);say("Shield Orb nạp +35 lá chắn.")}
+function compAct(d){d.atb-=1000;
+ const nm=cName(d),shoot=(mul,s)=>{if(Math.random()*100>d.acc){say(`${nm}: bắn trượt.`);return}const x=Math.round((d.dmg+.25*G.atk)*mul*(.9+Math.random()*.2));for(let i=0;i<(s?s.hits:1);i++)hitE(x,nm)};
+ if(d.sk&&d.sk.length){d.sk.forEach(s=>{if(G.over)return;if(s.type===2)shoot(s.mul,s);else if(s.type===6)supEff(s,nm)})}
+ else if(d.eq&&d.dmg>0)shoot(1);
+ else{
+  if(d.t==="sentry")hitE(25+3*(G.lv-12),"Sentry Drone");
+  if(d.t==="repair"){const h=Math.round(G.max*.07);G.hp=Math.min(G.max,G.hp+h);say(`Repair Pet hồi ${h} HP.`);pop("+"+h,"p",1)}
+  if(d.t==="shield"){G.sh=Math.min(G.sh+35,250);say("Shield Orb nạp +35 lá chắn.")}}
  pace();renderAll()}
 function tick(){
  if(G.over||G.turn||G.lock||G.modal)return;const k=.04*G.spdX;
- G.atb+=G.spd*k;G.e.atb+=G.e.spd*k;if(G.drone)G.drone.atb+=G.drone.spd*k;
- const a=[["p",G.atb],["e",G.e.atb],["d",G.drone?G.drone.atb:0]].filter(x=>x[1]>=1000).sort((x,y)=>y[1]-x[1])[0];
- if(a){if(a[0]==="p")startTurn();else if(a[0]==="e")enemyAct();else droneAct()}
+ G.atb+=G.spd*(1+bp("spd")/100)*k;G.e.atb+=G.e.spd*k;comps().forEach(c=>{c.atb+=c.spd*k});
+ const a=[["p",G.atb],["e",G.e.atb]].concat(comps().map(c=>[c,c.atb])).filter(x=>x[1]>=1000).sort((x,y)=>y[1]-x[1])[0];
+ if(a){if(a[0]==="p")startTurn();else if(a[0]==="e")enemyAct();else compAct(a[0])}
  tickUI()}
 function autoAct(){
  if(!G.auto||!G.turn||G.modal||G.over||G.lock)return;
  if(!G.drone&&G.en>=45&&G.soul>=15)return summon("sentry");
  const ok=SK.map((s,i)=>[s,i]).filter(([s])=>can(s));
- const h=ok.find(([s])=>s.n==="Nano sửa chữa");if(G.hp<G.max*.4&&h)return use(h[1]);
- const at=ok.filter(([s,i])=>[0,1,2,3,7].includes(i)).sort((a,b)=>b[0].en-a[0].en);
+ const h=ok.find(([s])=>s.eff==="heal");if(G.hp<G.max*.4&&h)return use(h[1]);
+ const bf=ok.filter(([s])=>s.eff==="buff"&&s.id!=="overdrive"&&!G.buffs.some(b=>b.id===s.id));
+ if(bf.length&&Math.random()<.5)return use(bf[0][1]);
+ const at=ok.filter(([s])=>s.eff==="dmg").sort((a,b)=>b[0].en-a[0].en);
  if(!at.length)return endTurn();
  use((Math.random()<.7?at[0]:rnd(at))[1])}
 const IT={cell:["Pin năng lượng","+60 năng lượng"],tonic:["Tinh dịch hồn lực","+40 hồn lực"],nano:["Gói nano","+30% HP"],shcell:["Pin lá chắn","+80 lá chắn (cần trang bị)"]};
@@ -191,7 +214,7 @@ function item(k){if(!G.turn||G.items[k]<1)return;G.items[k]--;
  if(k==="cell")G.en=Math.min(G.enMax,G.en+60);if(k==="tonic")G.soul=Math.min(G.soulMax,G.soul+40);if(k==="nano")heal(.3);if(k==="shcell")G.sh=Math.min(G.sh+80,250);
  say(`Dùng ${IT[k][0]}.`);G.modal=false;$("#modal").innerHTML="";endAct()}
 function sumM(){modal(`<h3>Triệu hồi</h3><div class="mut">Chi phí: 30 năng lượng, 10 hồn lực. Chỉ một drone cùng lúc, triệu hồi mới sẽ thay thế.</div>${Object.entries(DR).map(([k,v])=>`<button ${G.turn&&G.en>=30&&G.soul>=10?"":"disabled"} onclick="summon('${k}')">${v.ic} <b>${v.n}</b><div class="mut">${v.d}</div></button>`).join("")}`)}
-function summon(t){if(!G.turn||G.en<30||G.soul<10)return;G.en-=30;G.soul-=10;G.drone={t,hp:90,max:90,atb:300,spd:520};say(`Triệu hồi ${DR[t].n}.`);G.modal=false;$("#modal").innerHTML="";endAct()}
+function summon(t){if(!G.turn||G.en<30||G.soul<10)return;G.en-=30;G.soul-=10;G.drone={t,hp:90,max:90,atb:300,spd:520,sk:[]};say(`Triệu hồi ${DR[t].n}.`);G.modal=false;$("#modal").innerHTML="";endAct()}
 function run(){if(!G.turn||G.modal)return;const c=Math.max(.2,Math.min(.85,.45+(G.spd-G.e.spd)/1000));
  if(Math.random()<c){say("Thoát khỏi giao tranh thành công.");G.turn=false;G.over=true;finish("flee");renderAll();setTimeout(toMap,700)}
  else{say("Chạy thất bại, mất lượt.");endAct()}}
@@ -203,16 +226,18 @@ function renderAll(){
  document.querySelectorAll("#em .sp").forEach(n=>n.style.display=n.dataset.s===e.shape?"":"none");
  $("#rd").textContent="Hiệp "+Math.max(1,G.round);
  $("#dm").style.display=d?"":"none";
- $("#order").innerHTML=`<div class="pt"><b>🤖</b><div class="mb"><i id="opa"></i></div>Vân Giáp</div>${d?`<div class="pt"><b>${DR[d.t].ic}</b><div class="mb"><i id="oda"></i></div>${DR[d.t].n}</div>`:""}<div class="pt"><b>👾</b><div class="mb"><i id="oea"></i></div>${e.name}</div>`;
- $("#pp").innerHTML=`<div class="hd">${rankName(G.lv)}</div><div class="nm">Vân Giáp<small>${G.lv>=MAXR?"Cảnh giới tối cao":"KN "+G.xp+"/"+need()}</small>${G.od?'<small style="color:var(--red)">Overdrive</small>':""}</div>`+
+ $("#order").innerHTML=`<div class="pt"><b>🤖</b><div class="mb"><i id="opa"></i></div>Vân Giáp</div>${comps().map((c,i)=>`<div class="pt"><b>${cIc(c)}</b><div class="mb"><i id="oc${i}a"></i></div>${cName(c)}</div>`).join("")}<div class="pt"><b>👾</b><div class="mb"><i id="oea"></i></div>${e.name}</div>`;
+ $("#pp").innerHTML=`<div class="hd">${rankName(G.lv)}</div><div class="nm">Vân Giáp<small>${G.lv>=MAXR?"Cảnh giới tối cao":"KN "+G.xp+"/"+need()}</small>${G.buffs.map(b=>`<small style="color:var(--red)">${b.name} (${b.t-1})</small>`).join("")}</div>`+
  B("Lá chắn",G.sh,Math.max(G.shMax,G.sh),"--sh")+B("HP",G.hp,G.max,"--hp")+B("Năng lượng",G.en,G.enMax,"--en",`+${G.reg}/lượt · `)+
  B("Hồn lực",G.soul,G.soulMax,"--so")+(G.soul<G.soulMax*.25?'<div class="flag">Kiệt sức: sát thương giảm 30%</div>':"")+AT("pa",G.atb,G.spd);
  $("#ep").innerHTML=`<div class="hd">${e.tierName} · ${rankName(e.lv)}</div><div class="nm">${e.name}</div>`+
  B("Lá chắn",e.sh,e.shMax,"--sh")+B("HP",e.hp,e.max,"--bad")+B("Năng lượng",e.en,e.enMax,"--en")+AT("ea",e.atb,e.spd);
- const dp=$("#dp");dp.style.display=d?"":"none";
- if(d)dp.innerHTML=`<div class="nm" style="font-size:14px">${DR[d.t].ic} ${DR[d.t].n}</div>`+B("HP drone",d.hp,d.max,"--hp")+AT("da",d.atb,d.spd);
- $("#skills").innerHTML=SK.map((s,i)=>G.lv<s.lv?`<button class="sk" disabled><em>🔒</em><b>${s.n}</b><span>${rankShort(s.lv)}</span></button>`:
- `<button class="sk" ${can(s)?"":"disabled"} onclick="use(${i})"><em>${s.ic}</em><b>${s.n}</b><span>${s.d}</span><span>NL ${s.en} · HL ${s.so}</span></button>`).join("");
+ const dp=$("#dp"),cs=comps();dp.style.display=cs.length?"":"none";
+ dp.innerHTML=cs.map((c,i)=>`<div class="nm" style="font-size:14px">${cIc(c)} ${cName(c)}</div>`+B("HP",c.hp,c.max,"--hp")+AT("c"+i,c.atb,c.spd)).join("");
+ $("#skills").innerHTML=SK.map((s,i)=>G.lv<(s.lv||0)?`<button class="sk" disabled><em>🔒</em><b>${s.name}</b><span>${rankShort(s.lv)}</span></button>`:
+  `<button class="sk" ${can(s)?"":"disabled"} onclick="use(${i})"><em>${s.ic}</em><b>${s.name}</b><i>${VG.skill.TYPES[s.type].s}</i><span>${s.d}</span><span>NL ${s.en} · HL ${s.so}</span></button>`).join("");
+ const pv=$("#pasv"),pl=PAS.map(s=>`${s.ic} <b>${s.name}</b> <i style="color:var(--atb)">${VG.skill.TYPES[s.type].s}</i> — ${VG.skill.effText(s)}`).concat(cs.flatMap(c=>(c.sk||[]).map(s=>`${s.ic} <b>${s.name}</b> <i style="color:var(--atb)">${cName(c)} · ${VG.skill.TYPES[s.type].s}</i> — ${VG.skill.effText(s)}`)));
+ pv.style.display=pl.length?"":"none";pv.innerHTML=pl.length?"<div class=\"mut\" style=\"font-size:11px\">NỘI TẠI / BỊ ĐỘNG TỪ TRANG BỊ</div>"+pl.map(x=>`<div>${x}</div>`).join(""):"";
  const t=G.turn&&!G.modal&&!G.over;
  ["bBag","bSum","bRun","bEnd"].forEach(id=>$("#"+id).disabled=!t);
  $("#bSpd").textContent="x"+G.spdX;$("#bAuto").textContent="Auto "+(G.auto?"●":"○");
@@ -221,7 +246,7 @@ function tickUI(){
  const w=(id,v)=>{const n=$("#"+id);if(n)n.style.width=Math.min(100,Math.max(0,v/10))+"%"};
  const t=(id,v)=>{const n=$("#"+id+"t");if(n)n.textContent=Math.round(v)};
  w("pa",G.atb);t("pa",G.atb);w("opa",G.atb);w("ea",G.e.atb);t("ea",G.e.atb);w("oea",G.e.atb);
- if(G.drone){w("da",G.drone.atb);t("da",G.drone.atb);w("oda",G.drone.atb)}}
+ comps().forEach((c,i)=>{w("c"+i,c.atb);t("c"+i,c.atb);w("oc"+i,c.atb)});}
 $("#bBag").onclick=bag;$("#bSum").onclick=sumM;$("#bRun").onclick=run;$("#bEnd").onclick=endTurn;$("#bSet").onclick=setM;
 $("#bSpd").onclick=()=>{G.spdX=({5:1,1:2,2:3,3:5})[G.spdX]||5;renderAll()};
 $("#bAuto").onclick=()=>{G.auto=!G.auto;renderAll();if(G.auto&&G.turn)setTimeout(autoAct,300)};
@@ -229,7 +254,7 @@ GM.loadWorld().then(w=>(typeof GM.loadMonsters==='function'?Promise.resolve().th
  if(pd){def=w.events.find(v=>v.id===pd.id);mon=w.monsters.find(v=>v.id===pd.mon)}
  if(!def||!mon){PRACTICE=true;def=GM.rnd(w.events);mon=w.monsters.find(m=>m.id===GM.rnd(def.monsters))||w.monsters[0]}
  EV={def,mon,tier:w.tiers[def.tier]||{name:"?"},uid:pd&&pd.uid,from:pd&&pd.from,spawn:z.spawn};
- newGame();renderAll();setInterval(tick,100)}).catch(e=>{document.body.innerHTML='<p style="padding:20px">Không tải được dữ liệu: '+e.message+' <a href="index.html">Về bản đồ</a></p>'});
+ return GM.loadLib().catch(()=>null).then(l=>{LIB=l;newGame();buildSkills();renderAll();setInterval(tick,100)})}).catch(e=>{document.body.innerHTML='<p style="padding:20px">Không tải được dữ liệu: '+e.message+' <a href="index.html">Về bản đồ</a></p>'});
 </script>
 </body>
 </html>

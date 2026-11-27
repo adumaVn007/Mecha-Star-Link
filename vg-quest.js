@@ -283,7 +283,7 @@
   };
   function where(id, at) { var n = id && Q.npc(id); if (n) return 'NPC ' + esc(n.name); if (at) return 'ô (' + at.x + ', ' + at.y + ')'; return null; }
   /* 5 phẩm cấp nhiệm vụ (thấp → cao), cùng hệ với phẩm chất trang bị. q.grade thiếu = 1 */
-  Q.GN = ['', 'Phổ thông', 'Tốt', 'Hiếm', 'Sử thi', 'Truyền thuyết']; Q.GC = ['', '#a89f8d', '#4fa86a', '#3d7fd6', '#8c52d6', '#d9a21b']; Q.fg = 0;
+  Q.GN = ['', 'Phổ thông', 'Tốt', 'Hiếm', 'Sử thi', 'Truyền thuyết']; Q.GC = ['', '#a89f8d', '#4fa86a', '#3d7fd6', '#8c52d6', '#d6342c']; Q.fg = 0;
   Q.grade = function (q) { var g = Math.round(+(q && q.grade)); return g >= 1 ? Math.min(5, g) : 1; };
   Q.list = function (scope) {
     var by = { active: [], done: [], avail: [], claimed: [] };

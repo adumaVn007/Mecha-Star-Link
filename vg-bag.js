@@ -13,7 +13,7 @@
     ['boot', 'Giày', '👢'], ['weapon', 'Vũ khí', '⚔'], ['backpack', 'Ba lô', '🎒'], ['wing', 'Cánh', '🕊'], ['pet', 'Pet', '🐾'], ['drone', 'Drone', '🛸']], SLM = {};
   SL.forEach(function (s) { SLM[s[0]] = s; });
   var LEFT = ['head', 'body', 'shoulder', 'arm', 'glove', 'leg'], RIGHT = ['boot', 'weapon', 'backpack', 'wing', 'pet', 'drone'], NEEDBP = { wing: 1, drone: 1, pet: 1 };
-  var RN = ['', 'Phổ thông', 'Tốt', 'Hiếm', 'Sử thi', 'Truyền thuyết'], RC = ['', '#a89f8d', '#4fa86a', '#3d7fd6', '#8c52d6', '#d9a21b']; /* 5 phẩm chất, thấp → cao */
+  var RN = ['', 'Phổ thông', 'Tốt', 'Hiếm', 'Sử thi', 'Truyền thuyết'], RC = ['', '#a89f8d', '#4fa86a', '#3d7fd6', '#8c52d6', '#d6342c']; /* 5 phẩm chất, thấp → cao */
   var KIC = { cell: '🔋', tonic: '💧', nano: '🧪', shcell: '🔰', monster: '🦴', herb: '🌿', pill: '💊', artifact: '⚔️', talisman: '📜', ore: '💎', method: '📜', skill: '✨' };
   var LEG = {}, LIB = null, C = {}, libP = null;
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
@@ -49,6 +49,9 @@
       var c = C[ST.eq[s]]; if (!c || c.k !== 'e' || s === 'pet' || s === 'drone') return; /* HP của Pet/Drone là HP riêng của nó */
       b.max += num(c.d.hp); b.atk += num(c.d.atk); b.spd += num(c.d.spd); b.sh += num(c.d.shield);
     });
+    /* Skill loại 3 (nội tại bị động): +% chỉ số gốc, tính vào eqB để battle.html cộng sẵn */
+    if (VG.skill && LIB) { var bs = { max: ST.p.max, atk: ST.p.atk, spd: ST.p.spd, sh: ST.p.gear ? ST.p.shMax : 0 };
+      VG.skill.collect(ST, LIB).forEach(function (s) { if (s.type === 3 && bs[s.stat] != null) b[s.stat] += Math.round(bs[s.stat] * num(s.pct) / 100); }); }
     return b;
   };
   function nm(id) { return LEG[id] ? LEG[id][0] : (C[id] ? C[id].d.name : 'Vật phẩm'); }
@@ -131,6 +134,7 @@
       out.unshift('<div class="ln" style="color:#cbbd98">Vị trí: ' + esc(SLM[d.slot] ? SLM[d.slot][1] : (d.slot || '—')) + '</div>');
     } else if (it.k === 'i') out.push('<div class="ln">Hiệu ứng: ' + esc({ cell: 'Năng lượng', tonic: 'Hồn lực', nano: 'HP (theo %)', shcell: 'Lá chắn (chỉ dùng khi chiến đấu)' }[d.type] || d.type || '—') + (d.val ? ' · ' + fmt(num(d.val)) + (d.type === 'nano' ? '%' : '') : '') + '</div>');
     else if (it.k === 'm') out.push('<div class="ln" style="color:#cbbd98">Nguyên liệu: ' + esc({ monster: 'Tài liệu từ quái vật', herb: 'Linh dược / quả kì bí', pill: 'Đan dược', artifact: 'Pháp khí', talisman: 'Phù chú', ore: 'Khoáng liệu', method: 'Công pháp', skill: 'Skill' }[d.branch] || '—') + '</div>');
+    if (it.k === 'e' && VG.skill && Array.isArray(d.skills) && d.skills.length) out.push(VG.skill.html(d.skills));
     return out.join('');
   }
   function selItem(ST) {
@@ -159,7 +163,9 @@
       /* Chỉ số nhân vật = chỉ số cơ bản của Mecha. Trang bị chỉ cộng vào Mecha (hàng dưới), không đổi chỉ số nhân vật; tháo ra thì về lại chỉ số cơ bản. */
       var bs = function (k, v) { return '<span>' + k + ' ' + fmt(v) + '</span>'; };
       h += '<div class="st"><u>Nhân vật = Mecha cơ bản</u>' + bs('❤ HP', p.max) + bs('⚔ ATK', p.atk) + bs('⚡ SPD', p.spd) + bs('🛡 Giáp', p.gear ? p.shMax : 0) + '</div>';
+      var sks = VG.skill && LIB ? VG.skill.collect(ST, LIB) : [];
       if (num(e.b.max) || num(e.b.atk) || num(e.b.spd) || (p.gear && num(e.b.sh)))         h += '<div class="st on"><u>Mecha khi mặc trang bị</u>' + sp('❤ HP', e.max, num(e.b.max)) + sp('⚔ ATK', e.atk, num(e.b.atk)) + sp('⚡ SPD', e.spd, num(e.b.spd)) + sp('🛡 Giáp', e.sh, p.gear ? num(e.b.sh) : 0) + '</div>';
+      h += '<div class="st"><u>Kỹ năng Mecha (cơ bản luôn có' + (sks.length ? ' + từ trang bị đang mặc' : ' · mặc trang bị để có thêm') + ')</u>' + sks.map(function (k) { return '<span title="' + esc(k.src) + '">' + esc(k.ic) + ' ' + esc(k.name) + ' <i>' + esc(VG.skill.TYPES[k.type].s) + '</i></span>'; }).join('') + '</div>';
     }
     var pet = S.sub === 'pet' && S.tab === 'bag', ent = pet ? entries(ST, ST.petBag, false) : entries(ST, ST.inv, true);
     if (S.fRar) ent = ent.filter(function (x) { return x.r === S.fRar; });

@@ -114,10 +114,11 @@ html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none;backgrou
 
 <script src="vg-github.js?v=202611262"></script>
 <script src="vg-core.js?v=202611254"></script>
+<script src="vg-skill.js?v=202611271"></script>
 <script src="vg-char.js?v=202611254"></script>
-<script src="vg-bag.js?v=202611262"></script>
+<script src="vg-bag.js?v=202611271"></script>
 <script src="vg-mapart.js?v=202611254"></script>
-<script src="vg-quest.js?v=202611261"></script>
+<script src="vg-quest.js?v=202611271"></script>
 <script src="city-ui.js?v=3"></script>
 <script>
 (function(){
@@ -682,7 +683,6 @@ function renderHUD(){
 function buildTaskbar(){
  const tb=$('#tb');
  tb.innerHTML=FUNCS.map(f=>`<button data-f="${f[0]}" title="${f[2]}"><em>${f[1]}</em><small>${f[2]}</small></button>`).join('')+
-  SKILLS.map(s=>`<button class="sk" data-sk="${s.id}" title="${s.n} · ${s.d}"><em>${s.ic}</em><small>${s.n}</small></button>`).join('')+
   `<button id="bAuto" title="Tự động chiến đấu (áp dụng khi giao chiến)"><em>○</em><small>AUTO</small></button><button class="pri" id="bRest" title="Nghỉ ngơi"><em>🏕</em><small>Nghỉ ngơi</small></button><button class="fsb" id="bFs" title="Toàn màn hình"><em>⛶</em><small>Toàn màn hình</small></button>`;
  tb.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||modal||!ST)return;
   if(b.dataset.f)openPanel(b.dataset.f);
