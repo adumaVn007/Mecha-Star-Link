@@ -1,5 +1,0 @@
-{
- "v": 1,
- "note": "Gắn hệ nguyên tố + hiệu ứng đặc trưng lên trang bị (id = id trong database/mecha-studio.json › equips). KHÔNG sửa mecha-studio.json. Trang bị không có mục ở đây = không hệ (Non type). Sửa bằng EditTypeGame.html.",
- "tags": {}
-}
