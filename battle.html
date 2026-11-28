@@ -26,16 +26,27 @@ main{display:flex;flex-direction:column;gap:8px;min-width:0}
 .pop.g{color:var(--hp)}
 @keyframes fl{to{transform:translateY(-34px);opacity:0}}
 .hit{animation:bl .25s}@keyframes bl{50%{opacity:.25}}
-.panels{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-@media(max-width:560px){.panels{grid-template-columns:1fr}}
-.panel{border-left:3px solid var(--hp)}.panel.e{border-left-color:var(--red)}
-.hd{color:var(--red);font-weight:700;font-size:12px}.nm{font-size:17px;font-weight:700;margin:1px 0 4px}
-.nm small{font-weight:400;color:var(--mut);font-size:11px;margin-left:6px}
-.lb{display:flex;justify-content:space-between;font-size:11.5px}
-.bar{height:6px;background:var(--bd);border-radius:3px;overflow:hidden;margin:1px 0 5px}.bar i{display:block;height:100%;transition:width .25s}
-.flag{font-size:11px;color:var(--bad)}
-#skills{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
-#skills button{padding:6px 2px;min-height:78px}
+.panels{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.panel{border-left:3px solid var(--hp);padding:5px 6px;min-width:0}.panel.e{border-left-color:var(--red)}
+.hd{color:var(--red);font-weight:700;font-size:10px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nm{font-size:13px;font-weight:700;margin:0 0 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nm small{font-weight:400;color:var(--mut);font-size:10px;margin-left:5px}
+.sb{position:relative;display:flex;justify-content:space-between;gap:4px;height:15px;margin:2px 0;padding:0 4px;border-radius:3px;background:var(--bd);overflow:hidden;font-size:10px;line-height:15px;white-space:nowrap}
+.sb i{position:absolute;left:0;top:0;bottom:0;width:0;opacity:.8;transition:width .25s}
+.sb span,.sb b{position:relative;z-index:1;text-shadow:0 0 2px var(--card),0 0 2px var(--card)}.sb b{font-weight:700}
+.sb em{font-style:normal;opacity:.8;margin-left:3px}
+.flag{font-size:10px;color:var(--bad);line-height:1.2}.bf{font-size:10px;color:var(--red);line-height:1.2}
+.comps{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px}
+#skills{display:flex;flex-direction:column;gap:6px}
+.skg{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+#skills button{padding:6px 2px;min-height:78px;min-width:0}
+#skills button.sk{border:2px solid var(--rc,var(--bd));background:var(--card);background:linear-gradient(color-mix(in srgb,var(--rc,var(--bd)) 16%,var(--card)),var(--card))}
+#ordw{position:relative}.pt[data-p]{cursor:pointer}.pt.on b{outline:2px solid var(--atb);border-radius:8px}
+#pasv{display:none;position:absolute;z-index:4;top:100%;left:50%;transform:translateX(-50%);width:min(340px,94vw);max-height:45vh;overflow:auto;padding:8px 10px;font-size:12px;box-shadow:0 6px 18px #0006}
+#pasv .ph{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:11px;color:var(--mut);margin-bottom:4px}#pasv .ph button{padding:2px 10px;min-height:30px}
+#pasv .it{padding:3px 0;border-bottom:1px dotted var(--bd)}
+#stage[data-tone=light]{--m1:#3a3f46;--m2:#23272d;--acc:#c0392b;--b1:#4a5a55;--b2:#2f3b38}
+#stage[data-tone=dark]{--m1:#c9ced6;--m2:#8c93a0;--acc:#ff7a6b;--b1:#9fb3ab;--b2:#6b7e77}
 button{font:inherit;color:var(--tx);background:var(--card);border:1px solid var(--bd);border-radius:6px;padding:9px 10px;cursor:pointer}
 button:disabled{opacity:.4;cursor:default}button.pri{background:var(--red);color:#fff;border-color:var(--red)}
 .sk i{display:block;font-style:normal;font-size:9px;color:var(--atb);line-height:1.1}.sk b{display:block;font-size:11.5px;line-height:1.15;margin:1px 0}.sk span{display:block;font-size:10px;color:var(--mut);line-height:1.2}.sk em{font-style:normal;font-size:19px}
@@ -51,15 +62,10 @@ button:disabled{opacity:.4;cursor:default}button.pri{background:var(--red);color
 <body>
 <div class="wrap">
 <main>
-<div id="order" class="order"></div>
+<div id="ordw"><div id="order" class="order"></div><div id="pasv" class="card"></div></div>
 <div id="stage">
 <svg viewBox="0 0 400 210" preserveAspectRatio="xMidYMid slice">
-<defs><linearGradient id="sk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--sky1)"/><stop offset="1" stop-color="var(--sky2)"/></linearGradient></defs>
-<rect width="400" height="210" fill="url(#sk)"/>
-<polygon points="0,120 50,70 95,105 150,55 215,110 270,60 330,100 400,65 400,210 0,210" fill="var(--mt1)"/>
-<polygon points="0,150 60,110 120,140 190,100 260,145 330,115 400,140 400,210 0,210" fill="var(--mt2)"/>
-<ellipse cx="200" cy="150" rx="230" ry="18" fill="var(--sky1)" opacity=".55"/>
-<rect y="168" width="400" height="42" fill="var(--sky1)" opacity=".7"/>
+<g id="bg"></g>
 <g id="pm" transform="translate(50 62)">
 <rect x="22" y="80" width="14" height="42" rx="3" fill="var(--m2)"/><rect x="46" y="80" width="14" height="42" rx="3" fill="var(--m2)"/>
 <polygon points="14,40 68,40 62,84 20,84" fill="var(--m1)"/>
@@ -79,9 +85,8 @@ button:disabled{opacity:.4;cursor:default}button.pri{background:var(--red);color
 <span class="tag" id="rd">Hiệp 1</span>
 </div>
 <div class="panels"><div class="card panel" id="pp"></div><div class="card panel e" id="ep"></div></div>
-<div class="card" id="dp" style="display:none"></div>
+<div id="dp" class="comps" style="display:none"></div>
 <div id="skills"></div>
-<div class="card" id="pasv" style="display:none;font-size:12px"></div>
 <div id="bar">
 <button id="bBag">Hành trang</button><button id="bSum">Triệu hồi</button><button id="bRun">Chạy</button>
 <span class="gap"></span>
@@ -95,6 +100,7 @@ button:disabled{opacity:.4;cursor:default}button.pri{background:var(--red);color
 <script src="vg-github.js?v=202611254"></script>
 <script src="vg-core.js?v=202611254"></script>
 <script src="vg-skill.js?v=202611271"></script>
+<script src="vg-combat-scene.js?v=202611271"></script>
 <script>
 const GM=VG.game;let SV,EV,PRACTICE=false;
 const $=s=>document.querySelector(s);
@@ -102,6 +108,12 @@ const rnd=a=>a[Math.floor(Math.random()*a.length)],ri=(a,b)=>a+Math.floor(Math.r
 const BEASTS=["Xích Lang Cơ","Thiết Giáp Quy","Hư Ảnh Hổ","Ma Tượng Cơ","Kim Cương Sư","Sương Phách Lang"];
 const DR={pet:{n:"Pet",ic:"🐾",d:"Đồng hành, tự hỗ trợ."},sentry:{n:"Sentry Drone",ic:"🛸",d:"Tự bắn địch mỗi nhịp."},repair:{n:"Repair Pet",ic:"🐕",d:"Tự hồi HP cho mecha."},shield:{n:"Shield Orb",ic:"🔰",d:"Tự nạp lá chắn tạm."}};
 let G,SK=[],PAS=[],LIB=null;
+/* Nền theo địa hình: khóa từ index.html (ST.pending.ter) hoặc ?scene=... ; cấu hình ghi đè ở database/combat-ui.json (sửa bằng EditPlayoutCombat.html) */
+let SC=null,SCENE="grass";
+const RC=["","#a89f8d","#4fa86a","#3d7fd6","#8c52d6","#d9a21b"],RN=["Cơ bản","Phổ thông","Tốt","Hiếm","Sử thi","Truyền thuyết"];
+const scName=()=>((SC&&SC[SCENE])||{}).name||"";
+function applyScene(){const c=SC&&(SC[SCENE]||SC.grass);if(!c)return;$("#bg").innerHTML=VG.combatScene.svg(c,"bt");$("#stage").dataset.tone=c.tone}
+function loadScenes(){SC=VG.combatScene.merge(null);return fetch("database/combat-ui.json?t="+Date.now()).then(r=>{if(!r.ok)throw 0;return r.json()}).catch(()=>VG.fetchJSON?VG.fetchJSON("database/combat-ui.json"):null).then(j=>{if(j)SC=VG.combatScene.merge(j)}).catch(()=>{})}
 /* Cảnh giới chính thức: G.lv là số thứ tự cảnh giới 0–48 (bậc cũ N = cảnh giới số N, không đổi công thức chiến đấu).
    0–11: Hoàng/Huyền/Địa/Thiên Giai (mỗi giai Sơ/Trung/Hậu kỳ) · 12–47: Thánh Giai 12 tầng × Sơ/Trung/Hậu · 48: Thần Giai (tối cao). */
 const GR=["Hoàng Giai","Huyền Giai","Địa Giai","Thiên Giai"],PH=["Sơ kỳ","Trung kỳ","Hậu kỳ"],RK=[],RS=[],MAXR=48;
@@ -130,8 +142,12 @@ function hitE(d,n){const e=G.e;if(e.dead)return;const ab=Math.min(e.sh,d);e.sh-=
 function hitP(d){const ab=Math.min(G.sh,d);G.sh-=ab;G.hp-=d-ab;pop(d,"p");flash("pm");return ab}
 /* Skill: cơ bản (VG.skill.BASIC, luôn có) + skill của trang bị đang mặc (database equips[].skills). Pet/Drone chạy theo nhịp riêng. */
 function buildSkills(){
- const all=VG.skill.collect(SV,LIB),own=all.filter(s=>s.slot!=="pet"&&s.slot!=="drone");
- SK=VG.skill.BASIC.map(s=>Object.assign({},s)).concat(own.filter(s=>VG.skill.act(s)));
+ const all=VG.skill.collect(SV,LIB),own=all.filter(s=>s.slot!=="pet"&&s.slot!=="drone"),E={};
+ ((LIB&&LIB.equips)||[]).forEach(e=>{if(e&&e.id)E[e.id]=e});
+ own.forEach(s=>{const r=Math.round(+((E[s.eqid]||{}).rarity));s.r=r>=1?Math.min(5,r):1});
+ /* skill trang bị: phẩm cao → thấp (cùng phẩm giữ thứ tự cũ); skill cơ bản luôn ở cuối */
+ const act=own.map((s,i)=>[s,i]).filter(x=>VG.skill.act(x[0])).sort((a,b)=>b[0].r-a[0].r||a[1]-b[1]).map(x=>x[0]);
+ SK=act.concat(VG.skill.BASIC.map(s=>Object.assign({},s,{r:0})));
  SK.forEach(s=>{s.d=VG.skill.effText(s)});
  PAS=own.filter(s=>!VG.skill.act(s));
  G.passRed=PAS.reduce((a,s)=>a+(s.type===3&&s.stat==="dmgRed"?s.pct:0),0);
@@ -219,25 +235,27 @@ function run(){if(!G.turn||G.modal)return;const c=Math.max(.2,Math.min(.85,.45+(
  if(Math.random()<c){say("Thoát khỏi giao tranh thành công.");G.turn=false;G.over=true;finish("flee");renderAll();setTimeout(toMap,700)}
  else{say("Chạy thất bại, mất lượt.");endAct()}}
 function setM(){modal(`<h3>Cài đặt</h3><button onclick="G.gear=!G.gear;G.shMax=G.gear?120+15*(G.lv-12)+G.b.sh:0;G.sh=G.shMax;closeM()">Trang bị lá chắn: ${G.gear?"Đang mang":"Không mang"} (bấm để đổi)</button><button onclick="if(confirm('Xóa bản lưu và làm lại từ đầu?')){GM.reset();toMap()}">Làm lại từ đầu</button>`)}
-const B=(l,v,m,c,x)=>`<div class="lb"><span>${l}</span><span>${x||""}${Math.round(v)} / ${Math.round(m)}</span></div><div class="bar"><i style="width:${m>0?Math.min(100,v/m*100):0}%;background:var(${c})"></i></div>`;
-const AT=(id,v,s)=>`<div class="lb"><span>ATB</span><span><span id="${id}t">${Math.round(v)}</span> / 1000 · Tốc ${s}</span></div><div class="bar"><i id="${id}" style="width:${Math.min(100,v/10)}%;background:var(--atb)"></i></div>`;
+const B=(l,v,m,c,x)=>`<div class="sb"><i style="width:${m>0?Math.min(100,v/m*100):0}%;background:var(${c})"></i><span>${l}${x?`<em>${x}</em>`:""}</span><b>${Math.round(v)}/${Math.round(m)}</b></div>`;
+const AT=(id,v,s)=>`<div class="sb"><i id="${id}" style="width:${Math.min(100,v/10)}%;background:var(--atb)"></i><span>ATB</span><b><span id="${id}t">${Math.round(v)}</span>/1000 · Tốc ${s}</b></div>`;
 function renderAll(){
  const e=G.e,d=G.drone;
  document.querySelectorAll("#em .sp").forEach(n=>n.style.display=n.dataset.s===e.shape?"":"none");
- $("#rd").textContent="Hiệp "+Math.max(1,G.round);
+ $("#rd").textContent="Hiệp "+Math.max(1,G.round)+(scName()?" · "+scName():"");
  $("#dm").style.display=d?"":"none";
- $("#order").innerHTML=`<div class="pt"><b>🤖</b><div class="mb"><i id="opa"></i></div>Vân Giáp</div>${comps().map((c,i)=>`<div class="pt"><b>${cIc(c)}</b><div class="mb"><i id="oc${i}a"></i></div>${cName(c)}</div>`).join("")}<div class="pt"><b>👾</b><div class="mb"><i id="oea"></i></div>${e.name}</div>`;
- $("#pp").innerHTML=`<div class="hd">${rankName(G.lv)}</div><div class="nm">Vân Giáp<small>${G.lv>=MAXR?"Cảnh giới tối cao":"KN "+G.xp+"/"+need()}</small>${G.buffs.map(b=>`<small style="color:var(--red)">${b.name} (${b.t-1})</small>`).join("")}</div>`+
- B("Lá chắn",G.sh,Math.max(G.shMax,G.sh),"--sh")+B("HP",G.hp,G.max,"--hp")+B("Năng lượng",G.en,G.enMax,"--en",`+${G.reg}/lượt · `)+
- B("Hồn lực",G.soul,G.soulMax,"--so")+(G.soul<G.soulMax*.25?'<div class="flag">Kiệt sức: sát thương giảm 30%</div>':"")+AT("pa",G.atb,G.spd);
+ $("#order").innerHTML=`<div class="pt${G.pv?" on":""}" data-p="1" title="Nội tại / bị động"><b>🤖</b><div class="mb"><i id="opa"></i></div>Vân Giáp ⓘ</div>${comps().map((c,i)=>`<div class="pt"><b>${cIc(c)}</b><div class="mb"><i id="oc${i}a"></i></div>${cName(c)}</div>`).join("")}<div class="pt"><b>👾</b><div class="mb"><i id="oea"></i></div>${e.name}</div>`;
+ $("#pp").innerHTML=`<div class="hd">${rankName(G.lv)}</div><div class="nm">Vân Giáp<small>${G.lv>=MAXR?"Tối cao":"KN "+G.xp+"/"+need()}</small></div>`+
+ B("Lá chắn",G.sh,Math.max(G.shMax,G.sh),"--sh")+B("HP",G.hp,G.max,"--hp")+B("Năng lượng",G.en,G.enMax,"--en",`+${G.reg}`)+
+ B("Hồn lực",G.soul,G.soulMax,"--so")+AT("pa",G.atb,G.spd)+(G.soul<G.soulMax*.25?'<div class="flag">Kiệt sức: sát thương -30%</div>':"")+(G.buffs.length?`<div class="bf">${G.buffs.map(b=>`${b.name} (${b.t-1})`).join(" · ")}</div>`:"");
  $("#ep").innerHTML=`<div class="hd">${e.tierName} · ${rankName(e.lv)}</div><div class="nm">${e.name}</div>`+
  B("Lá chắn",e.sh,e.shMax,"--sh")+B("HP",e.hp,e.max,"--bad")+B("Năng lượng",e.en,e.enMax,"--en")+AT("ea",e.atb,e.spd);
  const dp=$("#dp"),cs=comps();dp.style.display=cs.length?"":"none";
- dp.innerHTML=cs.map((c,i)=>`<div class="nm" style="font-size:14px">${cIc(c)} ${cName(c)}</div>`+B("HP",c.hp,c.max,"--hp")+AT("c"+i,c.atb,c.spd)).join("");
- $("#skills").innerHTML=SK.map((s,i)=>G.lv<(s.lv||0)?`<button class="sk" disabled><em>🔒</em><b>${s.name}</b><span>${rankShort(s.lv)}</span></button>`:
-  `<button class="sk" ${can(s)?"":"disabled"} onclick="use(${i})"><em>${s.ic}</em><b>${s.name}</b><i>${VG.skill.TYPES[s.type].s}</i><span>${s.d}</span><span>NL ${s.en} · HL ${s.so}</span></button>`).join("");
+ dp.innerHTML=cs.map((c,i)=>`<div class="card panel"><div class="nm">${cIc(c)} ${cName(c)}</div>`+B("HP",c.hp,c.max,"--hp")+AT("c"+i,c.atb,c.spd)+`</div>`).join("");
+ const sb=(s,i)=>{const st=`style="--rc:${s.r?RC[s.r]:"var(--bd)"}" title="${RN[s.r||0]}"`;return G.lv<(s.lv||0)?`<button class="sk" ${st} disabled><em>🔒</em><b>${s.name}</b><span>${rankShort(s.lv)}</span></button>`:
+  `<button class="sk" ${st} ${can(s)?"":"disabled"} onclick="use(${i})"><em>${s.ic}</em><b>${s.name}</b><i>${VG.skill.TYPES[s.type].s}</i><span>${s.d}</span><span>NL ${s.en} · HL ${s.so}</span></button>`},
+  bi=SK.map((s,i)=>[s,i]);
+ $("#skills").innerHTML=[bi.filter(x=>x[0].eqid),bi.filter(x=>!x[0].eqid)].filter(l=>l.length).map(l=>`<div class="skg">${l.map(x=>sb(x[0],x[1])).join("")}</div>`).join("");
  const pv=$("#pasv"),pl=PAS.map(s=>`${s.ic} <b>${s.name}</b> <i style="color:var(--atb)">${VG.skill.TYPES[s.type].s}</i> — ${VG.skill.effText(s)}`).concat(cs.flatMap(c=>(c.sk||[]).map(s=>`${s.ic} <b>${s.name}</b> <i style="color:var(--atb)">${cName(c)} · ${VG.skill.TYPES[s.type].s}</i> — ${VG.skill.effText(s)}`)));
- pv.style.display=pl.length?"":"none";pv.innerHTML=pl.length?"<div class=\"mut\" style=\"font-size:11px\">NỘI TẠI / BỊ ĐỘNG TỪ TRANG BỊ</div>"+pl.map(x=>`<div>${x}</div>`).join(""):"";
+ pv.style.display=G.pv?"block":"none";pv.innerHTML=G.pv?`<div class="ph"><span>NỘI TẠI / BỊ ĐỘNG TỪ TRANG BỊ</span><button data-pc="1">✕</button></div>`+(pl.length?pl.map(x=>`<div class="it">${x}</div>`).join(""):'<div class="it" style="color:var(--mut)">Chưa có nội tại / bị động nào từ trang bị đang mặc.</div>'):"";
  const t=G.turn&&!G.modal&&!G.over;
  ["bBag","bSum","bRun","bEnd"].forEach(id=>$("#"+id).disabled=!t);
  $("#bSpd").textContent="x"+G.spdX;$("#bAuto").textContent="Auto "+(G.auto?"●":"○");
@@ -247,6 +265,7 @@ function tickUI(){
  const t=(id,v)=>{const n=$("#"+id+"t");if(n)n.textContent=Math.round(v)};
  w("pa",G.atb);t("pa",G.atb);w("opa",G.atb);w("ea",G.e.atb);t("ea",G.e.atb);w("oea",G.e.atb);
  comps().forEach((c,i)=>{w("c"+i,c.atb);t("c"+i,c.atb);w("oc"+i,c.atb)});}
+document.addEventListener("click",e=>{if(!G)return;const t=e.target;if(t.closest("[data-pc]")){G.pv=false;renderAll();return}if(t.closest("[data-p]")){G.pv=!G.pv;renderAll();return}if(G.pv&&!t.closest("#pasv")){G.pv=false;renderAll()}});
 $("#bBag").onclick=bag;$("#bSum").onclick=sumM;$("#bRun").onclick=run;$("#bEnd").onclick=endTurn;$("#bSet").onclick=setM;
 $("#bSpd").onclick=()=>{G.spdX=({5:1,1:2,2:3,3:5})[G.spdX]||5;renderAll()};
 $("#bAuto").onclick=()=>{G.auto=!G.auto;renderAll();if(G.auto&&G.turn)setTimeout(autoAct,300)};
@@ -254,7 +273,8 @@ GM.loadWorld().then(w=>(typeof GM.loadMonsters==='function'?Promise.resolve().th
  if(pd){def=w.events.find(v=>v.id===pd.id);mon=w.monsters.find(v=>v.id===pd.mon)}
  if(!def||!mon){PRACTICE=true;def=GM.rnd(w.events);mon=w.monsters.find(m=>m.id===GM.rnd(def.monsters))||w.monsters[0]}
  EV={def,mon,tier:w.tiers[def.tier]||{name:"?"},uid:pd&&pd.uid,from:pd&&pd.from,spawn:z.spawn};
- return GM.loadLib().catch(()=>null).then(l=>{LIB=l;newGame();buildSkills();renderAll();setInterval(tick,100)})}).catch(e=>{document.body.innerHTML='<p style="padding:20px">Không tải được dữ liệu: '+e.message+' <a href="index.html">Về bản đồ</a></p>'});
+ SCENE=new URLSearchParams(location.search).get("scene")||(pd&&pd.ter)||"grass";
+ return Promise.all([GM.loadLib().catch(()=>null),loadScenes()]).then(([l])=>{LIB=l;if(!SC[SCENE])SCENE="grass";newGame();buildSkills();applyScene();renderAll();setInterval(tick,100)})}).catch(e=>{document.body.innerHTML='<p style="padding:20px">Không tải được dữ liệu: '+e.message+' <a href="index.html">Về bản đồ</a></p>'});
 </script>
 </body>
 </html>

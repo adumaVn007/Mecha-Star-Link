@@ -177,6 +177,8 @@ const monOf=e=>monById.get(e.mon);
 function addEv(e){const m=monOf(e),r=m?GM.monFoot(m):0;for(let dx=-r;dx<=r;dx++)for(let dy=-r;dy<=r;dy++)evMap.set((e.x+dx)*1000+(e.y+dy),e)}
 function rebuildEv(){evMap=new Map();if(ST)ST.events.forEach(addEv)}
 const evAt=(x,y)=>evMap.get(x*1000+y);
+/* khóa nền chiến đấu (battle.html + database/combat-ui.json): địa hình tại ô người chơi, gần thành trì (≤4 ô) thì dùng 'city' */
+const sceneKey=(x,y)=>{const k=typ(x,y);return nearTown(x,y,4)?'city':(!k||k==='portal'?'grass':k)};
 function nearTown(x,y,r){for(let dx=-r;dx<=r;dx++)for(let dy=-r;dy<=r;dy++)if(pmap&&pmap[(x+dx)*1000+(y+dy)])return true;return false}
 function footOK(x,y,r,self){
  for(let dx=-r;dx<=r;dx++)for(let dy=-r;dy<=r;dy++){const a=x+dx,b=y+dy;
@@ -277,7 +279,7 @@ function aggroStep(now){
  if(chase){rebuildEv();if(sel)info(sel);for(const e of ST.events){const m=monOf(e);if(m&&m.roam!==false&&cheb(e,GM.monFoot(m))<=GM.monRange(m))return ambush(e,m)}}}
 function ambush(e,m){
  ambushing=true;route=[];mv=null;pv={x:ST.pos.x,y:ST.pos.y};
- ST.pending={uid:e.uid,id:e.id,mon:e.mon,x:e.x,y:e.y,from:{x:ST.pos.x,y:ST.pos.y}};ST.result=null;persist();
+ ST.pending={uid:e.uid,id:e.id,mon:e.mon,x:e.x,y:e.y,from:{x:ST.pos.x,y:ST.pos.y},ter:sceneKey(ST.pos.x,ST.pos.y)};ST.result=null;persist();
  const T=tierOf(e);
  openModal('⚠ Bị tấn công!',`<p style="text-align:center;font-size:1.15em"><b style="color:#ff9a8f">${esc(m.name||'Dị thú')}</b> tấn công bạn!</p>
   <div class="row"><span>Cảnh giới</span><span>${esc(GM.rankName(GM.monRank(m)))}</span></div><div class="row"><span>Phạm vi tấn công</span><span>${GM.monRange(m)} ô</span></div>
@@ -461,7 +463,7 @@ function openEvent(ev){
  <button class="btn pri" data-a="fight">⚔ Giao chiến</button><button class="btn" data-a="close">Rời đi (sự kiện vẫn còn trên bản đồ)</button>`)}
 function fight(){
  const ev=evAt(ST.pos.x,ST.pos.y);if(!ev)return closeModal();
- ST.pending={uid:ev.uid,id:ev.id,mon:ev.mon,x:ev.x,y:ev.y,from:ST.prev||{x:ev.x,y:ev.y}};ST.result=null;
+ ST.pending={uid:ev.uid,id:ev.id,mon:ev.mon,x:ev.x,y:ev.y,from:ST.prev||{x:ev.x,y:ev.y},ter:sceneKey(ST.pos.x,ST.pos.y)};ST.result=null;
  persist();GM.nav('battle.html')}
 function rest(full){
  const p=ST.p;p.en=p.enMax;p.soul=p.soulMax;p.hp=full?EM():Math.min(EM(),p.hp+Math.round(EM()*.25));

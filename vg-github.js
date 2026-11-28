@@ -6,8 +6,8 @@
   var VG = g.VG = g.VG || {};
   VG.cfg = {
     owner: 'adumavn007', repo: 'Mecha-Star-Link', branch: 'main',
-    paths: { db: 'database/mecha-studio.json', formula: 'database/stat-formula.json', jobs: 'database/jobs.json', monsters: 'database/monsters.json', quests: 'database/quests.json', npc: 'database/npc.json', blueprints: 'database/blueprints.json' },
-    writable: ['database/stat-formula.json', 'database/jobs.json', 'database/monsters.json', 'database/quests.json', 'database/npc.json', 'database/blueprints.json']
+    paths: { db: 'database/mecha-studio.json', formula: 'database/stat-formula.json', jobs: 'database/jobs.json', monsters: 'database/monsters.json', quests: 'database/quests.json', npc: 'database/npc.json', blueprints: 'database/blueprints.json', combat: 'database/combat-ui.json' },
+    writable: ['database/stat-formula.json', 'database/jobs.json', 'database/monsters.json', 'database/quests.json', 'database/npc.json', 'database/blueprints.json', 'database/combat-ui.json']
   };
   VG.rawUrl = function (p) { var c = VG.cfg; return 'https://raw.githubusercontent.com/' + c.owner + '/' + c.repo + '/' + c.branch + '/' + p; };
   VG.fetchJSON = function (path, ms) {

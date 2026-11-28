@@ -51,3 +51,5 @@ vg-core.js · vg-github.js · vg-char.js · vg-bag.js · vg-quest.js · vg-mapar
 
 ## Triển khai
 Settings → Pages → Deploy from a branch → `main` / `(root)`. Có `.nojekyll` để Pages không chạy Jekyll.
+
+https://adumavn007.github.io/Mecha-Star-Link/EditPlayoutCombat.html Edit nền giao diện combat theo địa hình

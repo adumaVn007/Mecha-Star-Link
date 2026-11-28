@@ -1,0 +1,75 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Vân Giáp – Giao diện chiến đấu</title>
+<link rel="stylesheet" href="vg-admin.css?v=202611261">
+<script src="vg-admin.js?v=202611271" defer></script>
+<style>
+.pv{border:1px solid var(--bd);border-radius:6px;overflow:hidden;margin-bottom:8px}.pv svg{display:block;width:100%;height:auto}
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:6px}.cg input[type=color]{padding:2px;height:42px}
+.ed .row.k>*{min-width:0}
+</style></head><body class="ed">
+<h1>🎬 Giao diện chiến đấu</h1>
+<div class="card mu">Mỗi loại địa hình (khóa theo worldmap) có một nền riêng. Khi gặp sự kiện chiến đấu ở ô nào, <b>battle.html</b> dùng nền của địa hình ô đó; gần thành trì (≤ 4 ô) dùng nền <b>Thành trì</b>. Có thể đổi phong cách cảnh xa, màu sắc, tông màu mecha/dị thú, hoặc tải ảnh nền riêng (nên tỉ lệ ≈ 400×210, ảnh tự thu nhỏ để file gọn). Dữ liệu lưu ở <code>database/combat-ui.json</code>; thiếu khóa nào thì dùng mặc định trong code.</div>
+<div class="chips" id="chips"></div>
+<div class="card" id="ed"></div>
+<div class="card"><div class="row"><button class="btn" id="save">Lưu trên máy</button><button class="btn g" id="exp">Xuất JSON</button><button class="btn g" id="imp">Nhập JSON</button><button class="btn g" id="rst">Đặt lại tất cả</button></div>
+<div class="row" style="margin-top:8px"><button class="btn g" id="gl">Tải từ GitHub</button><button class="btn g" id="gp">Đẩy lên GitHub</button><button class="btn g" id="gt">Xóa token</button></div>
+<div id="msg" class="mu" style="margin-top:6px"></div></div>
+<script src="vg-github.js?v=202611271"></script>
+<script src="vg-combat-scene.js?v=202611271"></script>
+<script>
+(function(){
+var CS=VG.combatScene,LK='vg_combat_ui_v1',D=CS.merge(null),cur='grass',dirty=false;
+var $=function(i){return document.getElementById(i)};
+var esc=function(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
+function msg(t,c){var m=$('msg');m.className=c||'mu';m.textContent=t||''}
+var st=document.createElement('style');st.textContent=CS.TONE_CSS.replace(/\[data-tone/g,'.pv[data-tone');document.head.appendChild(st);
+function chips(){$('chips').innerHTML=CS.ORDER.map(function(k){return'<button data-k="'+k+'"'+(k===cur?' class="on"':'')+'>'+esc(D[k].name)+'</button>'}).join('')}
+function opts(list,v){return list.map(function(o){return'<option value="'+o[0]+'"'+(o[0]===v?' selected':'')+'>'+esc(o[1])+'</option>'}).join('')}
+function col(k,l,c){return'<div><label>'+l+'</label><input type="color" id="f_'+k+'" value="'+c[k]+'"></div>'}
+function pv(){var c=D[cur],e=$('pv');if(!e)return;e.setAttribute('data-tone',c.tone);e.innerHTML='<svg viewBox="0 0 400 210" preserveAspectRatio="xMidYMid slice">'+CS.svg(c,'pv')+CS.figures()+'</svg>'}
+function form(){var c=D[cur];
+ $('ed').innerHTML='<h2>'+esc(c.name)+' <span class="mu">· khóa <code>'+cur+'</code></span></h2><div class="pv" id="pv"></div>'+
+ '<label>Tên hiển thị</label><input id="f_name" maxlength="40" value="'+esc(c.name)+'">'+
+ '<div class="row k"><div><label>Phong cách cảnh xa</label><select id="f_style">'+opts(CS.STYLES,c.style)+'</select></div><div><label>Tông nền</label><select id="f_tone">'+opts(CS.TONES,c.tone)+'</select></div></div>'+
+ '<div class="cg">'+col('sky1','Trời (trên)',c)+col('sky2','Trời (dưới)',c)+col('mt1','Cảnh xa',c)+col('mt2','Cảnh gần',c)+col('ground','Mặt đất',c)+
+ '<div><label>Ánh sáng (tùy chọn)</label><div class="row" style="margin:0;flex-wrap:nowrap"><label style="margin:0;display:flex;align-items:center;gap:5px"><input type="checkbox" id="f_gon"'+(c.glow?' checked':'')+'> Bật</label><input type="color" id="f_glow" value="'+(c.glow||'#b6ffe0')+'" style="height:42px;padding:2px"></div></div></div>'+
+ '<label>Ảnh nền riêng (thay cảnh vẽ sẵn)</label><input type="file" id="f_img" accept="image/*"><div class="mu" id="imgi">'+(c.img?'Đang dùng ảnh nền riêng (~'+Math.round(c.img.length/1024)+' KB).':'Chưa dùng ảnh riêng.')+'</div>'+
+ '<div class="row" style="margin-top:8px"><button class="btn g s" id="delimg"'+(c.img?'':' disabled')+'>Xóa ảnh nền</button><button class="btn g s" id="rs1">Đặt lại cảnh này</button><a class="btn g s" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;color:var(--tx)" href="battle.html?scene='+cur+'" target="_blank">▶ Xem thử trong trận</a></div>'+
+ '<div class="mu" style="margin-top:6px">Xem thử trong trận dùng dữ liệu đã đẩy lên GitHub / cùng thư mục; hãy đẩy lên rồi mới xem. Chế độ luyện tập không lưu tiến trình.</div>';
+ pv()}
+function setC(k,v){D[cur][k]=v;dirty=true;pv()}
+$('ed').addEventListener('input',function(e){var id=e.target.id;if(!id||id.indexOf('f_')!==0)return;var k=id.slice(2),v=e.target.value;
+ if(k==='name'){D[cur].name=v.trim()||CS.DEFAULTS[cur].name;dirty=true;chips();return}
+ if(k==='style'||k==='tone'){setC(k,v);return}
+ if(k==='gon'){setC('glow',e.target.checked?$('f_glow').value:'');return}
+ if(k==='glow'){if($('f_gon').checked)setC('glow',v);return}
+ if(k==='sky1'||k==='sky2'||k==='mt1'||k==='mt2'||k==='ground')setC(k,v)});
+$('ed').addEventListener('change',function(e){if(e.target.id==='f_img'&&e.target.files&&e.target.files[0])pickImg(e.target.files[0])});
+$('ed').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;
+ if(b.id==='delimg'){D[cur].img='';dirty=true;form()}
+ else if(b.id==='rs1'){if(confirm('Đặt lại cảnh "'+D[cur].name+'" về mặc định?')){D[cur]=Object.assign({},CS.DEFAULTS[cur]);dirty=true;chips();form()}}});
+$('chips').addEventListener('click',function(e){var b=e.target.closest('button[data-k]');if(!b)return;cur=b.dataset.k;chips();form()});
+function pickImg(f){var fr=new FileReader();fr.onerror=function(){msg('Không đọc được ảnh.','er')};
+ fr.onload=function(){var im=new Image();im.onerror=function(){msg('File không phải ảnh hợp lệ.','er')};
+  im.onload=function(){var w=Math.min(800,im.width),h=Math.max(1,Math.round(im.height*w/im.width)),cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.getContext('2d').drawImage(im,0,0,w,h);
+   var q=.82,u=cv.toDataURL('image/jpeg',q);while(u.length>350000&&q>.4){q-=.1;u=cv.toDataURL('image/jpeg',q)}
+   D[cur].img=u;dirty=true;form();msg('Đã nạp ảnh nền (~'+Math.round(u.length/1024)+' KB). Nhớ Lưu / Đẩy lên GitHub.','ok')};
+  im.src=fr.result};fr.readAsDataURL(f)}
+function json(){return CS.toJSON(D)}
+function adopt(j){D=CS.merge(j);chips();form()}
+$('save').onclick=function(){try{localStorage.setItem(LK,JSON.stringify(json()));dirty=false;msg('Đã lưu trên máy (chưa lên GitHub).','ok')}catch(e){msg('Không lưu được trên máy (bộ nhớ đầy/bị chặn). Hãy dùng Xuất JSON.','er')}};
+$('exp').onclick=function(){var b=new Blob([JSON.stringify(json(),null,1)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='combat-ui.json';document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1500);msg('Đã xuất combat-ui.json.','ok')};
+$('imp').onclick=function(){var i=document.createElement('input');i.type='file';i.accept='.json,application/json';i.onchange=function(){var f=i.files&&i.files[0];if(!f)return;var fr=new FileReader();fr.onload=function(){try{var j=JSON.parse(fr.result);if(!j||!j.scenes)throw 0;adopt(j);dirty=true;msg('Đã nhập. Nhớ Lưu / Đẩy lên GitHub.','ok')}catch(e){msg('File không phải combat-ui.json hợp lệ.','er')}};fr.readAsText(f)};i.click()};
+$('rst').onclick=function(){if(!confirm('Đặt lại TẤT CẢ cảnh về mặc định (chưa ghi đè lên GitHub cho tới khi bạn đẩy)?'))return;adopt(null);dirty=true};
+$('gl').onclick=function(){if(dirty&&!confirm('Có thay đổi chưa lưu. Tải từ GitHub sẽ thay thế. Tiếp tục?'))return;msg('Đang tải…');VG.fetchJSON(VG.cfg.paths.combat).then(function(j){if(!j){msg('GitHub chưa có database/combat-ui.json (đang dùng mặc định).');adopt(null);return}adopt(j);dirty=false;msg('Đã tải từ GitHub.','ok')}).catch(function(e){msg('Không tải được: '+e.message,'er')})};
+$('gp').onclick=function(){var tk=VG.getToken();if(!tk){tk=prompt('Dán token GitHub (fine-grained, chỉ quyền Contents: Read and write cho repo này). Token chỉ lưu trong tab này.');if(!tk)return;VG.setToken(tk.trim())}
+ var o=json();if(JSON.stringify(o).length>900000)if(!confirm('File combat-ui.json khá nặng (>900 KB do ảnh nền). Vẫn đẩy lên?'))return;
+ msg('Đang đẩy lên GitHub…');VG.save(VG.cfg.paths.combat,o,'Cập nhật giao diện chiến đấu').then(function(j){dirty=false;msg('✅ Đã đẩy lên GitHub'+(j&&j.commit?' (commit '+String(j.commit.sha).slice(0,7)+')':'')+'. Game cần vài phút để GitHub Pages cập nhật.','ok')}).catch(function(e){msg('Lỗi: '+e.message,'er')})};
+$('gt').onclick=function(){VG.clearToken();msg('Đã xóa token khỏi tab này.')};
+window.addEventListener('beforeunload',function(e){if(dirty){e.preventDefault();e.returnValue=''}});
+/* Khởi động: ưu tiên bản lưu trên máy, sau đó GitHub, cuối cùng mặc định */
+var loc=null;try{loc=JSON.parse(localStorage.getItem(LK)||'null')}catch(e){}
+chips();form();
+if(loc&&loc.scenes){adopt(loc);msg('Đang dùng bản lưu trên máy. Bấm "Tải từ GitHub" để lấy bản chính thức.')}
+else VG.fetchJSON(VG.cfg.paths.combat).then(function(j){if(j){adopt(j);msg('Đã tải combat-ui.json từ GitHub.','ok')}else msg('Chưa có combat-ui.json trên GitHub: đang hiển thị mặc định.')}).catch(function(){msg('Không kết nối được GitHub: đang hiển thị mặc định.')});
+})();
+</script></body></html>
