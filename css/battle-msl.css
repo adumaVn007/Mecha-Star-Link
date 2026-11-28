@@ -52,3 +52,67 @@
 /* ----- màu mecha/dị thú SVG theo tông nền (giữ như bản cũ; tông do database/combat-ui.json quyết định) ----- */
 #stage { --m1: #3a3f46; --m2: #23272d; --acc: #c0392b; --b1: #4a5a55; --b2: #2f3b38; }
 #stage[data-tone=dark] { --m1: #c9ced6; --m2: #8c93a0; --acc: #ff7a6b; --b1: #9fb3ab; --b2: #6b7e77; }
+
+/* =====================================================================
+   BỐ CỤC V2 (theo leader): 2 bảng trạng thái ngang hàng ở trên, hàng bài thẳng ở giữa đáy,
+   bỏ vòng xoáy dưới chân, viền nháy báo lượt, chữ/nút lớn hơn cho mobile ngang.
+   ===================================================================== */
+
+/* ----- bỏ vòng xoáy dưới chân phe mình (vòng nhắm mục tiêu của quái giữ lại để chọn đích) ----- */
+.u-ring { display: none !important; }   /* bỏ mọi vòng dưới chân, kể cả vòng vàng nhắm mục tiêu */
+
+/* ----- viền nháy báo lượt: người chơi / quái / đồng hành đang ra đòn ----- */
+.unit.active .u-sprite { animation: turnblink .5s steps(2) infinite; }
+.unit.active.hit .u-sprite { animation: shake .26s steps(6); filter: brightness(2.6) saturate(.4); }
+@keyframes turnblink {
+  0%, 49% { filter: drop-shadow(1.5px 0 0 var(--team)) drop-shadow(-1.5px 0 0 var(--team)) drop-shadow(0 1.5px 0 var(--team)) drop-shadow(0 -1.5px 0 var(--team)) drop-shadow(0 0 5px var(--team)); }
+  50%, 100% { filter: drop-shadow(0 -1px 0 rgba(255, 255, 255, .25)); }
+}
+
+/* ----- hàng trên: nút điều khiển + 2 bảng ngang nhau ----- */
+#top-hud { top: 3px; height: 20px; }
+.pxbtn { height: 20px; padding: 0 7px; font-size: 9px; }
+.chipbar { height: 20px; padding: 0 7px; font-size: 9px; }
+#turn-rail { top: 28px; }
+#turn-rail .rail-title { font-size: 7px; }
+#player-panel, #enemy-panel { top: 27px; bottom: auto; width: 254px; height: 54px; padding: 4px; }
+#player-panel { left: 36px; }
+#enemy-panel { right: 6px; }
+.ep-icon { width: 40px; height: 40px; } .pp-portrait { width: 40px; height: 40px; font-size: 20px; }
+.ep-name, .pp-name { height: 12px; font-size: 9px; }
+.row { height: 11px; }
+.lb { font-size: 7.5px; width: 15px; }
+.num { font-size: 8px; }
+.tag { font-size: 7px; line-height: 9px; }
+.chip { font-size: 7.5px; line-height: 9px; padding: 0 3px; }
+.hud-name { font-size: 8px; }
+
+/* ----- hàng dưới: hành động trái, bài thẳng giữa, kết lượt phải ----- */
+#actions { width: 76px; gap: 3px; }
+#actions .pxbtn { height: 22px; font-size: 9px; padding-left: 5px; }
+#actions .pxbtn span.ic { font-size: 12px; width: 15px; }
+#bEnd { right: 6px; bottom: 6px; width: 58px; height: 42px; font-size: 10px; line-height: 11px; }
+.sk-cb { font-size: 7px; } .sk-stars { font-size: 7px; } .sk-type { font-size: 6.5px; } .sk-name { font-size: 7px; }
+#skill-tip { bottom: 82px; font-size: 9px; line-height: 11px; width: 230px; }
+#skill-tip .tt { font-size: 10px; } #skill-tip .tt .tg { font-size: 7px; }
+#skills .empty { left: 270px; top: 330px; font-size: 9px; }
+#banner { top: 96px; }
+#log { font-size: 8.5px; line-height: 11px; top: 26px; }
+#pasv { font-size: 9px; line-height: 12px; } #pasv h4, #modal h4 { font-size: 11px; }
+#modal .box { width: 310px; font-size: 9.5px; }
+#modal .box h3 { font-size: 12px; } #modal .box .mut { font-size: 8.5px; }
+#modal .box button { padding: 6px 8px; font-size: 10px; }
+
+/* ----- chưa cầm ngang: nhắc xoay ----- */
+#rotate { display: none; position: fixed; inset: 0; z-index: 99999; background: #05080b; color: #e8f1ff; align-items: center; justify-content: center;
+  text-align: center; font: 700 18px/1.5 "Segoe UI", "Noto Sans", Arial, sans-serif; padding: 24px; }
+#rotate b { font-size: 56px; display: inline-block; animation: rot 1.6s ease-in-out infinite; }
+@keyframes rot { 0%, 20% { transform: rotate(0); } 60%, 100% { transform: rotate(-90deg); } }
+@media (orientation: portrait) and (max-width: 900px) { #rotate { display: flex; } }
+
+/* chỉnh sau lần chụp đầu: bảng rộng hơn để số 100/100 không tràn, ẩn chữ LƯỢT đè lên bảng */
+#player-panel, #enemy-panel { width: 272px; }
+#turn-rail .rail-title { display: none; }
+
+/* vòng sàn xanh do chính SVG mecha vẽ (dùng chung với túi đồ) — ẩn riêng trong trận (leader: bỏ vòng dưới chân) */
+#pm .mm-svg ellipse[cy="264"] { display: none; }

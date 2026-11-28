@@ -24,15 +24,15 @@
     playerId: 'pm',
     hideBasic: true,                                   // bài quạt CHỈ hiện skill, bỏ đánh thường
     isBasic: s => !!(s.basic || s.cat === 'basic' || !s.r),
-    fan: { cx: 458, bottom: 340, radius: 420, spacing: 38, maxSpread: 204, w: 48, h: 68 },   // vùng quạt x≈330..590
+    fan: { flat: true, cx: 320, bottom: 356, radius: 420, spacing: 46, maxSpread: 424, w: 48, h: 68 },   // hàng bài thẳng, giữa màn hình (x≈84..574); flat:false = quạt cong
     scaleMode: Q.get('scale') === 'fit' ? 'fit' : 'int',   // int: từ ×2 trở lên chỉ phóng số nguyên; fit: luôn co dãn vừa màn
     speeds: [1, 2, 3, 5],
     bgFormats: ['png', 'webp']                         // thứ tự thử đuôi ảnh nền (tầng 2 của fallback)
   };
   /* Tâm chân (feet) của từng vị trí đứng, toạ độ trong khung 640x360 */
   const SLOTS = {
-    ally0: { x: 196, y: 274 }, ally1: { x: 118, y: 298 }, ally2: { x: 108, y: 258 }, ally3: { x: 150, y: 316 },
-    enemy0: { x: 448, y: 266 }, enemy1: { x: 548, y: 238 }, enemy2: { x: 572, y: 292 }, enemy3: { x: 500, y: 312 }
+    ally0: { x: 196, y: 274 }, ally1: { x: 104, y: 282 }, ally2: { x: 108, y: 258 }, ally3: { x: 52, y: 262 },
+    enemy0: { x: 448, y: 266 }, enemy1: { x: 548, y: 238 }, enemy2: { x: 572, y: 276 }, enemy3: { x: 510, y: 284 }
   };
   const SCENES = { grass: 'Đồng bằng', forest: 'Rừng', water: 'Mặt nước', rock: 'Núi đá', sand: 'Bãi cát', snow: 'Tuyết sơn',
     swamp: 'Đầm lầy', road: 'Đường mòn', ruin: 'Phế tích', herb: 'Linh thảo', wall: 'Tường thành', city: 'Thành trì' };
@@ -158,8 +158,8 @@
     P.atb = mountBar('#ppAtb', { kind: 'pill_sm', color: 'silver', width: 52, clipDiv: true, fillId: 'pa' });
     P.nl = mountBar('#ppNl', { kind: 'pill_lg', color: 'yellow', width: 54, lag: false });
     P.hl = mountBar('#ppHl', { kind: 'slant', color: 'purple', width: 54 });
-    P.ehp = mountBar('#epHp', { kind: 'slant', color: 'red', width: 78 });
-    P.eatb = mountBar('#epAtb', { kind: 'pill_sm', color: 'silver', width: 56, clipDiv: true, fillId: 'ea' });
+    P.ehp = mountBar('#epHp', { kind: 'slant', color: 'red', width: 110 });
+    P.eatb = mountBar('#epAtb', { kind: 'pill_sm', color: 'silver', width: 80, clipDiv: true, fillId: 'ea' });
   }
   function panelPlayer(u, patch) {
     const d = u.d, has = k => !patch || k in patch;
@@ -231,9 +231,9 @@
     const f = CFG.fan, n = list.length;
     const sp = Math.min(f.spacing, f.maxSpread / Math.max(1, n - 1));
     list.forEach((s, i) => {
-      const th = (i - (n - 1) / 2) * sp / f.radius;                       // rad
-      const bx = f.cx + f.radius * Math.sin(th);
-      const by = f.bottom + f.radius - f.radius * Math.cos(th);           // đáy-giữa của lá bài
+      const th = f.flat ? 0 : (i - (n - 1) / 2) * sp / f.radius;          // rad
+      const bx = f.flat ? f.cx + (i - (n - 1) / 2) * sp : f.cx + f.radius * Math.sin(th);
+      const by = f.flat ? f.bottom : f.bottom + f.radius - f.radius * Math.cos(th);   // đáy-giữa của lá bài
       const [label, tcls] = typeOf(s.eff);
       const b = mk('button', 'sk ' + tcls + (s.locked ? ' locked' : ''));
       b.type = 'button';
@@ -272,7 +272,7 @@
       '<div class="cost">Tiêu hao: <span class="nl">⚡ ' + (s.nl || 0) + ' NL</span> · <span class="hl">✦ ' + (s.hl || 0) + ' HL</span></div>';
     tip.classList.remove('hidden');
     const cx = parseFloat(b.style.getPropertyValue('--x')) + CFG.fan.w / 2;       // căn giữa theo lá bài, giữ trong vùng 330..590
-    tip.style.left = clamp(Math.round(cx - 107), 330, 590 - 214) + 'px';
+    tip.style.left = clamp(Math.round(cx - 107), 84, 574 - 214) + 'px';
   }
   function hideTip() { $('#skill-tip').classList.add('hidden'); }
 
@@ -336,6 +336,16 @@
     $('#bSet').onclick = () => emit('settings');
     $('#bAuto').onclick = () => { UI.auto = !UI.auto; $('#bAuto').textContent = 'Auto ' + (UI.auto ? '●' : '○'); $('#bAuto').classList.toggle('on', UI.auto); emit('auto', UI.auto); };
     $('#bSpd').onclick = () => { const i = (CFG.speeds.indexOf(UI.speed) + 1) % CFG.speeds.length; UI.speed = CFG.speeds[i]; $('#bSpd').textContent = 'x' + UI.speed; emit('speed', UI.speed); };
+    const fs = $('#bFs');
+    if (fs) {
+      if (!document.documentElement.requestFullscreen) fs.style.display = 'none';
+      else fs.onclick = () => {
+        const d = document;
+        if (d.fullscreenElement) { d.exitFullscreen(); return; }
+        d.documentElement.requestFullscreen().then(() => { try { screen.orientation.lock('landscape').catch(() => {}); } catch (e) {} }).catch(() => {});
+      };
+    }
+    addEventListener('orientationchange', () => setTimeout(fit, 120));
     $('#modal').addEventListener('click', e => { if (e.target.id === 'modal') UI.modal.close(); });
     $('#pasv').addEventListener('click', () => $('#pasv').classList.add('hidden'));
     return UI;

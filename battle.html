@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Vân Giáp – Chiến đấu</title>
 <link rel="stylesheet" href="css/battle.css?v=20261128">
 <link rel="stylesheet" href="css/battle-msl.css?v=20261128">
@@ -36,6 +36,7 @@
     <div class="tr">
       <button id="bSpd" class="pxbtn px">x1</button>
       <button id="bAuto" class="pxbtn px">Auto ○</button>
+      <button id="bFs" class="pxbtn px" title="Toàn màn hình">⛶</button>
       <button id="bSet" class="pxbtn px">⚙</button>
     </div>
   </header>
@@ -94,6 +95,8 @@
   <div id="pasv" class="px hidden"></div>
   <div id="modal"></div>
 </div>
+
+<div id="rotate"><div><b>↻</b><br>Xoay ngang màn hình để chơi</div></div>
 
 <script src="vg-github.js?v=202611254"></script>
 <script src="vg-core.js?v=202611282"></script>
@@ -214,7 +217,11 @@ function say(t){G.log.push(t);if(G.log.length>60)G.log.shift();UI.log(t)}
 /* ===== COMBAT JUICE: gọi hiệu ứng của BattleUI (id DOM cũ → id đơn vị) ===== */
 function pop(t,side,kind){UI.fx.pop(side==="p"?"pm":"em",t,kind===1||kind==="heal"?"heal":(kind==="sh"?"shield":"dmg"))}
 function flash(id){UI.fx.hit(uid(id));UI.fx.shake()}
-function lunge(id){UI.fx.lunge(uid(id))}
+/* viền nháy báo lượt: người chơi sáng suốt lượt; quái/đồng hành sáng ~0,6s lúc ra đòn (code trận chạy gần như tức thời) */
+let actId=null,actUntil=0,actTimer=0;
+const baseActive=()=>G&&G.turn&&!G.over?"pm":null;
+function lunge(id){const u=uid(id);UI.fx.lunge(u);
+ if(u!=="pm"){actId=u;actUntil=performance.now()+600;UI.setActive(u);clearTimeout(actTimer);actTimer=setTimeout(()=>{actId=null;UI.setActive(baseActive())},620)}}
 function ring(id,color){
  const u=UI.units.get(id),f=$("#fx");if(!u||!f)return;
  const e=document.createElement("div");e.className="ring";
@@ -362,7 +369,7 @@ function renderAll(){
  if(G.pet)UI.updateUnit("pet",cState(G.pet));
  if(e.dead)deadOnce("em");
  if(G.hp<=0)deadOnce("pm");
- UI.setActive(G.turn&&!G.over?"pm":null);
+ UI.setActive(performance.now()<actUntil?actId:baseActive());
  $("#dp").style.display=cs.length?"":"none";
 
  const act=!!(G.turn&&!G.modal&&!G.over),hk=SK.length+":"+G.lv;
