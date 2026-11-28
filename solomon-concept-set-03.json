@@ -1,0 +1,169 @@
+{
+  "schema_version": 1,
+  "project": "Mecha-Star-Link",
+  "collection_id": "solomon-concept-set-03",
+  "collection_title": "Solomon Mecha · Concept Set 03",
+  "purpose": "Art-direction reference only. These are four-view presentation boards, not production sprites, rigged models, GLB files, equipment records, or playable units.",
+  "views": [
+    "Đông Nam",
+    "Đông Bắc",
+    "Tây Nam",
+    "Tây Bắc"
+  ],
+  "image_dimensions": "1086x1448 px (source boards)",
+  "gameplay_impact": "none",
+  "models": [
+    {
+      "id": "purson",
+      "number": 20,
+      "name": "Purson",
+      "src": "bảng_thiết_kế_mecha_purson_isometric_2d.png",
+      "note": "Bảng thiết kế nhấn vào khí chất vương giả/chỉ huy và các module thú cơ giới tách rời.",
+      "visual_signature": "Sư tử vương, giáp vai mang motif gấu, đuôi xà năng lượng; tông vàng hoàng gia, trắng ngọc và đỏ huyết.",
+      "asset": "assets/solomon/concept-set-03/images/solomon-20-purson-isometric-board.png",
+      "dimensions": [
+        1086,
+        1448
+      ],
+      "status": "new-concept",
+      "use": "reference-only"
+    },
+    {
+      "id": "ipos",
+      "number": 22,
+      "name": "Ipos",
+      "src": "bảng_thiết_kế_mecha_solomon_ipos.png",
+      "note": "Thiết kế thiên về dáng humanoid, cánh lớn tạo silhouette rõ ở bốn hướng.",
+      "visual_signature": "Hiệp sĩ cơ giới cánh thiên điểu, giáp trắng-vàng, bờm vàng và quầng sáng hình học.",
+      "asset": "assets/solomon/concept-set-03/images/solomon-22-ipos-isometric-board.png",
+      "dimensions": [
+        1086,
+        1448
+      ],
+      "status": "new-concept",
+      "use": "reference-only"
+    },
+    {
+      "id": "aim",
+      "number": 23,
+      "name": "Aim",
+      "src": "bảng_ý_tưởng_mecha_solomon_23_aim.png",
+      "note": "Bảng concept có thêm sơ đồ module, nhấn mạnh ba biểu tượng hợp thành một chiến giáp hình người.",
+      "visual_signature": "Tam diện Người–Miêu–Xà; giáp đỏ-đen, đuôi xà năng lượng và hiệu ứng hỏa lực.",
+      "asset": "assets/solomon/concept-set-03/images/solomon-23-aim-isometric-board.png",
+      "dimensions": [
+        1086,
+        1448
+      ],
+      "status": "new-concept",
+      "use": "reference-only"
+    },
+    {
+      "id": "naberius",
+      "number": 24,
+      "name": "Naberius",
+      "src": "bảng_ý_tưởng_mecha_naberius_isometric.png",
+      "note": "Thiết kế thiên về trinh sát/điều phối, có các drone và màn hình nổi quanh cơ thể.",
+      "visual_signature": "Đầu quạ cơ giới, giáp tím-đen-vàng, drone trinh sát và giao diện hologram.",
+      "asset": "assets/solomon/concept-set-03/images/solomon-24-naberius-isometric-board.png",
+      "dimensions": [
+        1086,
+        1448
+      ],
+      "status": "new-concept",
+      "use": "reference-only"
+    },
+    {
+      "id": "glasya-labolas",
+      "number": 25,
+      "name": "Glasya-Labolas",
+      "src": "bảng_ý_tưởng_mecha_glasya_labolas.png",
+      "note": "Silhouette sắc, gọn và thiên về tấn công tầm xa/đột kích.",
+      "visual_signature": "Chiến giáp sát kích màu đen-đỏ, cánh lưỡi năng lượng đỏ và súng cơ giới.",
+      "asset": "assets/solomon/concept-set-03/images/solomon-25-glasya-labolas-isometric-board.png",
+      "dimensions": [
+        1086,
+        1448
+      ],
+      "status": "new-concept",
+      "use": "reference-only"
+    },
+    {
+      "id": "bune",
+      "number": 26,
+      "name": "Bune",
+      "src": "bảng_concept_mecha_solomon_bune.png",
+      "note": "Tập trung vào motif long thú cơ giới và kho báu; thân chính vẫn giữ dáng chiến giáp hai chân.",
+      "visual_signature": "Giáp trắng-vàng-đỏ, đầu rồng đặt ở vai, cánh lông kim loại, rương kho báu và hỏa diễm tím.",
+      "asset": "assets/solomon/concept-set-03/images/solomon-26-bune-isometric-board.png",
+      "dimensions": [
+        1086,
+        1448
+      ],
+      "status": "new-concept",
+      "use": "reference-only"
+    },
+    {
+      "id": "ronove",
+      "number": 27,
+      "name": "Ronove",
+      "src": "bảng_thiết_kế_mecha_ronové_27.png",
+      "note": "Có bảng chi tiết đầu máy, trượng, drone cuộn rune và áo choàng cơ khí.",
+      "visual_signature": "Học giả/ngoại giao cơ giới, trượng nghi lễ, cuộn thư bay và giáp trắng-tím-vàng.",
+      "asset": "assets/solomon/concept-set-03/images/solomon-27-ronove-isometric-board.png",
+      "dimensions": [
+        1086,
+        1448
+      ],
+      "status": "new-concept",
+      "use": "reference-only"
+    },
+    {
+      "id": "berith",
+      "number": 28,
+      "name": "Berith",
+      "src": "bảng_thiết_kế_mecha_berith_tương_lai.png",
+      "note": "Thiết kế thiên về chiến tướng/kỵ binh, có lõi giả kim ở ngực.",
+      "visual_signature": "Kỵ sĩ vương quyền giáp đỏ, vương miện, motif đầu ngựa, áo choàng đỏ và trường kích.",
+      "asset": "assets/solomon/concept-set-03/images/solomon-28-berith-isometric-board.png",
+      "dimensions": [
+        1086,
+        1448
+      ],
+      "status": "new-concept",
+      "use": "reference-only"
+    },
+    {
+      "id": "forneus",
+      "number": 30,
+      "name": "Forneus",
+      "src": "bảng_thiết_kế_mecha_forneus_hải_vực.png",
+      "note": "Bảng có chi tiết sonar, phù hiệu đô đốc và cơ cấu di chuyển dưới nước.",
+      "visual_signature": "Đô đốc hải vực màu lam-trắng, vòng sonar, giáp mỏ neo và hệ đẩy thủy động lực.",
+      "asset": "assets/solomon/concept-set-03/images/solomon-30-forneus-isometric-board.png",
+      "dimensions": [
+        1086,
+        1448
+      ],
+      "status": "new-concept",
+      "use": "reference-only"
+    },
+    {
+      "id": "foras",
+      "number": 31,
+      "name": "Foras",
+      "src": "bảng_ý_tưởng_mecha_foras_isometric.png",
+      "note": "Silhouette chắc nịch, thiên về hỗ trợ, nghiên cứu và giả kim.",
+      "visual_signature": "Học giả/giả kim cơ giới, búa lớn, ba lô sách-thảo dược-lọ thuốc và giáp trắng-vàng-lục.",
+      "asset": "assets/solomon/concept-set-03/images/solomon-31-foras-isometric-board.png",
+      "dimensions": [
+        1086,
+        1448
+      ],
+      "status": "new-concept",
+      "use": "reference-only"
+    }
+  ],
+  "production_warning": "Do not load these board PNGs as in-game sprites. For production, crop each direction, remove frame/title/text/platform/background, create transparent sprites, then manually clean pixel-art silhouettes and add animation frames. No GLB, rig, animation, equipment data, combat stats, or save migration is included.",
+  "source_artwork_note": "Một số bảng PNG vẫn có dòng tiêu đề nhúng 'Solomon Concept Set 02 v0.5' từ mẫu thiết kế ban đầu. Giữ nguyên ảnh gốc, không sửa chữ trong ảnh; trong repository, 10 ảnh này được phân nhóm thành Concept Set 03 (đợt bổ sung tiếp theo)."
+}
