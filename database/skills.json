@@ -1,0 +1,58 @@
+{
+ "v": 1,
+ "note": "Ghi đè skill (sửa bằng EditSkill.html). equips[<id trang bị>] thay toàn bộ skills của trang bị đó; basic[] (nếu có) là TOÀN BỘ danh sách skill cơ bản; bỏ khóa = dùng mặc định / skill gốc trong mecha-studio.json.",
+ "equips": {},
+ "basic": [
+  {
+   "id": "guard",
+   "name": "Thủ thế",
+   "type": 7,
+   "ic": "🛡️",
+   "lv": 14,
+   "en": 10,
+   "so": 2,
+   "mul": 1,
+   "hits": 1,
+   "eff": "shield",
+   "stat": "atk",
+   "pct": 0,
+   "val": 60,
+   "turns": 1,
+   "desc": ""
+  },
+  {
+   "id": "overdrive",
+   "name": "Overdrive",
+   "type": 7,
+   "ic": "⚡",
+   "lv": 14,
+   "en": 20,
+   "so": 6,
+   "mul": 1,
+   "hits": 1,
+   "eff": "buff",
+   "stat": "atk",
+   "pct": 50,
+   "val": 0,
+   "turns": 1,
+   "desc": ""
+  },
+  {
+   "id": "nano",
+   "name": "Nano sửa chữa",
+   "type": 7,
+   "ic": "🔧",
+   "lv": 15,
+   "en": 25,
+   "so": 6,
+   "mul": 1,
+   "hits": 1,
+   "eff": "heal",
+   "stat": "atk",
+   "pct": 25,
+   "val": 0,
+   "turns": 1,
+   "desc": ""
+  }
+ ]
+}
