@@ -24,7 +24,7 @@
 <script src="vg-skill.js?v=202611281"></script>
 <script>
 (function(){
-var S=VG.skill,GM=VG.game,LK='vg_skill_ov_v1',LIB=null,W={equips:{},basic:{}},tab='eq',sel='',dirty=false,F={q:'',slot:'',mode:''},stale=0;
+var S=VG.skill,GM=VG.game,LK='vg_skill_ov_v1',LIB=null,W={equips:{},basic:null},tab='eq',sel='',dirty=false,F={q:'',slot:'',mode:''},stale=0;
 var SLOTS={head:'Đầu',body:'Thân',shoulder:'Vai',arm:'Tay',glove:'Găng',leg:'Chân',boot:'Giày',weapon:'Vũ khí',backpack:'Ba lô',wing:'Cánh',pet:'Pet',drone:'Drone'};
 var RN=['','Phổ thông','Tốt','Hiếm','Sử thi','Truyền thuyết'],RC=['','#a89f8d','#4fa86a','#3d7fd6','#8c52d6','#d9a21b'];
 var $=function(i){return document.getElementById(i)};
@@ -37,7 +37,7 @@ var eff=function(e){return own(e)?W.equips[e.id]:(Array.isArray(e.skills)?e.skil
 var clone=function(o){return JSON.parse(JSON.stringify(o))};
 function J(p){return fetch(p+'?t='+Date.now()).then(function(r){if(!r.ok)throw 0;return r.json()}).catch(function(){return VG.fetchJSON(p).catch(function(){return null})})}
 function info(){var n=eqs(),w=n.filter(function(e){return eff(e).length}).length;
- $('info').innerHTML=LIB?'Thư viện: <b>'+n.length+'</b> trang bị, <b>'+w+'</b> có skill · ghi đè trang bị: <b>'+Object.keys(W.equips).length+'</b> · ghi đè skill cơ bản: <b>'+Object.keys(W.basic).length+'</b>'+(stale?' · <span class="er">'+stale+' ghi đè không khớp trang bị nào trong database</span>':'')+
+ $('info').innerHTML=LIB?'Thư viện: <b>'+n.length+'</b> trang bị, <b>'+w+'</b> có skill · ghi đè trang bị: <b>'+Object.keys(W.equips).length+'</b> · skill cơ bản: <b>'+(W.basic?W.basic.length+' (tùy chỉnh)':S.BASIC.length+' (mặc định)')+'</b>'+(stale?' · <span class="er">'+stale+' ghi đè không khớp trang bị nào trong database</span>':'')+
  '<br>Skill gốc nằm trong <code>database/mecha-studio.json</code> (không bị ghi đè). Chỉnh ở đây được lưu vào <code>database/skills.json</code> và <b>thắng</b> skill gốc của trang bị đó; bấm "Khôi phục gốc" để bỏ ghi đè.':'<span class="er">Không đọc được database/mecha-studio.json — chưa thể sửa skill trang bị. Skill cơ bản vẫn sửa được.</span>'}
 /* ---------- giao diện ---------- */
 function render(){var y=window.scrollY;info();$('t1').className=tab==='eq'?'on':'';$('t2').className=tab==='ba'?'on':'';
@@ -50,10 +50,13 @@ function fill(){var q=F.q.trim().toLowerCase(),L=eqs().filter(function(e){return
 function vEdit(){var e=eqs().filter(function(x){return x.id===sel})[0],L=eff(e);
  return '<button class="btn g s" data-a="back">← Danh sách</button><div class="card" style="margin-top:8px"><h2>'+esc(e.name||e.id)+'</h2><div class="mu">'+esc(SLOTS[e.slot]||e.slot||'—')+' · '+RN[rar(e)]+' · id <code>'+esc(e.id)+'</code> · '+(own(e)?'<b class="er">Đang dùng bản ghi đè</b>':'Đang dùng skill gốc (sửa sẽ tạo bản ghi đè)')+'</div></div>'+
  L.map(function(s,j){return card(S.norm(s),j,false)}).join('')+'<div class="row"><button class="btn" data-a="add">+ Thêm skill</button><button class="btn g" data-a="restore"'+(own(e)?'':' disabled')+'>↺ Khôi phục gốc</button></div>'}
-function vBasic(){return '<div class="card mu">Skill cơ bản luôn có với mọi Mecha. id, loại và hiệu ứng giữ nguyên (game dựa vào id); chỉ chỉnh số liệu, tên, icon, cảnh giới mở khóa, mô tả.</div>'+S.BASIC0.map(function(o,j){var s=S.norm(Object.assign({},o,W.basic[o.id]||{},{id:o.id,type:7,eff:o.eff}));return card(s,j,true)}).join('')}
+function vBasic(){var L=W.basic||S.BASIC0;
+ return '<div class="card mu">Danh sách skill cơ bản <b>luôn có với mọi Mecha</b> và hiện ở hàng cuối của giao diện chiến đấu. Thêm / xóa / đổi thứ tự ở đây = thêm / xóa / đổi thứ tự trong game (sau khi đẩy lên GitHub). Hiện đang dùng: <b>'+(W.basic?'danh sách tùy chỉnh':'danh sách mặc định của game')+'</b>.</div>'+
+ L.map(function(o,j){return card(S.norm(Object.assign({},o,{type:7})),j,true)}).join('')+'<div class="row"><button class="btn" data-a="add">+ Thêm skill cơ bản</button><button class="btn g" data-a="restore"'+(W.basic?'':' disabled')+'>↺ Về danh sách mặc định</button></div>'}
 function card(s,j,basic){var T=S.TYPES,ac=S.act(s),f='';
  var n=function(k,l,st){return'<div><label>'+l+'</label><input type="number" step="'+(st||1)+'" data-k="'+k+'" value="'+s[k]+'"></div>'};
  var se=function(k,l,op,cur){return'<div><label>'+l+'</label><select data-k="'+k+'">'+op.map(function(o){return'<option value="'+o[0]+'"'+(String(cur)===String(o[0])?' selected':'')+'>'+esc(o[1])+'</option>'}).join('')+'</select></div>'};
+ if(basic)f+=se('eff','Hiệu ứng',S.EFFS[7].map(function(k){return[k,S.EFFN[k]]}),s.eff);
  if(!basic){f+=se('type','Loại skill',Object.keys(T).map(function(k){return[k,k+' · '+T[k].n]}),s.type);if(S.EFFS[s.type].length>1)f+=se('eff','Hiệu ứng',S.EFFS[s.type].map(function(k){return[k,S.EFFN[k]]}),s.eff)}
  f+=n('lv','Mở ở cảnh giới (0 = luôn mở)');
  if(ac)f+=n('en','NL tốn')+n('so','Hồn lực tốn');
@@ -62,16 +65,15 @@ function card(s,j,basic){var T=S.TYPES,ac=S.act(s),f='';
  if(s.eff==='shield'||s.eff==='en'||s.eff==='soul')f+=n('val','Giá trị');
  if(s.eff==='stat'||s.eff==='buff')f+=se('stat','Chỉ số',Object.keys(S.STATS).map(function(k){return[k,S.STATS[k]]}),s.stat)+n('pct','Cộng %');
  if(s.eff==='buff')f+=n('turns','Số lượt');
- var bt=basic?(W.basic[s.id]?'<button class="btn g s" data-a="rb" title="Khôi phục gốc">↺ Gốc</button>':''):'<button class="btn g s" data-a="up" title="Lên">↑</button><button class="btn g s" data-a="dn" title="Xuống">↓</button><button class="btn g s" data-a="dup" title="Nhân bản">⧉</button><button class="btn g s" data-a="del" title="Xóa">🗑</button>';
- return '<div class="card sk" data-j="'+j+'"'+(basic?' data-id="'+esc(s.id)+'"':'')+'><div class="hd"><div class="ic"><label>Icon</label><input data-k="ic" value="'+esc(s.ic)+'"></div><div class="nm"><label>Tên skill'+(basic&&W.basic[s.id]?' <b class="er">· ghi đè</b>':'')+'</label><input data-k="name" value="'+esc(s.name)+'"></div><div class="bt">'+bt+'</div></div>'+
+ var bt='<button class="btn g s" data-a="up" title="Lên">↑</button><button class="btn g s" data-a="dn" title="Xuống">↓</button><button class="btn g s" data-a="dup" title="Nhân bản">⧉</button><button class="btn g s" data-a="del" title="Xóa">🗑</button>';
+ return '<div class="card sk" data-j="'+j+'"><div class="hd"><div class="ic"><label>Icon</label><input data-k="ic" value="'+esc(s.ic)+'"></div><div class="nm"><label>Tên skill</label><input data-k="name" value="'+esc(s.name)+'"></div><div class="bt">'+bt+'</div></div>'+
   '<div class="fg" style="margin-top:6px">'+f+'</div><label>Mô tả</label><input data-k="desc" value="'+esc(s.desc)+'"><div class="pvw">'+pvh(s,basic)+'</div></div>'}
 function pvh(s,basic){return '▶ '+esc(S.effText(s))+' · '+esc(S.costText(s))+(s.lv?' · mở ở '+esc(GM.rankName(s.lv)):'')+(basic?'':' · id '+esc(s.id))}
 /* ---------- chỉnh sửa dữ liệu ---------- */
 function curEq(){return eqs().filter(function(x){return x.id===sel})[0]}
 function ensEq(e){if(!own(e))W.equips[e.id]=(Array.isArray(e.skills)?e.skills:[]).map(function(s){return S.norm(s)});return W.equips[e.id]}
-function target(card){var j=+card.dataset.j;
- if(tab==='ba'){var o=S.BASIC0[j];if(!W.basic[o.id])W.basic[o.id]=S.norm(Object.assign({},o));return W.basic[o.id]}
- var e=curEq();return e?ensEq(e)[j]:null}
+function ensBa(){if(!W.basic)W.basic=S.BASIC0.map(function(b){return S.norm(Object.assign({},b,{type:7}))});return W.basic}
+function target(card){var j=+card.dataset.j;if(tab==='ba')return ensBa()[j];var e=curEq();return e?ensEq(e)[j]:null}
 function setF(card,k,v,fin){var s=target(card);if(!s)return;
  if(['ic','name','desc'].indexOf(k)>=0)s[k]=v;
  else if(k==='eff'||k==='stat')s[k]=v;
@@ -79,35 +81,36 @@ function setF(card,k,v,fin){var s=target(card);if(!s)return;
  dirty=true;
  var j=+card.dataset.j,ns;
  if(['ic','name','desc'].indexOf(k)<0){
-  if(tab==='ba'){var o=S.BASIC0[j];ns=W.basic[o.id]=S.norm(Object.assign({},o,s,{id:o.id,type:7,eff:o.eff}))}else{var e=curEq();ns=W.equips[e.id][j]=S.norm(s)}
+  if(tab==='ba'){ns=W.basic[j]=S.norm(Object.assign({},s,{type:7}))}else{var e=curEq();ns=W.equips[e.id][j]=S.norm(s)}
   if(k==='type'||k==='eff')render();else{var pv=card.querySelector('.pvw');if(pv)pv.textContent=pvh(ns,tab==='ba')}}}
 $('view').addEventListener('input',function(ev){var t=ev.target,c=t.closest&&t.closest('[data-j]'),k=t.dataset&&t.dataset.k;if(c&&k&&(k==='name'||k==='desc'||k==='ic'))setF(c,k,t.value,false)});
 $('view').addEventListener('change',function(ev){var t=ev.target,k=t.dataset&&t.dataset.k;
  if(t.id==='fs'){F.slot=t.value;return fill()}if(t.id==='fm'){F.mode=t.value;return fill()}
  var c=t.closest&&t.closest('[data-j]');if(c&&k)setF(c,k,t.value)});
 $('view').addEventListener('input',function(ev){if(ev.target.id==='q'){F.q=ev.target.value;fill()}});
-$('view').addEventListener('click',function(ev){var b=ev.target.closest('button[data-a]');if(!b)return;var a=b.dataset.a,c=b.closest('[data-j]'),e=curEq();
- if(a==='open'){sel=b.dataset.id;dirty=dirty;return render()}
+$('view').addEventListener('click',function(ev){var b=ev.target.closest('button[data-a]');if(!b)return;var a=b.dataset.a,c=b.closest('[data-j]'),e=curEq(),ba=tab==='ba';
+ if(a==='open'){sel=b.dataset.id;return render()}
  if(a==='back'){sel='';return render()}
- if(a==='add'&&e){ensEq(e).push(S.norm(S.blank()));dirty=true;return render()}
- if(a==='restore'&&e){if(confirm('Bỏ ghi đè và quay về skill gốc của "'+(e.name||e.id)+'"?')){delete W.equips[e.id];dirty=true;render()}return}
- if(a==='rb'&&c){var o=S.BASIC0[+c.dataset.j];delete W.basic[o.id];dirty=true;return render()}
- if(e&&c){var L=ensEq(e),j=+c.dataset.j;
-  if(a==='del'){if(confirm('Xóa skill này khỏi trang bị?'))L.splice(j,1)}
-  else if(a==='dup'){var d=clone(L[j]);d.id='sk_'+Math.random().toString(36).slice(2,8);d.name+=' (bản sao)';L.splice(j+1,0,d)}
-  else if(a==='up'&&j>0){var t=L[j];L[j]=L[j-1];L[j-1]=t}
-  else if(a==='dn'&&j<L.length-1){var t2=L[j];L[j]=L[j+1];L[j+1]=t2}
-  dirty=true;render()}});
+ if(a==='restore'){if(ba){if(confirm('Bỏ danh sách tùy chỉnh và quay về skill cơ bản mặc định của game?')){W.basic=null;dirty=true;render()}}else if(e&&confirm('Bỏ ghi đè và quay về skill gốc của "'+(e.name||e.id)+'"?')){delete W.equips[e.id];dirty=true;render()}return}
+ var L=ba?ensBa():(e?ensEq(e):null);if(!L)return;
+ if(a==='add'){var n=S.blank();if(ba){n.type=7;n.id='basic_'+Math.random().toString(36).slice(2,7);n.name='Skill cơ bản mới';n.lv=12}L.push(S.norm(n));dirty=true;return render()}
+ if(!c)return;var j=+c.dataset.j;
+ if(a==='del'){if(confirm('Xóa skill này'+(ba?' khỏi danh sách skill cơ bản?':' khỏi trang bị?')))L.splice(j,1);else return}
+ else if(a==='dup'){var d=clone(L[j]);d.id=(ba?'basic_':'sk_')+Math.random().toString(36).slice(2,7);d.name+=' (bản sao)';L.splice(j+1,0,d)}
+ else if(a==='up'&&j>0){var t=L[j];L[j]=L[j-1];L[j-1]=t}
+ else if(a==='dn'&&j<L.length-1){var t2=L[j];L[j]=L[j+1];L[j+1]=t2}
+ dirty=true;render()});
 $('t1').onclick=function(){tab='eq';render()};$('t2').onclick=function(){tab='ba';render()};
 /* ---------- dữ liệu / GitHub ---------- */
-function out(){var o={v:1,note:'Ghi đè skill (sửa bằng EditSkill.html). equips[<id trang bị>] thay toàn bộ skills của trang bị đó; basic[] chỉnh skill cơ bản theo id. Bỏ khóa = dùng skill gốc trong mecha-studio.json.',equips:{},basic:[]};
+function out(){var o={v:1,note:'Ghi đè skill (sửa bằng EditSkill.html). equips[<id trang bị>] thay toàn bộ skills của trang bị đó; basic[] (nếu có) là TOÀN BỘ danh sách skill cơ bản; bỏ khóa = dùng mặc định / skill gốc trong mecha-studio.json.',equips:{}};
  Object.keys(W.equips).forEach(function(id){o.equips[id]=W.equips[id].map(function(s){return S.norm(s)})});
- S.BASIC0.forEach(function(b){if(W.basic[b.id])o.basic.push(S.norm(Object.assign({},b,W.basic[b.id],{id:b.id,type:7,eff:b.eff})))});return o}
+ if(W.basic)o.basic=W.basic.map(function(s){return S.norm(Object.assign({},s,{type:7}))});return o}
 function issues(){var p=[];Object.keys(W.equips).forEach(function(id){var seen={},e=eqs().filter(function(x){return x.id===id})[0],nm=e?(e.name||id):id;
- W.equips[id].forEach(function(s,j){if(!String(s.name||'').trim())p.push(nm+': skill #'+(j+1)+' chưa có tên');if(!s.id)p.push(nm+': skill #'+(j+1)+' thiếu id');else if(seen[s.id])p.push(nm+': trùng id skill "'+s.id+'"');seen[s.id]=1})});return p}
-function adopt(j){W={equips:{},basic:{}};stale=0;var ids={};eqs().forEach(function(e){ids[e.id]=1});
+ W.equips[id].forEach(function(s,j){if(!String(s.name||'').trim())p.push(nm+': skill #'+(j+1)+' chưa có tên');if(!s.id)p.push(nm+': skill #'+(j+1)+' thiếu id');else if(seen[s.id])p.push(nm+': trùng id skill "'+s.id+'"');seen[s.id]=1})});
+ if(W.basic){var sb={};if(!W.basic.length)p.push('Skill cơ bản: cần ít nhất 1 skill');W.basic.forEach(function(s,j){if(!String(s.name||'').trim())p.push('Skill cơ bản #'+(j+1)+' chưa có tên');if(!s.id)p.push('Skill cơ bản #'+(j+1)+' thiếu id');else if(sb[s.id])p.push('Skill cơ bản: trùng id "'+s.id+'"');sb[s.id]=1})}return p}
+function adopt(j){W={equips:{},basic:null};stale=0;var ids={};eqs().forEach(function(e){ids[e.id]=1});
  if(j&&j.equips&&typeof j.equips==='object')Object.keys(j.equips).forEach(function(id){if(Array.isArray(j.equips[id])){W.equips[id]=j.equips[id].map(function(s){return S.norm(s)});if(LIB&&!ids[id])stale++}});
- if(j&&Array.isArray(j.basic))j.basic.forEach(function(r){var o=r&&S.BASIC0.filter(function(b){return b.id===r.id})[0];if(o)W.basic[o.id]=S.norm(Object.assign({},o,r,{id:o.id,type:7,eff:o.eff}))});
+ if(j&&Array.isArray(j.basic))W.basic=j.basic.filter(function(r){return r&&typeof r==='object'}).map(function(r){return S.norm(Object.assign({},r,{type:7}))});
  render()}
 $('save').onclick=function(){try{localStorage.setItem(LK,JSON.stringify(out()));dirty=false;msg('Đã lưu trên máy (chưa lên GitHub).','ok')}catch(e){msg('Không lưu được trên máy. Hãy dùng Xuất JSON.','er')}};
 $('exp').onclick=function(){var b=new Blob([JSON.stringify(out(),null,1)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='skills.json';document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1500);msg('Đã xuất skills.json.','ok')};

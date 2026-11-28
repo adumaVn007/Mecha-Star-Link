@@ -147,6 +147,7 @@ function buildSkills(){
  own.forEach(s=>{const r=Math.round(+((E[s.eqid]||{}).rarity));s.r=r>=1?Math.min(5,r):1});
  /* skill trang bị: phẩm cao → thấp (cùng phẩm giữ thứ tự cũ); skill cơ bản luôn ở cuối */
  const act=own.map((s,i)=>[s,i]).filter(x=>VG.skill.act(x[0])).sort((a,b)=>b[0].r-a[0].r||a[1]-b[1]).map(x=>x[0]);
+ /* nhóm trên: skill của trang bị (mọi loại, phẩm cao → thấp). Nhóm cuối: danh sách skill cơ bản (VG.skill.BASIC: mặc định hoặc database/skills.json), khung trung tính */
  SK=act.concat(VG.skill.BASIC.map(s=>Object.assign({},s,{r:0})));
  SK.forEach(s=>{s.d=VG.skill.effText(s)});
  PAS=own.filter(s=>!VG.skill.act(s));
