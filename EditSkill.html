@@ -1,0 +1,127 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Vân Giáp – Sửa Skill</title>
+<link rel="stylesheet" href="vg-admin.css?v=202611261">
+<script src="vg-admin.js?v=202611281" defer></script>
+<style>
+.sk{border-left:4px solid var(--rc,var(--bd))}.sk h3{margin:0}
+.eqb{display:block;width:100%;text-align:left;margin:0 0 6px;padding:9px 10px;min-height:46px;border:1px solid var(--bd);border-left:4px solid var(--rc,var(--bd));border-radius:6px;background:var(--card);color:var(--tx);font:inherit;cursor:pointer}
+.eqb small{display:block;color:var(--mut);font-size:12px}
+.eqb .dot{color:var(--red);font-weight:700}
+.hd{display:flex;gap:6px;align-items:flex-end;flex-wrap:wrap}.hd>.ic{width:58px}.hd>.nm{flex:1;min-width:120px}.hd>.bt{display:flex;gap:4px}
+.hd .bt button{min-width:40px}
+.fg{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px}
+.pvw{margin-top:6px;font-size:13px;color:var(--mut)}
+</style></head><body class="ed">
+<h1>✨ Sửa Skill</h1>
+<div class="card mu" id="info">Đang đọc database…</div>
+<div class="tabs"><button id="t1" class="on">Skill trang bị</button><button id="t2">Skill cơ bản</button></div>
+<div id="view"></div>
+<div class="card"><div class="row"><button class="btn" id="save">Lưu trên máy</button><button class="btn g" id="exp">Xuất JSON</button><button class="btn g" id="imp">Nhập JSON</button></div>
+<div class="row" style="margin-top:8px"><button class="btn g" id="gl">Tải từ GitHub</button><button class="btn g" id="gp">Đẩy lên GitHub</button><button class="btn g" id="gt">Xóa token</button></div>
+<div id="msg" class="mu" style="margin-top:6px"></div>
+<div class="mu" style="margin-top:8px">Sau khi đẩy lên GitHub, kiểm tra trong game: <a href="bag-test.html" target="_blank">Test Túi đồ &amp; Trang bị</a> · <a href="battle.html?scene=grass" target="_blank">Chiến đấu thử</a> (GitHub Pages cần vài phút cập nhật).</div></div>
+<script src="vg-github.js?v=202611281"></script>
+<script src="vg-core.js?v=202611281"></script>
+<script src="vg-skill.js?v=202611281"></script>
+<script>
+(function(){
+var S=VG.skill,GM=VG.game,LK='vg_skill_ov_v1',LIB=null,W={equips:{},basic:{}},tab='eq',sel='',dirty=false,F={q:'',slot:'',mode:''},stale=0;
+var SLOTS={head:'Đầu',body:'Thân',shoulder:'Vai',arm:'Tay',glove:'Găng',leg:'Chân',boot:'Giày',weapon:'Vũ khí',backpack:'Ba lô',wing:'Cánh',pet:'Pet',drone:'Drone'};
+var RN=['','Phổ thông','Tốt','Hiếm','Sử thi','Truyền thuyết'],RC=['','#a89f8d','#4fa86a','#3d7fd6','#8c52d6','#d9a21b'];
+var $=function(i){return document.getElementById(i)};
+var esc=function(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
+function msg(t,c){var m=$('msg');m.className=c||'mu';m.textContent=t||''}
+var rar=function(e){var r=Math.round(+e.rarity);return r>=1?Math.min(5,r):1};
+var eqs=function(){return LIB&&Array.isArray(LIB.equips)?LIB.equips.filter(function(e){return e&&e.id}):[]};
+var own=function(e){return Array.isArray(W.equips[e.id])};
+var eff=function(e){return own(e)?W.equips[e.id]:(Array.isArray(e.skills)?e.skills:[])};
+var clone=function(o){return JSON.parse(JSON.stringify(o))};
+function J(p){return fetch(p+'?t='+Date.now()).then(function(r){if(!r.ok)throw 0;return r.json()}).catch(function(){return VG.fetchJSON(p).catch(function(){return null})})}
+function info(){var n=eqs(),w=n.filter(function(e){return eff(e).length}).length;
+ $('info').innerHTML=LIB?'Thư viện: <b>'+n.length+'</b> trang bị, <b>'+w+'</b> có skill · ghi đè trang bị: <b>'+Object.keys(W.equips).length+'</b> · ghi đè skill cơ bản: <b>'+Object.keys(W.basic).length+'</b>'+(stale?' · <span class="er">'+stale+' ghi đè không khớp trang bị nào trong database</span>':'')+
+ '<br>Skill gốc nằm trong <code>database/mecha-studio.json</code> (không bị ghi đè). Chỉnh ở đây được lưu vào <code>database/skills.json</code> và <b>thắng</b> skill gốc của trang bị đó; bấm "Khôi phục gốc" để bỏ ghi đè.':'<span class="er">Không đọc được database/mecha-studio.json — chưa thể sửa skill trang bị. Skill cơ bản vẫn sửa được.</span>'}
+/* ---------- giao diện ---------- */
+function render(){var y=window.scrollY;info();$('t1').className=tab==='eq'?'on':'';$('t2').className=tab==='ba'?'on':'';
+ if(tab==='ba')$('view').innerHTML=vBasic();else if(sel&&eqs().some(function(e){return e.id===sel}))$('view').innerHTML=vEdit();else{sel='';$('view').innerHTML=vFilter()+'<div id="lst"></div>';fill()}
+ window.scrollTo(0,y)}
+function vFilter(){return '<div class="card"><div class="row"><div><label>Tìm tên / id</label><input id="q" value="'+esc(F.q)+'" placeholder="vd: prime"></div><div><label>Ô trang bị</label><select id="fs"><option value="">Tất cả</option>'+Object.keys(SLOTS).map(function(k){return'<option value="'+k+'"'+(F.slot===k?' selected':'')+'>'+SLOTS[k]+'</option>'}).join('')+'</select></div><div><label>Hiện</label><select id="fm"><option value="">Tất cả</option><option value="sk"'+(F.mode==='sk'?' selected':'')+'>Có skill</option><option value="ov"'+(F.mode==='ov'?' selected':'')+'>Đã ghi đè</option></select></div></div></div>'}
+function fill(){var q=F.q.trim().toLowerCase(),L=eqs().filter(function(e){return(!F.slot||e.slot===F.slot)&&(!q||(String(e.name||'')+' '+e.id).toLowerCase().indexOf(q)>=0)&&(F.mode!=='sk'||eff(e).length)&&(F.mode!=='ov'||own(e))});
+ L.sort(function(a,b){return rar(b)-rar(a)||String(a.name).localeCompare(String(b.name),'vi')});
+ $('lst').innerHTML=L.length?L.map(function(e){return'<button class="eqb" style="--rc:'+RC[rar(e)]+'" data-a="open" data-id="'+esc(e.id)+'">'+(own(e)?'<span class="dot">● </span>':'')+esc(e.name||e.id)+'<small>'+esc(SLOTS[e.slot]||e.slot||'—')+' · '+RN[rar(e)]+' · '+eff(e).length+' skill'+(own(e)?' · đã ghi đè':'')+'</small></button>'}).join(''):'<div class="card mu">Không có trang bị phù hợp.</div>'}
+function vEdit(){var e=eqs().filter(function(x){return x.id===sel})[0],L=eff(e);
+ return '<button class="btn g s" data-a="back">← Danh sách</button><div class="card" style="margin-top:8px"><h2>'+esc(e.name||e.id)+'</h2><div class="mu">'+esc(SLOTS[e.slot]||e.slot||'—')+' · '+RN[rar(e)]+' · id <code>'+esc(e.id)+'</code> · '+(own(e)?'<b class="er">Đang dùng bản ghi đè</b>':'Đang dùng skill gốc (sửa sẽ tạo bản ghi đè)')+'</div></div>'+
+ L.map(function(s,j){return card(S.norm(s),j,false)}).join('')+'<div class="row"><button class="btn" data-a="add">+ Thêm skill</button><button class="btn g" data-a="restore"'+(own(e)?'':' disabled')+'>↺ Khôi phục gốc</button></div>'}
+function vBasic(){return '<div class="card mu">Skill cơ bản luôn có với mọi Mecha. id, loại và hiệu ứng giữ nguyên (game dựa vào id); chỉ chỉnh số liệu, tên, icon, cảnh giới mở khóa, mô tả.</div>'+S.BASIC0.map(function(o,j){var s=S.norm(Object.assign({},o,W.basic[o.id]||{},{id:o.id,type:7,eff:o.eff}));return card(s,j,true)}).join('')}
+function card(s,j,basic){var T=S.TYPES,ac=S.act(s),f='';
+ var n=function(k,l,st){return'<div><label>'+l+'</label><input type="number" step="'+(st||1)+'" data-k="'+k+'" value="'+s[k]+'"></div>'};
+ var se=function(k,l,op,cur){return'<div><label>'+l+'</label><select data-k="'+k+'">'+op.map(function(o){return'<option value="'+o[0]+'"'+(String(cur)===String(o[0])?' selected':'')+'>'+esc(o[1])+'</option>'}).join('')+'</select></div>'};
+ if(!basic){f+=se('type','Loại skill',Object.keys(T).map(function(k){return[k,k+' · '+T[k].n]}),s.type);if(S.EFFS[s.type].length>1)f+=se('eff','Hiệu ứng',S.EFFS[s.type].map(function(k){return[k,S.EFFN[k]]}),s.eff)}
+ f+=n('lv','Mở ở cảnh giới (0 = luôn mở)');
+ if(ac)f+=n('en','NL tốn')+n('so','Hồn lực tốn');
+ if(s.eff==='dmg')f+=n('mul','Sát thương ×',0.1)+n('hits','Số đòn');
+ if(s.eff==='heal')f+=n('pct','Hồi % HP tối đa');
+ if(s.eff==='shield'||s.eff==='en'||s.eff==='soul')f+=n('val','Giá trị');
+ if(s.eff==='stat'||s.eff==='buff')f+=se('stat','Chỉ số',Object.keys(S.STATS).map(function(k){return[k,S.STATS[k]]}),s.stat)+n('pct','Cộng %');
+ if(s.eff==='buff')f+=n('turns','Số lượt');
+ var bt=basic?(W.basic[s.id]?'<button class="btn g s" data-a="rb" title="Khôi phục gốc">↺ Gốc</button>':''):'<button class="btn g s" data-a="up" title="Lên">↑</button><button class="btn g s" data-a="dn" title="Xuống">↓</button><button class="btn g s" data-a="dup" title="Nhân bản">⧉</button><button class="btn g s" data-a="del" title="Xóa">🗑</button>';
+ return '<div class="card sk" data-j="'+j+'"'+(basic?' data-id="'+esc(s.id)+'"':'')+'><div class="hd"><div class="ic"><label>Icon</label><input data-k="ic" value="'+esc(s.ic)+'"></div><div class="nm"><label>Tên skill'+(basic&&W.basic[s.id]?' <b class="er">· ghi đè</b>':'')+'</label><input data-k="name" value="'+esc(s.name)+'"></div><div class="bt">'+bt+'</div></div>'+
+  '<div class="fg" style="margin-top:6px">'+f+'</div><label>Mô tả</label><input data-k="desc" value="'+esc(s.desc)+'"><div class="pvw">'+pvh(s,basic)+'</div></div>'}
+function pvh(s,basic){return '▶ '+esc(S.effText(s))+' · '+esc(S.costText(s))+(s.lv?' · mở ở '+esc(GM.rankName(s.lv)):'')+(basic?'':' · id '+esc(s.id))}
+/* ---------- chỉnh sửa dữ liệu ---------- */
+function curEq(){return eqs().filter(function(x){return x.id===sel})[0]}
+function ensEq(e){if(!own(e))W.equips[e.id]=(Array.isArray(e.skills)?e.skills:[]).map(function(s){return S.norm(s)});return W.equips[e.id]}
+function target(card){var j=+card.dataset.j;
+ if(tab==='ba'){var o=S.BASIC0[j];if(!W.basic[o.id])W.basic[o.id]=S.norm(Object.assign({},o));return W.basic[o.id]}
+ var e=curEq();return e?ensEq(e)[j]:null}
+function setF(card,k,v,fin){var s=target(card);if(!s)return;
+ if(['ic','name','desc'].indexOf(k)>=0)s[k]=v;
+ else if(k==='eff'||k==='stat')s[k]=v;
+ else{s[k]=+v;if(k==='type'){var ok=S.EFFS[s.type]||S.EFFS[7];if(ok.indexOf(s.eff)<0)s.eff=ok[0]}}
+ dirty=true;
+ var j=+card.dataset.j,ns;
+ if(['ic','name','desc'].indexOf(k)<0){
+  if(tab==='ba'){var o=S.BASIC0[j];ns=W.basic[o.id]=S.norm(Object.assign({},o,s,{id:o.id,type:7,eff:o.eff}))}else{var e=curEq();ns=W.equips[e.id][j]=S.norm(s)}
+  if(k==='type'||k==='eff')render();else{var pv=card.querySelector('.pvw');if(pv)pv.textContent=pvh(ns,tab==='ba')}}}
+$('view').addEventListener('input',function(ev){var t=ev.target,c=t.closest&&t.closest('[data-j]'),k=t.dataset&&t.dataset.k;if(c&&k&&(k==='name'||k==='desc'||k==='ic'))setF(c,k,t.value,false)});
+$('view').addEventListener('change',function(ev){var t=ev.target,k=t.dataset&&t.dataset.k;
+ if(t.id==='fs'){F.slot=t.value;return fill()}if(t.id==='fm'){F.mode=t.value;return fill()}
+ var c=t.closest&&t.closest('[data-j]');if(c&&k)setF(c,k,t.value)});
+$('view').addEventListener('input',function(ev){if(ev.target.id==='q'){F.q=ev.target.value;fill()}});
+$('view').addEventListener('click',function(ev){var b=ev.target.closest('button[data-a]');if(!b)return;var a=b.dataset.a,c=b.closest('[data-j]'),e=curEq();
+ if(a==='open'){sel=b.dataset.id;dirty=dirty;return render()}
+ if(a==='back'){sel='';return render()}
+ if(a==='add'&&e){ensEq(e).push(S.norm(S.blank()));dirty=true;return render()}
+ if(a==='restore'&&e){if(confirm('Bỏ ghi đè và quay về skill gốc của "'+(e.name||e.id)+'"?')){delete W.equips[e.id];dirty=true;render()}return}
+ if(a==='rb'&&c){var o=S.BASIC0[+c.dataset.j];delete W.basic[o.id];dirty=true;return render()}
+ if(e&&c){var L=ensEq(e),j=+c.dataset.j;
+  if(a==='del'){if(confirm('Xóa skill này khỏi trang bị?'))L.splice(j,1)}
+  else if(a==='dup'){var d=clone(L[j]);d.id='sk_'+Math.random().toString(36).slice(2,8);d.name+=' (bản sao)';L.splice(j+1,0,d)}
+  else if(a==='up'&&j>0){var t=L[j];L[j]=L[j-1];L[j-1]=t}
+  else if(a==='dn'&&j<L.length-1){var t2=L[j];L[j]=L[j+1];L[j+1]=t2}
+  dirty=true;render()}});
+$('t1').onclick=function(){tab='eq';render()};$('t2').onclick=function(){tab='ba';render()};
+/* ---------- dữ liệu / GitHub ---------- */
+function out(){var o={v:1,note:'Ghi đè skill (sửa bằng EditSkill.html). equips[<id trang bị>] thay toàn bộ skills của trang bị đó; basic[] chỉnh skill cơ bản theo id. Bỏ khóa = dùng skill gốc trong mecha-studio.json.',equips:{},basic:[]};
+ Object.keys(W.equips).forEach(function(id){o.equips[id]=W.equips[id].map(function(s){return S.norm(s)})});
+ S.BASIC0.forEach(function(b){if(W.basic[b.id])o.basic.push(S.norm(Object.assign({},b,W.basic[b.id],{id:b.id,type:7,eff:b.eff})))});return o}
+function issues(){var p=[];Object.keys(W.equips).forEach(function(id){var seen={},e=eqs().filter(function(x){return x.id===id})[0],nm=e?(e.name||id):id;
+ W.equips[id].forEach(function(s,j){if(!String(s.name||'').trim())p.push(nm+': skill #'+(j+1)+' chưa có tên');if(!s.id)p.push(nm+': skill #'+(j+1)+' thiếu id');else if(seen[s.id])p.push(nm+': trùng id skill "'+s.id+'"');seen[s.id]=1})});return p}
+function adopt(j){W={equips:{},basic:{}};stale=0;var ids={};eqs().forEach(function(e){ids[e.id]=1});
+ if(j&&j.equips&&typeof j.equips==='object')Object.keys(j.equips).forEach(function(id){if(Array.isArray(j.equips[id])){W.equips[id]=j.equips[id].map(function(s){return S.norm(s)});if(LIB&&!ids[id])stale++}});
+ if(j&&Array.isArray(j.basic))j.basic.forEach(function(r){var o=r&&S.BASIC0.filter(function(b){return b.id===r.id})[0];if(o)W.basic[o.id]=S.norm(Object.assign({},o,r,{id:o.id,type:7,eff:o.eff}))});
+ render()}
+$('save').onclick=function(){try{localStorage.setItem(LK,JSON.stringify(out()));dirty=false;msg('Đã lưu trên máy (chưa lên GitHub).','ok')}catch(e){msg('Không lưu được trên máy. Hãy dùng Xuất JSON.','er')}};
+$('exp').onclick=function(){var b=new Blob([JSON.stringify(out(),null,1)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='skills.json';document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1500);msg('Đã xuất skills.json.','ok')};
+$('imp').onclick=function(){var i=document.createElement('input');i.type='file';i.accept='.json,application/json';i.onchange=function(){var f=i.files&&i.files[0];if(!f)return;var r=new FileReader();r.onload=function(){try{var j=JSON.parse(r.result);if(!j||(!j.equips&&!j.basic))throw 0;adopt(j);dirty=true;msg('Đã nhập. Nhớ Lưu / Đẩy lên GitHub.','ok')}catch(e){msg('File không phải skills.json hợp lệ.','er')}};r.readAsText(f)};i.click()};
+$('gl').onclick=function(){if(dirty&&!confirm('Có thay đổi chưa lưu. Tải từ GitHub sẽ thay thế. Tiếp tục?'))return;msg('Đang tải…');VG.fetchJSON(VG.cfg.paths.skills).then(function(j){if(!j){adopt(null);dirty=false;msg('GitHub chưa có database/skills.json (đang dùng skill gốc).');return}adopt(j);dirty=false;msg('Đã tải từ GitHub.','ok')}).catch(function(e){msg('Không tải được: '+e.message,'er')})};
+$('gp').onclick=function(){var p=issues();if(p.length){msg('Chưa đẩy được: '+p.slice(0,4).join('; ')+(p.length>4?'…':''),'er');return}
+ var tk=VG.getToken();if(!tk){tk=prompt('Dán token GitHub (fine-grained, chỉ quyền Contents: Read and write cho repo này). Token chỉ lưu trong tab này.');if(!tk)return;VG.setToken(tk.trim())}
+ msg('Đang đẩy lên GitHub…');VG.save(VG.cfg.paths.skills,out(),'Cập nhật skill (EditSkill)').then(function(j){dirty=false;msg('✅ Đã đẩy lên GitHub'+(j&&j.commit?' (commit '+String(j.commit.sha).slice(0,7)+')':'')+'. Game cần vài phút để GitHub Pages cập nhật.','ok')}).catch(function(e){msg('Lỗi: '+e.message,'er')})};
+$('gt').onclick=function(){VG.clearToken();msg('Đã xóa token khỏi tab này.')};
+window.addEventListener('beforeunload',function(e){if(dirty){e.preventDefault();e.returnValue=''}});
+/* ---------- khởi động: thư viện thật + ghi đè (bản lưu máy → GitHub) ---------- */
+render();
+var loc=null;try{loc=JSON.parse(localStorage.getItem(LK)||'null')}catch(e){}
+Promise.all([J('database/mecha-studio.json'),loc?Promise.resolve(loc):J('database/skills.json')]).then(function(a){LIB=a[0];adopt(a[1]);
+ if(loc)msg('Đang dùng bản lưu trên máy. Bấm "Tải từ GitHub" để lấy bản chính thức.');else if(!a[1])msg('Chưa có skills.json trên GitHub: đang dùng skill gốc.')});
+})();
+</script></body></html>

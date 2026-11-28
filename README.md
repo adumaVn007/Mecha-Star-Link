@@ -19,6 +19,8 @@ Trang chính (GitHub Pages): https://adumavn007.github.io/Mecha-Star-Link/
 - https://adumavn007.github.io/Mecha-Star-Link/editmisson.html — nhiệm vụ / NPC / thành tựu / danh tiếng
 - https://adumavn007.github.io/Mecha-Star-Link/worldmap-editor.html — bản đồ thế giới
 - https://adumavn007.github.io/Mecha-Star-Link/player.html — hồ sơ người chơi
+- https://adumavn007.github.io/Mecha-Star-Link/EditPlayoutCombat.html — nền giao diện chiến đấu theo địa hình (database/combat-ui.json)
+- https://adumavn007.github.io/Mecha-Star-Link/EditSkill.html — skill trang bị & skill cơ bản (database/skills.json, ghi đè skill trong mecha-studio.json)
 
 ## 🤖 Mecha 3D / thư viện
 - https://adumavn007.github.io/Mecha-Star-Link/mecha-studio.html
@@ -39,6 +41,8 @@ Mở trực tiếp (raw):
 - https://raw.githubusercontent.com/adumaVn007/Mecha-Star-Link/main/database/blueprints.json
 - https://raw.githubusercontent.com/adumaVn007/Mecha-Star-Link/main/database/origins.json
 - https://raw.githubusercontent.com/adumaVn007/Mecha-Star-Link/main/database/city-items.json
+- https://raw.githubusercontent.com/adumaVn007/Mecha-Star-Link/main/database/combat-ui.json
+- https://raw.githubusercontent.com/adumaVn007/Mecha-Star-Link/main/database/skills.json
 
 File lớn (xem trên GitHub):
 - https://github.com/adumaVn007/Mecha-Star-Link/blob/main/msl-solomon-embed.js (~4,6 MB)
@@ -47,9 +51,8 @@ File lớn (xem trên GitHub):
 - https://github.com/adumaVn007/Mecha-Star-Link/blob/main/database-schema.md — định dạng dữ liệu
 
 ## 🧩 Module dùng chung
-vg-core.js · vg-github.js · vg-char.js · vg-bag.js · vg-quest.js · vg-mapart.js · vg-admin.js/.css · worldmap-gen.js · city-ui.js
+vg-skill.js · vg-combat-scene.js · vg-core.js · vg-github.js · vg-char.js · vg-bag.js · vg-quest.js · vg-mapart.js · vg-admin.js/.css · worldmap-gen.js · city-ui.js
 
 ## Triển khai
 Settings → Pages → Deploy from a branch → `main` / `(root)`. Có `.nojekyll` để Pages không chạy Jekyll.
 
-https://adumavn007.github.io/Mecha-Star-Link/EditPlayoutCombat.html Edit nền giao diện combat theo địa hình

@@ -94,7 +94,19 @@
       return w;
     });
   };
-  GM.loadLib = function () { return getJSON('database/mecha-studio.json').catch(function () { return null; }); };
+  /* Skill ghi đè (database/skills.json, sửa bằng EditSkill.html): equips[<id trang bị>] thay skills của trang bị đó; basic[] chỉnh skill cơ bản. Thiếu file = dùng nguyên mecha-studio.json. */
+  GM.applySkills = function (lib, ov) {
+    if (!lib || !ov || typeof ov !== 'object') return lib;
+    if (ov.equips && Array.isArray(lib.equips)) lib.equips.forEach(function (e) { if (e && e.id && Array.isArray(ov.equips[e.id])) e.skills = JSON.parse(JSON.stringify(ov.equips[e.id])); });
+    if (Array.isArray(ov.basic) && VG.skill && VG.skill.applyBasic) VG.skill.applyBasic(ov.basic);
+    return lib;
+  };
+  GM.loadLib = function () {
+    return getJSON('database/mecha-studio.json').catch(function () { return null; }).then(function (lib) {
+      if (!lib) return lib;
+      return getJSON('database/skills.json').catch(function () { return null; }).then(function (ov) { try { GM.applySkills(lib, ov); } catch (e) {} return lib; });
+    });
+  };
   /* ===== Quái vật mở rộng (MỚI): database/monsters.json, trộn vào w.monsters theo id (trùng id = ghi đè). =====
      Quái cũ trong world-events.json giữ nguyên. Trường mới: rank 0-48, kind 'monster'|'boss', terrain[], weight, roam, img, bossMap{x,y,roam,respawnDays,respawnKills,tier}. */
   GM.monRank = function (m) { var r = m && (m.rank != null ? m.rank : m.lv); r = +r; return isFinite(r) ? Math.max(0, Math.min(GM.MAXR, Math.round(r))) : 0; };

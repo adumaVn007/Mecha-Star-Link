@@ -80,4 +80,10 @@
     { id: 'nano', name: 'Nano sửa chữa', ic: '🔧', lv: 15, type: 7, en: 25, so: 6, eff: 'heal', pct: 25 },
     { id: 'void', name: 'Pháo Hư Không', ic: '🌑', lv: 16, type: 7, en: 60, so: 18, eff: 'dmg', mul: 4.5, hits: 1 }
   ].map(S.norm);
+  /* Ghi đè skill cơ bản từ database/skills.json (basic:[{id,name,ic,lv,en,so,mul,hits,pct,val,stat,turns,desc}]). id / loại / hiệu ứng giữ nguyên. Gọi lại nhiều lần vẫn đúng. */
+  S.BASIC0 = S.BASIC.map(function (b) { return Object.assign({}, b); });
+  S.applyBasic = function (list) {
+    var m = {}; (Array.isArray(list) ? list : []).forEach(function (r) { if (r && r.id) m[r.id] = r; });
+    S.BASIC0.forEach(function (o, i) { var r = m[o.id]; S.BASIC[i] = r ? S.norm(Object.assign({}, o, r, { id: o.id, type: 7, eff: o.eff })) : Object.assign({}, o); });
+  };
 })(typeof window != 'undefined' ? window : globalThis);
