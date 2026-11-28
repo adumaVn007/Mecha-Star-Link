@@ -1,0 +1,101 @@
+{
+  "_note": "Cắt từ healthbar-sheet-original.png (256x240). Pixel gốc, chỉ phóng to số nguyên.",
+  "slant": {
+    "size": [
+      42,
+      7
+    ],
+    "skew": 7,
+    "slice": [
+      0,
+      8,
+      0,
+      8
+    ],
+    "states": [
+      "full",
+      "empty"
+    ],
+    "colors": [
+      "cyan",
+      "green",
+      "steel",
+      "red",
+      "purple",
+      "maroon"
+    ],
+    "file": "slant/slant_{color}_{state}.png"
+  },
+  "pill_lg": {
+    "size": [
+      27,
+      8
+    ],
+    "slice": [
+      0,
+      4,
+      0,
+      4
+    ],
+    "segments": 6,
+    "states": [
+      "full",
+      "empty"
+    ],
+    "colors": [
+      "orange",
+      "green",
+      "yellow",
+      "silver"
+    ],
+    "file": "pill/pill_{color}_lg_{state}.png"
+  },
+  "pill_sm": {
+    "size": [
+      18,
+      6
+    ],
+    "slice": [
+      0,
+      3,
+      0,
+      3
+    ],
+    "segments": 5,
+    "states": [
+      "full",
+      "empty"
+    ],
+    "colors": [
+      "orange",
+      "green",
+      "yellow",
+      "silver"
+    ],
+    "file": "pill/pill_{color}_sm_{state}.png"
+  },
+  "pips5": {
+    "size": [
+      30,
+      10
+    ],
+    "file": "pips/pips5_{n}.png",
+    "n": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  "roles": {
+    "hp_ally": "slant:green",
+    "hp_enemy": "slant:red",
+    "shield": "slant:cyan",
+    "hl": "slant:purple",
+    "nl": "pill_lg:yellow",
+    "atb": "pill_lg:silver",
+    "atb_mini": "pill_sm:silver"
+  }
+}

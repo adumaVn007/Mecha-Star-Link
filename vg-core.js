@@ -101,10 +101,30 @@
     if (Array.isArray(ov.basic) && VG.skill && VG.skill.applyBasic) VG.skill.applyBasic(ov.basic);
     return lib;
   };
+  GM.mergeLib = function (base, extra) {
+    if (!extra || typeof extra !== 'object') return base;
+    base = base || {};
+    ['humans', 'mechas', 'equips', 'items', 'materials'].forEach(function (k) {
+      var list = Array.isArray(extra[k]) ? extra[k] : [];
+      if (!list.length) return;
+      base[k] = Array.isArray(base[k]) ? base[k].slice() : [];
+      var seen = {};
+      base[k].forEach(function (x) { if (x && x.id) seen[x.id] = 1; });
+      list.forEach(function (x) { if (x && x.id && !seen[x.id]) { seen[x.id] = 1; base[k].push(x); } });
+    });
+    return base;
+  };
   GM.loadLib = function () {
-    return getJSON('database/mecha-studio.json').catch(function () { return null; }).then(function (lib) {
-      if (!lib) return lib;
-      return getJSON('database/skills.json').catch(function () { return null; }).then(function (ov) { try { GM.applySkills(lib, ov); } catch (e) {} return lib; });
+    return Promise.all([
+      getJSON('database/mecha-studio.json').catch(function () { return null; }),
+      getJSON('mecha-studio.json').catch(function () { return null; }),
+      getJSON('database/skills.json').catch(function () { return null; })
+    ]).then(function (res) {
+      var lib = res[0], sup = res[1], ov = res[2];
+      if (!lib && !sup) return null;
+      lib = GM.mergeLib(lib || {}, sup);
+      try { GM.applySkills(lib, ov); } catch (e) {}
+      return lib;
     });
   };
   /* ===== Quái vật mở rộng (MỚI): database/monsters.json, trộn vào w.monsters theo id (trùng id = ghi đè). =====

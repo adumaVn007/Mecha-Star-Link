@@ -4,123 +4,201 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Vân Giáp – Chiến đấu</title>
-<style>
-:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
---bg:#efe7d6;--card:#f7f1e3;--tx:#2b2118;--mut:#7a6a58;--bd:#bda985;--red:#8b1e1e;--hp:#4b7a52;--en:#3f5fa8;--sh:#2c8fa5;--so:#8a56b0;--atb:#c58a2b;--bad:#b3261e;
---sky1:#eef0e4;--sky2:#cdd9d0;--mt1:#a9bdb0;--mt2:#86a295;--m1:#3a3f46;--m2:#23272d;--acc:#c0392b;--b1:#4a5a55;--b2:#2f3b38;color-scheme:light}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17130f;--card:#211b15;--tx:#eadfcb;--mut:#a2937d;--bd:#4a3e30;--red:#d9605a;--hp:#7fbf86;--en:#7d9be0;--sh:#5cc6dc;--so:#b98ce0;--atb:#e0aa4d;--bad:#f2766d;--sky1:#27323a;--sky2:#1b2429;--mt1:#35504a;--mt2:#27403b;--m1:#c9ced6;--m2:#8c93a0;--acc:#ff7a6b;--b1:#9fb3ab;--b2:#6b7e77;color-scheme:dark}}
-*{box-sizing:border-box}html,body{height:100%}
-body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.35 Georgia,"Noto Serif","Times New Roman",serif}
-.wrap{max-width:980px;margin:0 auto;padding:8px;display:grid;gap:8px}
-@media(min-width:860px){.wrap{grid-template-columns:1fr 260px}}
-main{display:flex;flex-direction:column;gap:8px;min-width:0}
-.card{background:var(--card);border:1px solid var(--bd);border-radius:6px;padding:8px}
-.order{display:flex;justify-content:center;gap:14px}
-.pt{text-align:center;width:64px;font-size:10px;color:var(--mut)}
-.pt b{display:block;font-size:22px;line-height:1.2}
-.mb{height:4px;background:var(--bd);border-radius:2px;overflow:hidden}.mb i{display:block;height:100%;background:var(--atb);width:0}
-#stage{position:relative;border:1px solid var(--bd);border-radius:6px;overflow:hidden}
-#stage svg{display:block;width:100%;height:auto}
-.tag{position:absolute;left:8px;top:8px;background:var(--card);border:1px solid var(--bd);padding:1px 7px;font-size:12px}
-.pop{position:absolute;top:34%;font:700 20px Georgia,serif;color:var(--bad);text-shadow:0 1px 0 var(--card);animation:fl .9s forwards;pointer-events:none}
-.pop.g{color:var(--hp)}
-@keyframes fl{to{transform:translateY(-34px);opacity:0}}
-.hit{animation:bl .25s}@keyframes bl{50%{opacity:.25}}
-.panels{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.panel{border-left:3px solid var(--hp);padding:5px 6px;min-width:0}.panel.e{border-left-color:var(--red)}
-.hd{color:var(--red);font-weight:700;font-size:10px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.nm{font-size:13px;font-weight:700;margin:0 0 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.nm small{font-weight:400;color:var(--mut);font-size:10px;margin-left:5px}
-.sb{position:relative;display:flex;justify-content:space-between;gap:4px;height:15px;margin:2px 0;padding:0 4px;border-radius:3px;background:var(--bd);overflow:hidden;font-size:10px;line-height:15px;white-space:nowrap}
-.sb i{position:absolute;left:0;top:0;bottom:0;width:0;opacity:.8;transition:width .25s}
-.sb span,.sb b{position:relative;z-index:1;text-shadow:0 0 2px var(--card),0 0 2px var(--card)}.sb b{font-weight:700}
-.sb em{font-style:normal;opacity:.8;margin-left:3px}
-.flag{font-size:10px;color:var(--bad);line-height:1.2}.bf{font-size:10px;color:var(--red);line-height:1.2}
-.comps{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px}
-#skills{display:flex;flex-direction:column;gap:6px}
-.skg{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
-#skills button{padding:6px 2px;min-height:78px;min-width:0}
-#skills button.sk{border:2px solid var(--rc,var(--bd));background:var(--card);background:linear-gradient(color-mix(in srgb,var(--rc,var(--bd)) 16%,var(--card)),var(--card))}
-#ordw{position:relative}.pt[data-p]{cursor:pointer}.pt.on b{outline:2px solid var(--atb);border-radius:8px}
-#pasv{display:none;position:absolute;z-index:4;top:100%;left:50%;transform:translateX(-50%);width:min(340px,94vw);max-height:45vh;overflow:auto;padding:8px 10px;font-size:12px;box-shadow:0 6px 18px #0006}
-#pasv .ph{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:11px;color:var(--mut);margin-bottom:4px}#pasv .ph button{padding:2px 10px;min-height:30px}
-#pasv .it{padding:3px 0;border-bottom:1px dotted var(--bd)}
-#stage[data-tone=light]{--m1:#3a3f46;--m2:#23272d;--acc:#c0392b;--b1:#4a5a55;--b2:#2f3b38}
-#stage[data-tone=dark]{--m1:#c9ced6;--m2:#8c93a0;--acc:#ff7a6b;--b1:#9fb3ab;--b2:#6b7e77}
-button{font:inherit;color:var(--tx);background:var(--card);border:1px solid var(--bd);border-radius:6px;padding:9px 10px;cursor:pointer}
-button:disabled{opacity:.4;cursor:default}button.pri{background:var(--red);color:#fff;border-color:var(--red)}
-.sk i{display:block;font-style:normal;font-size:9px;color:var(--atb);line-height:1.1}.sk b{display:block;font-size:11.5px;line-height:1.15;margin:1px 0}.sk span{display:block;font-size:10px;color:var(--mut);line-height:1.2}.sk em{font-style:normal;font-size:19px}
-#bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center}#bar .gap{flex:1}
-#log{font-size:12.5px;max-height:130px;overflow:auto}
-@media(min-width:860px){#log{max-height:none;height:100%;min-height:400px}}
-#log h4{margin:0 0 4px;font-size:11px;letter-spacing:.08em;color:var(--mut)}#log div{padding:2px 0;border-bottom:1px dotted var(--bd)}#log div:last-child{font-weight:700}
-.ov{position:fixed;inset:0;background:#0007;display:flex;align-items:center;justify-content:center;padding:16px;z-index:5}
-.box{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:14px;width:100%;max-width:380px;display:flex;flex-direction:column;gap:8px}
-.box h3{margin:0}.box button{text-align:left}.box .mut{color:var(--mut);font-size:12px}
-</style>
+<link rel="stylesheet" href="css/battle.css?v=20261128">
+<link rel="stylesheet" href="css/battle-msl.css?v=20261128">
 </head>
 <body>
-<div class="wrap">
-<main>
-<div id="ordw"><div id="order" class="order"></div><div id="pasv" class="card"></div></div>
-<div id="stage">
-<svg viewBox="0 0 400 210" preserveAspectRatio="xMidYMid slice">
-<g id="bg"></g>
-<g id="pm" transform="translate(50 62)">
-<rect x="22" y="80" width="14" height="42" rx="3" fill="var(--m2)"/><rect x="46" y="80" width="14" height="42" rx="3" fill="var(--m2)"/>
-<polygon points="14,40 68,40 62,84 20,84" fill="var(--m1)"/>
-<rect x="30" y="14" width="22" height="22" rx="4" fill="var(--m1)"/><rect x="34" y="22" width="14" height="5" fill="var(--acc)"/>
-<polygon points="41,2 34,16 48,16" fill="var(--acc)"/>
-<rect x="2" y="38" width="16" height="16" rx="2" fill="var(--m2)"/><rect x="64" y="38" width="16" height="16" rx="2" fill="var(--m2)"/>
-<line x1="90" y1="26" x2="90" y2="110" stroke="var(--acc)" stroke-width="4" stroke-linecap="round"/>
-<circle cx="41" cy="60" r="6" fill="var(--acc)"/></g>
-<g id="dm" transform="translate(150 44)" style="display:none"><ellipse rx="16" ry="4" cy="2" fill="var(--m2)" opacity=".5"/><circle r="9" fill="var(--m1)"/><circle r="4" fill="var(--acc)"/></g>
-<g id="em" transform="translate(262 78)"><g class="sp" data-s="wolf">
-<path d="M6 54 Q-14 42 -8 26" stroke="var(--b2)" stroke-width="6" fill="none" stroke-linecap="round"/>
-<ellipse cx="46" cy="56" rx="40" ry="22" fill="var(--b1)"/>
-<polygon points="78,40 108,50 98,68 72,64" fill="var(--b1)"/><circle cx="96" cy="52" r="3.5" fill="var(--acc)"/>
-<rect x="20" y="70" width="8" height="34" fill="var(--b2)"/><rect x="34" y="72" width="8" height="32" fill="var(--b2)"/><rect x="58" y="72" width="8" height="32" fill="var(--b2)"/><rect x="70" y="70" width="8" height="34" fill="var(--b2)"/>
-<polygon points="22,40 32,16 40,38" fill="var(--b2)"/><polygon points="42,36 54,12 60,36" fill="var(--b2)"/></g><g class="sp" data-s="turtle" style="display:none"><ellipse cx="50" cy="62" rx="46" ry="30" fill="var(--b2)"/><path d="M12 62 Q50 8 88 62Z" fill="var(--b1)"/><path d="M30 56 L50 30 L70 56 M50 30 V62" stroke="var(--b2)" stroke-width="3" fill="none"/><ellipse cx="96" cy="64" rx="13" ry="9" fill="var(--b1)"/><circle cx="100" cy="61" r="3" fill="var(--acc)"/><rect x="22" y="80" width="14" height="22" rx="4" fill="var(--b2)"/><rect x="62" y="80" width="14" height="22" rx="4" fill="var(--b2)"/></g><g class="sp" data-s="tiger" style="display:none"><path d="M6 54 Q-18 30 -6 12" stroke="var(--b2)" stroke-width="7" fill="none" stroke-linecap="round"/><ellipse cx="46" cy="54" rx="42" ry="24" fill="var(--b1)"/><path d="M26 34 L30 74 M42 31 L46 78 M58 33 L62 76" stroke="var(--b2)" stroke-width="4" fill="none"/><circle cx="90" cy="46" r="17" fill="var(--b1)"/><polygon points="80,32 84,18 92,30" fill="var(--b2)"/><polygon points="94,30 102,18 106,34" fill="var(--b2)"/><circle cx="96" cy="44" r="3.5" fill="var(--acc)"/><rect x="18" y="70" width="9" height="34" fill="var(--b2)"/><rect x="34" y="72" width="9" height="32" fill="var(--b2)"/><rect x="58" y="72" width="9" height="32" fill="var(--b2)"/><rect x="72" y="70" width="9" height="34" fill="var(--b2)"/></g></g>
-</svg>
-<span class="tag" id="rd">Hiệp 1</span>
+
+<div id="letterbox"></div>
+
+<!-- Toàn bộ game nằm trong khung 640x360, được phóng to bằng số nguyên -->
+<div id="game">
+
+  <!-- Lớp 1: sân đấu 2.5D. #pm #dm #petm #em được tạo trong #units bởi BattleUI.addUnit() -->
+  <div id="stage">
+    <div id="world">
+      <div id="bg-fallback"></div>
+      <img id="bg" alt="">
+      <div id="floor-shade"></div>
+      <div id="units"></div>
+      <div id="fx"></div>
+    </div>
+    <div id="vignette"></div>
+  </div>
+
+  <!-- Lớp 3: thanh điều khiển góc trên -->
+  <header id="top-hud">
+    <div class="tl">
+      <div id="roundChip" class="px chipbar">Hiệp <b id="roundNo">1</b> · <span id="sceneName">—</span></div>
+      <button id="bLog" class="pxbtn px">📜 Nhật ký</button>
+      <button id="bPas" class="pxbtn px">ⓘ Nội tại</button>
+    </div>
+    <div class="tr">
+      <button id="bSpd" class="pxbtn px">x1</button>
+      <button id="bAuto" class="pxbtn px">Auto ○</button>
+      <button id="bSet" class="pxbtn px">⚙</button>
+    </div>
+  </header>
+
+  <!-- Thứ tự lượt (kiểu Epic Seven): chân dung trượt dọc theo ATB, trên cùng = sắp ra đòn -->
+  <aside id="turn-rail"><div class="rail-title">LƯỢT</div><div class="rail-line"></div></aside>
+
+  <!-- Thông tin mục tiêu (quái đang chọn) -->
+  <section id="enemy-panel" class="px">
+    <div class="ep-icon" id="epIcon">🐺</div>
+    <div class="ep-col">
+      <div class="ep-name"><span id="epName">—</span><em id="epTag" class="tag"></em></div>
+      <div class="row"><span class="lb">HP</span><span class="slot" id="epHp"></span><span class="num" id="epHpN"></span></div>
+      <div class="row"><span class="lb">ATB</span><span class="slot" id="epAtb"></span><span class="lb" style="width:auto;margin-left:3px">NL</span><span class="num" id="epNl" style="color:#7fe6ff"></span></div>
+      <div class="pp-buffs" id="epBuffs" style="justify-content:flex-start"></div>
+    </div>
+  </section>
+
+  <!-- Hành động trong lượt (góc dưới trái) -->
+  <nav id="actions">
+    <button id="bBag" class="pxbtn px"><span class="ic">🎒</span>Hành trang</button>
+    <button id="bSum" class="pxbtn px"><span class="ic">🛸</span>Triệu hồi</button>
+    <button id="bRun" class="pxbtn px"><span class="ic">🏃</span>Chạy</button>
+  </nav>
+
+  <!-- Bảng chỉ số phe mình -->
+  <div id="pp" style="display:contents"><section id="player-panel" class="px">
+    <div class="pp-portrait" id="ppIcon">🤖</div>
+    <div class="pp-col1">
+      <div class="pp-name"><span id="ppName">—</span><em id="ppTag" class="tag"></em></div>
+      <div class="row"><span class="lb">HP</span><span class="slot" id="ppHp"></span><span class="num" id="ppHpN"></span></div>
+      <div class="row"><span class="lb">LC</span><span class="slot" id="ppSh"></span><span class="num" id="ppShN"></span></div>
+      <div class="row"><span class="lb">ATB</span><span class="slot" id="ppAtb"></span></div>
+    </div>
+    <div class="pp-col2">
+      <div class="pp-name" style="color:var(--dim);font-size:6px">TÀI NGUYÊN</div>
+      <div class="row"><span class="lb" style="color:#7fe6ff">NL</span><span class="slot" id="ppNl"></span><span class="num" id="ppNlN"></span></div>
+      <div class="row"><span class="lb" style="color:#dcb6ff">HL</span><span class="slot" id="ppHl"></span><span class="num" id="ppHlN"></span></div>
+      <div class="pp-buffs" id="ppBuffs" style="justify-content:flex-start"></div>
+    </div>
+  </section></div>
+
+  <!-- Lớp 4: bài quạt cong — CHỈ HIỆN SKILL (đánh thường bị ẩn) -->
+  <section id="hand">
+    <div id="skills"></div>
+    <div id="skill-tip" class="px hidden"></div>
+  </section>
+  <button id="bEnd" disabled>KẾT<br>LƯỢT</button>
+
+  <div id="dp" style="display:none"></div>
+
+  <div id="banner"></div>
+
+  <!-- ngăn kéo / popup -->
+  <aside id="log" class="px"></aside>
+  <div id="pasv" class="px hidden"></div>
+  <div id="modal"></div>
 </div>
-<div class="panels"><div class="card panel" id="pp"></div><div class="card panel e" id="ep"></div></div>
-<div id="dp" class="comps" style="display:none"></div>
-<div id="skills"></div>
-<div id="bar">
-<button id="bBag">Hành trang</button><button id="bSum">Triệu hồi</button><button id="bRun">Chạy</button>
-<span class="gap"></span>
-<button id="bSpd">x1</button><button id="bAuto">Auto ○</button><button id="bSet">Cài đặt</button>
-<button id="bEnd" class="pri">Kết lượt</button>
-</div>
-</main>
-<aside class="card" id="log"></aside>
-</div>
-<div id="modal"></div>
+
 <script src="vg-github.js?v=202611254"></script>
-<script src="vg-core.js?v=202611281"></script>
-<script src="vg-skill.js?v=202611281"></script>
+<script src="vg-core.js?v=202611282"></script>
+<script src="vg-skill.js?v=202611282"></script>
+<script src="vg-bag.js?v=202611283"></script>
 <script src="vg-combat-scene.js?v=202611271"></script>
+<script src="js/battle-bars.js?v=20261128"></script>
+<script src="js/battle-ui.js?v=20261128"></script>
 <script>
 const GM=VG.game;let SV,EV,PRACTICE=false;
 const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const rnd=a=>a[Math.floor(Math.random()*a.length)],ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
 const BEASTS=["Xích Lang Cơ","Thiết Giáp Quy","Hư Ảnh Hổ","Ma Tượng Cơ","Kim Cương Sư","Sương Phách Lang"];
 const DR={pet:{n:"Pet",ic:"🐾",d:"Đồng hành, tự hỗ trợ."},sentry:{n:"Sentry Drone",ic:"🛸",d:"Tự bắn địch mỗi nhịp."},repair:{n:"Repair Pet",ic:"🐕",d:"Tự hồi HP cho mecha."},shield:{n:"Shield Orb",ic:"🔰",d:"Tự nạp lá chắn tạm."}};
 let G,SK=[],PAS=[],LIB=null;
 /* Nền theo địa hình: khóa từ index.html (ST.pending.ter) hoặc ?scene=... ; cấu hình ghi đè ở database/combat-ui.json (sửa bằng EditPlayoutCombat.html) */
-let SC=null,SCENE="grass";
+let SC=null,SCENE="grass",bgSeq=0;
 const RC=["","#a89f8d","#4fa86a","#3d7fd6","#8c52d6","#d9a21b"],RN=["Cơ bản","Phổ thông","Tốt","Hiếm","Sử thi","Truyền thuyết"];
 const scName=()=>((SC&&SC[SCENE])||{}).name||"";
-function applyScene(){const c=SC&&(SC[SCENE]||SC.grass);if(!c)return;$("#bg").innerHTML=VG.combatScene.svg(c,"bt");$("#stage").dataset.tone=c.tone}
+function applyScene(){
+ const c=SC&&(SC[SCENE]||SC.grass);if(!c)return null;
+ const stg=$("#stage");if(stg)stg.dataset.tone=c.tone;
+ const fb=$("#bg-fallback");
+ if(fb)fb.innerHTML='<svg class="bg-svg" viewBox="0 0 400 210" preserveAspectRatio="xMidYMid slice">'+VG.combatScene.svg(Object.assign({},c,{img:""}),"bt")+'</svg>';
+ return isValidImg(c.img)?c.img:null;
+}
 function loadScenes(){SC=VG.combatScene.merge(null);return fetch("database/combat-ui.json?t="+Date.now()).then(r=>{if(!r.ok)throw 0;return r.json()}).catch(()=>VG.fetchJSON?VG.fetchJSON("database/combat-ui.json"):null).then(j=>{if(j)SC=VG.combatScene.merge(j)}).catch(()=>{})}
-/* Cảnh giới chính thức: G.lv là số thứ tự cảnh giới 0–48 (bậc cũ N = cảnh giới số N, không đổi công thức chiến đấu).
-   0–11: Hoàng/Huyền/Địa/Thiên Giai (mỗi giai Sơ/Trung/Hậu kỳ) · 12–47: Thánh Giai 12 tầng × Sơ/Trung/Hậu · 48: Thần Giai (tối cao). */
+/* Cảnh giới chính thức: G.lv là số thứ tự cảnh giới 0–48 (bậc cũ N = cảnh giới số N, không đổi công thức chiến đấu). */
 const GR=["Hoàng Giai","Huyền Giai","Địa Giai","Thiên Giai"],PH=["Sơ kỳ","Trung kỳ","Hậu kỳ"],RK=[],RS=[],MAXR=48;
-(()=>{GR.forEach((g,gi)=>PH.forEach((p,pi)=>{RK.push(g+" "+p);RS.push(g.split(" ")[0]+" "+p.split(" ")[0])}));for(let t=1;t<=12;t++)PH.forEach(p=>{RK.push("Thánh Giai Tầng "+t+" "+p);RS.push("Thánh T"+t+" "+p.split(" ")[0])});RK.push("Thần Giai");RS.push("Thần Giai")})();
+(()=>{GR.forEach(g=>PH.forEach(p=>{RK.push(g+" "+p);RS.push(g.split(" ")[0]+" "+p.split(" ")[0])}));for(let t=1;t<=12;t++)PH.forEach(p=>{RK.push("Thánh Giai Tầng "+t+" "+p);RS.push("Thánh T"+t+" "+p.split(" ")[0])});RK.push("Thần Giai");RS.push("Thần Giai")})();
 const rankName=i=>RK[i]||("Cảnh giới "+i),rankShort=i=>RS[i]||("Cảnh giới "+i);
 const need=()=>60+(G.lv-12)*30;
 function SHP(m){const S=["wolf","turtle","tiger"];if(S.indexOf(m.shape)>=0)return m.shape;let h=0;for(const c of String(m.id||m.name||""))h=(h*31+c.charCodeAt(0))>>>0;return S[h%3]}
+const isValidImg=v=>typeof v==="string"&&(v.indexOf("data:image")===0||v.indexOf("https://")===0||v.indexOf("http://")===0||v.indexOf("assets/")===0);
+
+function monsterSvg(shape){
+ return '<svg class="mon-svg" viewBox="-20 6 136 108" aria-hidden="true">'+
+  '<g class="sp" data-s="wolf" style="display:'+(shape==="wolf"?"":"none")+'">'+
+  '<path d="M6 54 Q-14 42 -8 26" stroke="var(--b2)" stroke-width="6" fill="none" stroke-linecap="round"/>'+
+  '<ellipse cx="46" cy="56" rx="40" ry="22" fill="var(--b1)"/>'+
+  '<polygon points="78,40 108,50 98,68 72,64" fill="var(--b1)"/><circle cx="96" cy="52" r="3.5" fill="var(--acc)"/>'+
+  '<rect x="20" y="70" width="8" height="34" fill="var(--b2)"/><rect x="34" y="72" width="8" height="32" fill="var(--b2)"/><rect x="58" y="72" width="8" height="32" fill="var(--b2)"/><rect x="70" y="70" width="8" height="34" fill="var(--b2)"/>'+
+  '<polygon points="22,40 32,16 40,38" fill="var(--b2)"/><polygon points="42,36 54,12 60,36" fill="var(--b2)"/></g>'+
+  '<g class="sp" data-s="turtle" style="display:'+(shape==="turtle"?"":"none")+'">'+
+  '<ellipse cx="50" cy="62" rx="46" ry="30" fill="var(--b2)"/><path d="M12 62 Q50 8 88 62Z" fill="var(--b1)"/>'+
+  '<path d="M30 56 L50 30 L70 56 M50 30 V62" stroke="var(--b2)" stroke-width="3" fill="none"/><ellipse cx="96" cy="64" rx="13" ry="9" fill="var(--b1)"/><circle cx="100" cy="61" r="3" fill="var(--acc)"/>'+
+  '<rect x="22" y="80" width="14" height="22" rx="4" fill="var(--b2)"/><rect x="62" y="80" width="14" height="22" rx="4" fill="var(--b2)"/></g>'+
+  '<g class="sp" data-s="tiger" style="display:'+(shape==="tiger"?"":"none")+'">'+
+  '<path d="M6 54 Q-18 30 -6 12" stroke="var(--b2)" stroke-width="7" fill="none" stroke-linecap="round"/>'+
+  '<ellipse cx="46" cy="54" rx="42" ry="24" fill="var(--b1)"/><path d="M26 34 L30 74 M42 31 L46 78 M58 33 L62 76" stroke="var(--b2)" stroke-width="4" fill="none"/>'+
+  '<circle cx="90" cy="46" r="17" fill="var(--b1)"/><polygon points="80,32 84,18 92,30" fill="var(--b2)"/><polygon points="94,30 102,18 106,34" fill="var(--b2)"/><circle cx="96" cy="44" r="3.5" fill="var(--acc)"/>'+
+  '<rect x="18" y="70" width="9" height="34" fill="var(--b2)"/><rect x="34" y="72" width="9" height="32" fill="var(--b2)"/><rect x="58" y="72" width="9" height="32" fill="var(--b2)"/><rect x="72" y="70" width="9" height="34" fill="var(--b2)"/></g></svg>';
+}
+
+/* ===== LỚP HIỂN THỊ: BattleUI (js/battle-ui.js). Logic trận bên dưới không đổi; chỉ các hàm vẽ nối vào BattleUI. ===== */
+const UI=window.BattleUI;
+const UID={pm:"pm",em:"em",dm:"dm",petm:"pet",pet:"pet"};
+const SPR={pm:{w:108,h:148,bodyH:140},em:{w:132,h:126,bodyH:112},dm:{w:44,h:44,bodyH:38},pet:{w:44,h:44,bodyH:38}};
+const uid=s=>UID[String(s).replace(/^#/,"")];
+const c01=v=>Math.max(0,Math.min(1,v/1000));
+const pName=()=>{const n=SV.char&&SV.char.name;return n&&n!=="Vân Giáp"?n:"Vân Giáp"};
+function pState(){
+ const bf=G.buffs.map(b=>({label:b.name,turns:b.t-1,kind:"good"}));
+ if(G.soul<G.soulMax*.25)bf.unshift({label:"Kiệt sức -30% ATK",kind:"bad"});
+ return{name:pName(),tag:rankShort(G.lv),hp:Math.max(0,G.hp),hpMax:G.max,shield:G.sh,shieldMax:Math.max(G.shMax,G.sh),nl:G.en,nlMax:G.enMax,hl:G.soul,hlMax:G.soulMax,atb:c01(G.atb),buffs:bf}}
+function eState(){const e=G.e;
+ return{name:e.name,tag:rankShort(e.lv),hp:Math.max(0,e.hp),hpMax:e.max,shield:e.sh,shieldMax:e.shMax,nl:e.en,atb:c01(e.atb),buffs:e.en>=30?[{label:"Tụ lực",kind:"bad"}]:[]}}
+function cState(c){return{name:cName(c),icon:cIc(c),hp:Math.max(0,c.hp),hpMax:c.max,atb:c01(c.atb)}}
+
+let lastDroneKey="",lastPetKey="";
+function renderStageActors(){
+ UI.addUnit(Object.assign({id:"pm",domId:"pm",team:"ally",icon:"🤖",slot:"ally0",sprite:SPR.pm,hudW:60,
+  mount:el=>{if(VG.bag){VG.bag.setLib(LIB);VG.bag.renderModularMecha(el,SV,LIB,{hideCompanions:true})}}},pState()));
+ if(pName()!=="Vân Giáp"){const sr=document.createElement("span");sr.className="sr";sr.textContent=" Vân Giáp";$("#pp").appendChild(sr)}
+ const m=EV.mon,sh=G.e.shape;
+ UI.addUnit(Object.assign({id:"em",domId:"em",team:"enemy",icon:"👾",slot:"enemy0",sprite:SPR.em,hudW:60,
+  mount:el=>{
+   const put=src=>{el.innerHTML='<div class="mon-wrap"><img class="mon-img" src="'+esc(src)+'" alt="'+esc(G.e.name)+'"></div>'};
+   el.innerHTML='<div class="mon-wrap">'+monsterSvg(sh)+'</div>';
+   if(isValidImg(m.img))return put(m.img);
+   /* chưa khai báo img trong data: thử theo tên file quy ước assets/monsters/<ten_khong_dau>.png (vd Thiết Giáp Quy → thiet_giap_quy.png) */
+   const slug=String(G.e.name).normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/đ/gi,"d").toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_|_$/g,"");
+   const probe=(i,ex)=>{if(i>=ex.length)return;const u="assets/monsters/"+slug+"."+ex[i],im=new Image();im.onload=()=>put(u);im.onerror=()=>probe(i+1,ex);im.src=u};
+   probe(0,["png","webp"]);
+  }},eState()));
+ UI.setTarget("em");
+ lastDroneKey="";lastPetKey="";syncCompActors();
+}
+function compUnit(id,type,c){
+ const u=UI.units.get(id);
+ if(!c){if(u&&!u.dead)UI.markDead(id);return}
+ const opt=type==="drone"&&!c.eq?{forcedType:c.t,name:cName(c)}:null;
+ const mount=el=>{el.innerHTML="";if(VG.bag&&VG.bag.renderCompanion){opt?VG.bag.renderCompanion(el,SV,type,LIB,opt):VG.bag.renderCompanion(el,SV,type,LIB)}};
+ if(!u)UI.addUnit(Object.assign({id,domId:id==="pet"?"petm":"dm",team:"ally",slot:id==="pet"?"ally1":"ally2",fly:id!=="pet",lift:id==="pet"?0:54,hudW:46,sprite:SPR[id],mount},cState(c)));
+ else{UI.revive(id);mount(u.spr);UI.updateUnit(id,cState(c))}
+}
+function syncCompActors(){
+ const d=G.drone,p=G.pet;
+ const dk=d?(d.eq||("tmp:"+d.t)):"";
+ if(dk!==lastDroneKey){lastDroneKey=dk;compUnit("dm","drone",d)}
+ const pk=p?(p.eq||"1"):"";
+ if(pk!==lastPetKey){lastPetKey=pk;compUnit("pet","pet",p)}
+}
+
 function newGame(){
  const p=SV.p,B=SV.eqB||{};
  G={b:{max:+B.max||0,atk:+B.atk||0,spd:+B.spd||0,sh:+B.sh||0},lv0:p.lv,lv:p.lv,xp:p.xp,hp:p.hp,max:p.max+(+B.max||0),atk:p.atk+(+B.atk||0),en:p.en,enMax:p.enMax,reg:p.reg,soul:p.soul,soulMax:p.soulMax,sh:p.gear?p.shMax+(+B.sh||0):0,shMax:p.gear?p.shMax+(+B.sh||0):0,gear:p.gear,spd:p.spd+(+B.spd||0),atb:650,
@@ -131,44 +209,62 @@ function spawn(){
  const hp=Math.round(m.hp*f(.15)*hm*(.95+Math.random()*.15)),sh=Math.round((m.sh||0)*f(.1));
  G.e={name:m.name,shape:SHP(m),tierName:"Sự kiện "+EV.tier.name,lv,hp,max:hp,sh,shMax:sh,atk:Math.round(m.atk*f(.13)*am),en:40,enMax:60,spd:Math.round(m.spd+ri(-30,30)),atb:0,dead:false};
  G.round=0;say(`${G.e.name} (${rankName(lv)}) xuất hiện.`);}
-function say(t){G.log.push(t);if(G.log.length>60)G.log.shift();const l=$("#log");if(l){l.innerHTML="<h4>NHẬT KÝ</h4>"+G.log.map(x=>`<div>${x}</div>`).join("");l.scrollTop=l.scrollHeight}}
-function pop(t,side,g){const d=document.createElement("div");d.className="pop"+(g?" g":"");d.textContent=t;d.style[side==="p"?"left":"right"]="18%";$("#stage").appendChild(d);setTimeout(()=>d.remove(),900)}
-function flash(id){const g=$("#"+id);g.classList.remove("hit");void g.getBoundingClientRect();g.classList.add("hit")}
+function say(t){G.log.push(t);if(G.log.length>60)G.log.shift();UI.log(t)}
+
+/* ===== COMBAT JUICE: gọi hiệu ứng của BattleUI (id DOM cũ → id đơn vị) ===== */
+function pop(t,side,kind){UI.fx.pop(side==="p"?"pm":"em",t,kind===1||kind==="heal"?"heal":(kind==="sh"?"shield":"dmg"))}
+function flash(id){UI.fx.hit(uid(id));UI.fx.shake()}
+function lunge(id){UI.fx.lunge(uid(id))}
+function ring(id,color){
+ const u=UI.units.get(id),f=$("#fx");if(!u||!f)return;
+ const e=document.createElement("div");e.className="ring";
+ e.style.left=u.slot.x+"px";e.style.top=(u.slot.y-u.lift-(u.sp.bodyH||u.sp.h)*.5)+"px";e.style.setProperty("--bc",color);
+ f.appendChild(e);setTimeout(()=>e.remove(),420);
+}
+function vfxBurst(fromSel,toSel,color,kind){
+ const a=uid(fromSel),b=uid(toSel);if(!UI.units.get(a)||!UI.units.get(b))return;
+ if(kind==="support")ring(b,color);else if(kind==="slash")UI.fx.slash(b);else UI.fx.beam(a,b,color);
+}
+
 const bp=k=>G.buffs.reduce((a,b)=>a+(b.stat===k?b.pct:0),0);
 const redc=d=>Math.max(1,Math.round(d*(1-Math.min(60,bp("dmgRed")+G.passRed)/100)));
 const dmg=m=>{let d=G.atk*(1+bp("atk")/100)*m*(.9+Math.random()*.2);if(G.soul<G.soulMax*.25)d*=.7;return Math.round(d)};
-function heal(p){const h=Math.round(G.max*p);G.hp=Math.min(G.max,G.hp+h);say(`Hồi ${h} HP.`);pop("+"+h,"p",1)}
-function hitE(d,n){const e=G.e;if(e.dead)return;const ab=Math.min(e.sh,d);e.sh-=ab;e.hp-=d-ab;say(`${n}: ${d} sát thương.`);pop(d,"e");flash("em");if(e.hp<=0){e.hp=0;e.dead=true;win()}}
-function hitP(d){const ab=Math.min(G.sh,d);G.sh-=ab;G.hp-=d-ab;pop(d,"p");flash("pm");return ab}
+function heal(p){const h=Math.round(G.max*p);G.hp=Math.min(G.max,G.hp+h);say(`Hồi ${h} HP.`);pop("+"+h,"p","heal");vfxBurst("#pm","#pm","#4ade80","support")}
+function hitE(d,n){const e=G.e;if(e.dead)return;const ab=Math.min(e.sh,d),hpD=d-ab;e.sh-=ab;e.hp-=hpD;say(`${n}: ${d} sát thương.`);if(ab>0)pop("🛡-"+ab,"e","sh");if(hpD>0)pop("-"+hpD,"e","dmg");flash("em");if(e.hp<=0){e.hp=0;e.dead=true;win()}}
+function hitP(d){const ab=Math.min(G.sh,d),hpD=d-ab;G.sh-=ab;G.hp-=hpD;if(ab>0)pop("🛡-"+ab,"p","sh");if(hpD>0)pop("-"+hpD,"p","dmg");flash("pm");return ab}
+
 /* Skill: cơ bản (VG.skill.BASIC, luôn có) + skill của trang bị đang mặc (database equips[].skills). Pet/Drone chạy theo nhịp riêng. */
 function buildSkills(){
  const all=VG.skill.collect(SV,LIB),own=all.filter(s=>s.slot!=="pet"&&s.slot!=="drone"),E={};
  ((LIB&&LIB.equips)||[]).forEach(e=>{if(e&&e.id)E[e.id]=e});
  own.forEach(s=>{const r=Math.round(+((E[s.eqid]||{}).rarity));s.r=r>=1?Math.min(5,r):1});
- /* skill trang bị: phẩm cao → thấp (cùng phẩm giữ thứ tự cũ); skill cơ bản luôn ở cuối */
  const act=own.map((s,i)=>[s,i]).filter(x=>VG.skill.act(x[0])).sort((a,b)=>b[0].r-a[0].r||a[1]-b[1]).map(x=>x[0]);
- /* nhóm trên: skill của trang bị (mọi loại, phẩm cao → thấp). Nhóm cuối: danh sách skill cơ bản (VG.skill.BASIC: mặc định hoặc database/skills.json), khung trung tính */
  SK=act.concat(VG.skill.BASIC.map(s=>Object.assign({},s,{r:0})));
  SK.forEach(s=>{s.d=VG.skill.effText(s)});
  PAS=own.filter(s=>!VG.skill.act(s));
  G.passRed=PAS.reduce((a,s)=>a+(s.type===3&&s.stat==="dmgRed"?s.pct:0),0);
  G.drone=comp("drone");G.pet=comp("pet")}
-function comp(slot){const id=SV.eq&&SV.eq[slot],q=id&&LIB&&(LIB.equips||[]).find(x=>x.id===id);if(!q)return null;const hp=Math.max(1,+q.hp||60);
+function comp(slot){if(!SV.eq||!SV.eq.backpack)return null;const id=SV.eq[slot],q=id&&LIB&&(LIB.equips||[]).find(x=>x.id===id);if(!q)return null;const hp=Math.max(1,+q.hp||60);
  return{t:String(q.dtype||"").toLowerCase()||(slot==="pet"?"pet":"sentry"),slot,eq:q.id,name:q.name,hp,max:hp,atb:300,spd:520,dmg:+q.dmg||0,acc:+q.acc||100,sk:VG.skill.collect(SV,LIB).filter(s=>s.slot===slot)}}
 const comps=()=>[G.drone,G.pet].filter(Boolean);
 const cName=d=>d.name||(DR[d.t]||DR.sentry).n,cIc=d=>(DR[d.t]||DR.pet).ic;
-function addBuff(s){G.buffs=G.buffs.filter(b=>b.id!==s.id);G.buffs.push({id:s.id,name:s.name,stat:s.stat,pct:s.pct,t:s.turns+1});say(`${s.name}: ${VG.skill.effText(s)}.`);pop("↑","p",1)}
+function addBuff(s){G.buffs=G.buffs.filter(b=>b.id!==s.id);G.buffs.push({id:s.id,name:s.name,stat:s.stat,pct:s.pct,t:s.turns+1});say(`${s.name}: ${VG.skill.effText(s)}.`);pop("↑ "+s.name,"p","heal");vfxBurst("#pm","#pm","#e5a93c","support")}
 function supEff(s,who){const n=who||s.name;
  if(s.eff==="heal")heal(s.pct/100);
- else if(s.eff==="shield"){if(!G.gear)return;G.sh=Math.min(Math.max(250,G.shMax),G.sh+s.val);say(`${n}: +${s.val} lá chắn.`);pop("+"+s.val,"p",1)}
- else if(s.eff==="en"){G.en=Math.min(G.enMax,G.en+s.val);say(`${n}: +${s.val} năng lượng.`)}
- else if(s.eff==="soul"){G.soul=Math.min(G.soulMax,G.soul+s.val);say(`${n}: +${s.val} hồn lực.`)}
+ else if(s.eff==="shield"){if(!G.gear)return;G.sh=Math.min(Math.max(250,G.shMax),G.sh+s.val);say(`${n}: +${s.val} lá chắn.`);pop("+"+s.val,"p","sh");vfxBurst("#pm","#pm","#3dd9eb","support")}
+ else if(s.eff==="en"){G.en=Math.min(G.enMax,G.en+s.val);say(`${n}: +${s.val} năng lượng.`);vfxBurst("#pm","#pm","#3b82f6","support")}
+ else if(s.eff==="soul"){G.soul=Math.min(G.soulMax,G.soul+s.val);say(`${n}: +${s.val} hồn lực.`);vfxBurst("#pm","#pm","#9d5ce6","support")}
  else if(s.eff==="buff")addBuff(s)}
 function runSk(s){
- if(s.eff==="dmg"){for(let i=0;i<s.hits;i++)hitE(dmg(s.mul),s.name)}
- else supEff(s,s.name)}
+ lunge("pm","r");
+ if(s.eff==="dmg"){
+  const isSlash=/saber|chém|kiếm|đao/i.test(s.name)||s.id==="saber";
+  const col=s.id==="void"?"#b96eff":(s.r>=4?"#ffd15c":"#4de3ff");
+  vfxBurst("#pm","#em",col,isSlash?"slash":(s.hits>1?"orb":"beam"));
+  for(let i=0;i<s.hits;i++)hitE(dmg(s.mul),s.name);
+ }else supEff(s,s.name)}
 const can=s=>G.turn&&!G.over&&!G.modal&&G.lv>=(s.lv||0)&&G.en>=s.en&&G.soul>=s.so;
-function use(i){const s=SK[i];if(!s||!can(s))return;G.en-=s.en;G.soul-=s.so;runSk(s);endAct()}
+function use(i){const s=SK[i];if(!s||!can(s))return;hideTip();clearArmed();G.en-=s.en;G.soul-=s.so;runSk(s);endAct()}
 function endAct(){G.buffs.forEach(b=>b.t--);G.buffs=G.buffs.filter(b=>b.t>0);G.turn=false;G.atb-=1000;renderAll()}
 function endTurn(){if(!G.turn||G.modal)return;G.soul=Math.min(G.soulMax,G.soul+12);G.en=Math.min(G.enMax,G.en+10);say("Kết lượt: nghỉ ngơi, hồi 10 năng lượng và 12 hồn lực.");endAct()}
 function win(){const e=G.e,d=EV.def,g=EV.mon.xp||d.xp||40;G.xp+=g;say(`${e.name} bị hạ. +${g} kinh nghiệm.`);
@@ -195,17 +291,27 @@ function startTurn(){G.turn=true;G.round++;G.en=Math.min(G.enMax,G.en+G.reg);G.s
 function enemyAct(){const e=G.e;e.atb-=1000;e.en=Math.min(e.enMax,e.en+6);
  const hv=e.en>=30&&Math.random()<.4;if(hv)e.en-=30;
  const d=redc(Math.round(e.atk*(hv?1.9:1)*(.9+Math.random()*.2)));
- if(G.drone&&Math.random()<.25){G.drone.hp-=d;say(`${e.name} bắn trúng drone: ${d}.`);if(G.drone.hp<=0){say("Drone bị phá hủy.");G.drone=null}}
- else{const ab=hitP(d);say(`${e.name} ${hv?"tung đòn nặng":"tấn công"}: ${d} sát thương${ab?` (khiên chặn ${ab})`:""}.`);if(G.hp<=0){G.hp=0;pace();renderAll();return lose()}}
+ lunge("em","l");
+ if(G.drone&&Math.random()<.25){
+  vfxBurst("#em","#dm",hv?"#ff5e5e":"#ff9b54",hv?"beam":"slash");
+  G.drone.hp-=d;say(`${e.name} bắn trúng drone: ${d}.`);flash("dm");
+  if(G.drone.hp<=0){say("Drone bị phá hủy.");G.drone=null}
+ }else{
+  vfxBurst("#em","#pm",hv?"#ff3b3b":"#ff8547",hv?"beam":"slash");
+  const ab=hitP(d);say(`${e.name} ${hv?"tung đòn nặng":"tấn công"}: ${d} sát thương${ab?` (khiên chặn ${ab})`:""}.`);
+  if(G.hp<=0){G.hp=0;pace();renderAll();return lose()}
+ }
  pace();renderAll()}
 function compAct(d){d.atb-=1000;
- const nm=cName(d),shoot=(mul,s)=>{if(Math.random()*100>d.acc){say(`${nm}: bắn trượt.`);return}const x=Math.round((d.dmg+.25*G.atk)*mul*(.9+Math.random()*.2));for(let i=0;i<(s?s.hits:1);i++)hitE(x,nm)};
+ const srcId=d.slot==="pet"?"#petm":"#dm";
+ lunge(d.slot==="pet"?"petm":"dm","r");
+ const nm=cName(d),shoot=(mul,s)=>{if(Math.random()*100>d.acc){say(`${nm}: bắn trượt.`);return}vfxBurst(srcId,"#em","#5eead4","beam");const x=Math.round((d.dmg+.25*G.atk)*mul*(.9+Math.random()*.2));for(let i=0;i<(s?s.hits:1);i++)hitE(x,nm)};
  if(d.sk&&d.sk.length){d.sk.forEach(s=>{if(G.over)return;if(s.type===2)shoot(s.mul,s);else if(s.type===6)supEff(s,nm)})}
  else if(d.eq&&d.dmg>0)shoot(1);
  else{
-  if(d.t==="sentry")hitE(25+3*(G.lv-12),"Sentry Drone");
-  if(d.t==="repair"){const h=Math.round(G.max*.07);G.hp=Math.min(G.max,G.hp+h);say(`Repair Pet hồi ${h} HP.`);pop("+"+h,"p",1)}
-  if(d.t==="shield"){G.sh=Math.min(G.sh+35,250);say("Shield Orb nạp +35 lá chắn.")}}
+  if(d.t==="sentry"){vfxBurst(srcId,"#em","#5eead4","beam");hitE(25+3*(G.lv-12),"Sentry Drone")}
+  if(d.t==="repair"){const h=Math.round(G.max*.07);G.hp=Math.min(G.max,G.hp+h);say(`Repair Pet hồi ${h} HP.`);pop("+"+h,"p","heal");vfxBurst(srcId,"#pm","#4ade80","support")}
+  if(d.t==="shield"){G.sh=Math.min(G.sh+35,250);say("Shield Orb nạp +35 lá chắn.");pop("+35","p","sh");vfxBurst(srcId,"#pm","#3dd9eb","support")}}
  pace();renderAll()}
 function tick(){
  if(G.over||G.turn||G.lock||G.modal)return;const k=.04*G.spdX;
@@ -236,46 +342,69 @@ function run(){if(!G.turn||G.modal)return;const c=Math.max(.2,Math.min(.85,.45+(
  if(Math.random()<c){say("Thoát khỏi giao tranh thành công.");G.turn=false;G.over=true;finish("flee");renderAll();setTimeout(toMap,700)}
  else{say("Chạy thất bại, mất lượt.");endAct()}}
 function setM(){modal(`<h3>Cài đặt</h3><button onclick="G.gear=!G.gear;G.shMax=G.gear?120+15*(G.lv-12)+G.b.sh:0;G.sh=G.shMax;closeM()">Trang bị lá chắn: ${G.gear?"Đang mang":"Không mang"} (bấm để đổi)</button><button onclick="if(confirm('Xóa bản lưu và làm lại từ đầu?')){GM.reset();toMap()}">Làm lại từ đầu</button>`)}
-const B=(l,v,m,c,x)=>`<div class="sb"><i style="width:${m>0?Math.min(100,v/m*100):0}%;background:var(${c})"></i><span>${l}${x?`<em>${x}</em>`:""}</span><b>${Math.round(v)}/${Math.round(m)}</b></div>`;
-const AT=(id,v,s)=>`<div class="sb"><i id="${id}" style="width:${Math.min(100,v/10)}%;background:var(--atb)"></i><span>ATB</span><b><span id="${id}t">${Math.round(v)}</span>/1000 · Tốc ${s}</b></div>`;
+
+/* ===== RENDER: đẩy trạng thái G sang BattleUI ===== */
+let lastHandKey="",lastRound=0,lastOver=false;
+function handSkills(){
+ /* Bài quạt chỉ hiện skill sao. Skill cơ bản (r=0) chỉ bị ẩn khi người chơi đã có ít nhất 1 skill sao SÁT THƯƠNG;
+    nếu chưa có thì vẫn hiện để còn đường đánh (đổi cờ này ở HIDE_BASIC_ALWAYS). */
+ const HIDE_BASIC_ALWAYS=false,hideB=HIDE_BASIC_ALWAYS||SK.some(s=>s.r>0&&s.eff==="dmg");
+ return SK.map((s,i)=>({n:s.name,ic:s.ic,eff:s.eff,r:s.r,nl:s.en,hl:s.so,i,lv:s.lv||0,basic:hideB&&!s.r,locked:G.lv<(s.lv||0),
+  d:(G.lv<(s.lv||0)?"Mở khóa ở "+rankName(s.lv)+". ":"")+s.d})).map(s=>(s._i=s.i,s));
+}
+function deadOnce(id){const u=UI.units.get(id);if(u&&!u.dead)UI.markDead(id)}
 function renderAll(){
- const e=G.e,d=G.drone;
- document.querySelectorAll("#em .sp").forEach(n=>n.style.display=n.dataset.s===e.shape?"":"none");
- $("#rd").textContent="Hiệp "+Math.max(1,G.round)+(scName()?" · "+scName():"");
- $("#dm").style.display=d?"":"none";
- $("#order").innerHTML=`<div class="pt${G.pv?" on":""}" data-p="1" title="Nội tại / bị động"><b>🤖</b><div class="mb"><i id="opa"></i></div>Vân Giáp ⓘ</div>${comps().map((c,i)=>`<div class="pt"><b>${cIc(c)}</b><div class="mb"><i id="oc${i}a"></i></div>${cName(c)}</div>`).join("")}<div class="pt"><b>👾</b><div class="mb"><i id="oea"></i></div>${e.name}</div>`;
- $("#pp").innerHTML=`<div class="hd">${rankName(G.lv)}</div><div class="nm">Vân Giáp<small>${G.lv>=MAXR?"Tối cao":"KN "+G.xp+"/"+need()}</small></div>`+
- B("Lá chắn",G.sh,Math.max(G.shMax,G.sh),"--sh")+B("HP",G.hp,G.max,"--hp")+B("Năng lượng",G.en,G.enMax,"--en",`+${G.reg}`)+
- B("Hồn lực",G.soul,G.soulMax,"--so")+AT("pa",G.atb,G.spd)+(G.soul<G.soulMax*.25?'<div class="flag">Kiệt sức: sát thương -30%</div>':"")+(G.buffs.length?`<div class="bf">${G.buffs.map(b=>`${b.name} (${b.t-1})`).join(" · ")}</div>`:"");
- $("#ep").innerHTML=`<div class="hd">${e.tierName} · ${rankName(e.lv)}</div><div class="nm">${e.name}</div>`+
- B("Lá chắn",e.sh,e.shMax,"--sh")+B("HP",e.hp,e.max,"--bad")+B("Năng lượng",e.en,e.enMax,"--en")+AT("ea",e.atb,e.spd);
- const dp=$("#dp"),cs=comps();dp.style.display=cs.length?"":"none";
- dp.innerHTML=cs.map((c,i)=>`<div class="card panel"><div class="nm">${cIc(c)} ${cName(c)}</div>`+B("HP",c.hp,c.max,"--hp")+AT("c"+i,c.atb,c.spd)+`</div>`).join("");
- const sb=(s,i)=>{const st=`style="--rc:${s.r?RC[s.r]:"var(--bd)"}" title="${RN[s.r||0]}"`;return G.lv<(s.lv||0)?`<button class="sk" ${st} disabled><em>🔒</em><b>${s.name}</b><span>${rankShort(s.lv)}</span></button>`:
-  `<button class="sk" ${st} ${can(s)?"":"disabled"} onclick="use(${i})"><em>${s.ic}</em><b>${s.name}</b><i>${VG.skill.TYPES[s.type].s}</i><span>${s.d}</span><span>NL ${s.en} · HL ${s.so}</span></button>`},
-  bi=SK.map((s,i)=>[s,i]);
- $("#skills").innerHTML=[bi.filter(x=>x[0].eqid),bi.filter(x=>!x[0].eqid)].filter(l=>l.length).map(l=>`<div class="skg">${l.map(x=>sb(x[0],x[1])).join("")}</div>`).join("");
- const pv=$("#pasv"),pl=PAS.map(s=>`${s.ic} <b>${s.name}</b> <i style="color:var(--atb)">${VG.skill.TYPES[s.type].s}</i> — ${VG.skill.effText(s)}`).concat(cs.flatMap(c=>(c.sk||[]).map(s=>`${s.ic} <b>${s.name}</b> <i style="color:var(--atb)">${cName(c)} · ${VG.skill.TYPES[s.type].s}</i> — ${VG.skill.effText(s)}`)));
- pv.style.display=G.pv?"block":"none";pv.innerHTML=G.pv?`<div class="ph"><span>NỘI TẠI / BỊ ĐỘNG TỪ TRANG BỊ</span><button data-pc="1">✕</button></div>`+(pl.length?pl.map(x=>`<div class="it">${x}</div>`).join(""):'<div class="it" style="color:var(--mut)">Chưa có nội tại / bị động nào từ trang bị đang mặc.</div>'):"";
- const t=G.turn&&!G.modal&&!G.over;
- ["bBag","bSum","bRun","bEnd"].forEach(id=>$("#"+id).disabled=!t);
- $("#bSpd").textContent="x"+G.spdX;$("#bAuto").textContent="Auto "+(G.auto?"●":"○");
+ const e=G.e,cs=comps();
+ syncCompActors();
+ if(G.round!==lastRound){lastRound=G.round;UI.setRound(Math.max(1,G.round))}
+ UI.updateUnit("pm",pState());UI.updateUnit("em",eState());
+ if(G.drone)UI.updateUnit("dm",cState(G.drone));
+ if(G.pet)UI.updateUnit("pet",cState(G.pet));
+ if(e.dead)deadOnce("em");
+ if(G.hp<=0)deadOnce("pm");
+ UI.setActive(G.turn&&!G.over?"pm":null);
+ $("#dp").style.display=cs.length?"":"none";
+
+ const act=!!(G.turn&&!G.modal&&!G.over),hk=SK.length+":"+G.lv;
+ if(hk!==lastHandKey){lastHandKey=hk;UI.setHand(handSkills(),{nl:G.en,hl:G.soul,canAct:act})}
+ UI.setResources(G.en,G.soul);UI.setCanAct(act);
+ ["bBag","bSum","bRun"].forEach(id=>$("#"+id).disabled=!act);
+
+ if((G.over||G.hp<=0)&&!lastOver){lastOver=true;UI.banner(e.dead?"CHIẾN THẮNG":(G.hp<=0?"THẤT BẠI":"RÚT LUI"))}
  tickUI()}
+
 function tickUI(){
- const w=(id,v)=>{const n=$("#"+id);if(n)n.style.width=Math.min(100,Math.max(0,v/10))+"%"};
- const t=(id,v)=>{const n=$("#"+id+"t");if(n)n.textContent=Math.round(v)};
- w("pa",G.atb);t("pa",G.atb);w("opa",G.atb);w("ea",G.e.atb);t("ea",G.e.atb);w("oea",G.e.atb);
- comps().forEach((c,i)=>{w("c"+i,c.atb);t("c"+i,c.atb);w("oc"+i,c.atb)});}
-document.addEventListener("click",e=>{if(!G)return;const t=e.target;if(t.closest("[data-pc]")){G.pv=false;renderAll();return}if(t.closest("[data-p]")){G.pv=!G.pv;renderAll();return}if(G.pv&&!t.closest("#pasv")){G.pv=false;renderAll()}});
-$("#bBag").onclick=bag;$("#bSum").onclick=sumM;$("#bRun").onclick=run;$("#bEnd").onclick=endTurn;$("#bSet").onclick=setM;
-$("#bSpd").onclick=()=>{G.spdX=({5:1,1:2,2:3,3:5})[G.spdX]||5;renderAll()};
-$("#bAuto").onclick=()=>{G.auto=!G.auto;renderAll();if(G.auto&&G.turn)setTimeout(autoAct,300)};
+ UI.updateUnit("pm",{atb:c01(G.atb)});UI.updateUnit("em",{atb:c01(G.e.atb)});
+ if(G.drone)UI.updateUnit("dm",{atb:c01(G.drone.atb)});
+ if(G.pet)UI.updateUnit("pet",{atb:c01(G.pet.atb)});
+}
+/* tooltip do BattleUI quản; giữ hai hàm rỗng vì use() còn gọi */
+function hideTip(){}
+function clearArmed(){}
+
+function showPass(){
+ const it=PAS.map(s=>({n:(s.ic||"")+" "+s.name,d:VG.skill.TYPES[s.type].s+" — "+VG.skill.effText(s)}))
+  .concat(comps().flatMap(c=>(c.sk||[]).map(s=>({n:(s.ic||"")+" "+s.name,d:cName(c)+" · "+VG.skill.TYPES[s.type].s+" — "+VG.skill.effText(s)}))));
+ UI.showPassives(it.length?it:[{n:"Chưa có",d:"Chưa có nội tại / bị động nào từ trang bị đang mặc."}]);
+}
+
+function bootUI(){
+ const c=SC[SCENE]||SC.grass;
+ UI.init({scene:SCENE,sceneName:(c&&c.name)||undefined,customBg:applyScene(),round:1});
+ UI.cfg.isBasic=s=>!!s.basic;
+ UI.speed=G.spdX;$("#bSpd").textContent="x"+G.spdX;
+ UI.auto=!!G.auto;$("#bAuto").textContent="Auto "+(G.auto?"●":"○");$("#bAuto").classList.toggle("on",!!G.auto);
+ UI.on("skill",s=>use(s._i)).on("end",endTurn).on("run",run).on("bag",bag).on("summon",sumM).on("settings",setM).on("passives",showPass)
+  .on("speed",v=>{G.spdX=v}).on("auto",a=>{G.auto=a;if(G.auto&&G.turn)setTimeout(autoAct,300)});
+ document.addEventListener("click",e=>{const t=e.target;if(!t.closest("#log")&&!t.closest("#bLog"))$("#log").classList.remove("open")});
+}
+
 GM.loadWorld().then(w=>(typeof GM.loadMonsters==='function'?Promise.resolve().then(()=>GM.loadMonsters(w)):Promise.resolve(w)).catch(()=>w).then(()=>w)).then(w=>{const z=w.zones[0];SV=GM.load(z);const pd=SV.pending;let def,mon;
- if(pd){def=w.events.find(v=>v.id===pd.id);mon=w.monsters.find(v=>v.id===pd.mon)}
+ if(pd){def=w.events.find(v=>v.id===pd.id);mon=w.monsters.find(m=>m.id===pd.mon)}
  if(!def||!mon){PRACTICE=true;def=GM.rnd(w.events);mon=w.monsters.find(m=>m.id===GM.rnd(def.monsters))||w.monsters[0]}
  EV={def,mon,tier:w.tiers[def.tier]||{name:"?"},uid:pd&&pd.uid,from:pd&&pd.from,spawn:z.spawn};
  SCENE=new URLSearchParams(location.search).get("scene")||(pd&&pd.ter)||"grass";
- return Promise.all([GM.loadLib().catch(()=>null),loadScenes()]).then(([l])=>{LIB=l;if(!SC[SCENE])SCENE="grass";newGame();buildSkills();applyScene();renderAll();setInterval(tick,100)})}).catch(e=>{document.body.innerHTML='<p style="padding:20px">Không tải được dữ liệu: '+e.message+' <a href="index.html">Về bản đồ</a></p>'});
+ return Promise.all([GM.loadLib().catch(()=>null),loadScenes()]).then(([l])=>{LIB=l;if(!SC[SCENE])SCENE="grass";newGame();buildSkills();bootUI();renderStageActors();renderAll();setInterval(tick,100)})}).catch(e=>{document.body.innerHTML='<p style="padding:20px;color:#fff">Không tải được dữ liệu: '+e.message+' <a href="index.html" style="color:#5eead4">Về bản đồ</a></p>'});
 </script>
 </body>
 </html>

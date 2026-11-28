@@ -63,6 +63,7 @@
     if (!lib || !Array.isArray(lib.equips)) return out;
     lib.equips.forEach(function (e) { if (e && e.id) E[e.id] = e; });
     Object.keys(eq).forEach(function (slot) {
+      if ((slot === 'wing' || slot === 'pet' || slot === 'drone') && !eq.backpack) return;
       var e = E[eq[slot]]; if (!e || !Array.isArray(e.skills)) return;
       e.skills.forEach(function (r) { var s = S.norm(r); s.slot = slot; s.src = e.name; s.eqid = e.id; out.push(s); });
     });
@@ -80,17 +81,10 @@
     { id: 'nano', name: 'Nano sửa chữa', ic: '🔧', lv: 15, type: 7, en: 25, so: 6, eff: 'heal', pct: 25 },
     { id: 'void', name: 'Pháo Hư Không', ic: '🌑', lv: 16, type: 7, en: 60, so: 18, eff: 'dmg', mul: 4.5, hits: 1 }
   ].map(S.norm);
-  /* Danh sách skill cơ bản theo database/skills.json: basic:[{id,name,ic,lv,en,so,eff,mul,hits,pct,val,stat,turns,desc}] = TOÀN BỘ danh sách (thêm/xóa/sửa).
-     Không có basic (hoặc không phải mảng) = dùng mặc định S.BASIC0. S.BASIC được cập nhật tại chỗ (giữ nguyên tham chiếu mảng). Gọi lại nhiều lần vẫn đúng. */
+  /* Ghi đè skill cơ bản từ database/skills.json (basic:[{id,name,ic,lv,en,so,mul,hits,pct,val,stat,turns,desc}]). id / loại / hiệu ứng giữ nguyên. Gọi lại nhiều lần vẫn đúng. */
   S.BASIC0 = S.BASIC.map(function (b) { return Object.assign({}, b); });
   S.applyBasic = function (list) {
-    var src = Array.isArray(list) ? list : S.BASIC0, seen = {}, out = [];
-    src.forEach(function (r, i) {
-      if (!r || typeof r !== 'object') return;
-      var s = S.norm(Object.assign({}, r, { type: 7 }));
-      if (!s.id || seen[s.id]) s.id = (s.id || 'basic') + '_' + i;
-      seen[s.id] = 1; out.push(s);
-    });
-    S.BASIC.splice.apply(S.BASIC, [0, S.BASIC.length].concat(out));
+    var m = {}; (Array.isArray(list) ? list : []).forEach(function (r) { if (r && r.id) m[r.id] = r; });
+    S.BASIC0.forEach(function (o, i) { var r = m[o.id]; S.BASIC[i] = r ? S.norm(Object.assign({}, o, r, { id: o.id, type: 7, eff: o.eff })) : Object.assign({}, o); });
   };
 })(typeof window != 'undefined' ? window : globalThis);

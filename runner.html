@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Inventory & Character Verification Runner</title>
+<style>
+  body { margin: 0; font: 13px/1.4 monospace; background: #0b141a; color: #d8ecf2; padding: 12px; }
+  pre { white-space: pre-wrap; margin: 8px 0; }
+  .ok { color: #54d18b; }
+  .bad { color: #ff7a70; }
+  #stage { margin-top: 10px; border: 1px solid #2b4a56; display: inline-block; background: #000; }
+  iframe { border: 0; display: block; }
+</style>
+</head>
+<body>
+<div id="status">Đang chạy bộ kiểm thử...</div>
+<pre id="out"></pre>
+<div id="stage"></div>
+<script>
+(async function () {
+  const BASE = '/MechaStarLink-latest-20261128-1338/Mecha-Star-Link-main';
+  const stage = document.getElementById('stage');
+  const out = document.getElementById('out');
+  const statusEl = document.getElementById('status');
+  const results = [];
+
+  function log(name, pass, detail) {
+    results.push({ name, pass: !!pass, detail: detail == null ? '' : String(detail) });
+    out.textContent += (pass ? '[PASS] ' : '[FAIL] ') + name + (detail ? ' — ' + detail : '') + '\n';
+  }
+
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  async function waitFor(fn, timeoutMs = 15000) {
+    const t0 = Date.now();
+    while (Date.now() - t0 < timeoutMs) {
+      try {
+        const v = fn();
+        if (v) return v;
+      } catch (e) {}
+      await sleep(80);
+    }
+    throw new Error('Timeout waiting for condition');
+  }
+
+  function loadFrame(path, w, h) {
+    return new Promise((resolve, reject) => {
+      stage.innerHTML = '';
+      const ifr = document.createElement('iframe');
+      ifr.style.width = w + 'px';
+      ifr.style.height = h + 'px';
+      const errs = [];
+      ifr.onload = () => {
+        try {
+          ifr.contentWindow.addEventListener('error', e => errs.push('ERR: ' + e.message));
+          ifr.contentWindow.addEventListener('unhandledrejection', e => errs.push('REJ: ' + (e.reason && e.reason.message || e.reason)));
+        } catch (e) {}
+        resolve({ ifr, win: ifr.contentWindow, doc: ifr.contentDocument, errs });
+      };
+      ifr.onerror = reject;
+      ifr.src = BASE + '/' + path + (path.includes('?') ? '&' : '?') + '_t=' + Date.now();
+      stage.appendChild(ifr);
+    });
+  }
+
+  try {
+    // =========================================================================
+    // SUITE A: bag-test.html Desktop 1280x720
+    // =========================================================================
+    {
+      const { win, doc, errs } = await loadFrame('bag-test.html', 1280, 720);
+      await waitFor(() => doc.querySelector('#vgb .grid [data-b="sel"]') && doc.getElementById('m')?.textContent.includes('Đã nạp database'));
+      await sleep(250);
+
+      const hdText = doc.querySelector('#vgb .hd')?.textContent || '';
+      log('A1. bag-test loads cleanly with 0 errors', errs.length === 0, errs.join('; '));
+      log('A2. Header displays title, 4 Linh Thạch tiers, and used/200',
+        hdText.includes('VÂN GIÁP') && hdText.includes('Linh Thạch') && hdText.includes('/200 ô'),
+        doc.querySelector('#vgb .hd-r')?.textContent.replace(/\s+/g, ' ').trim());
+
+      const slots = [...doc.querySelectorAll('#vgb [data-b="slot"]')];
+      const lockedSlots = slots.filter(s => s.classList.contains('lk')).map(s => s.dataset.v);
+      log('A3. 12 equipment slots rendered & wing/pet/drone locked without Backpack',
+        slots.length === 12 && ['wing', 'pet', 'drone'].every(k => lockedSlots.includes(k)),
+        'slots=' + slots.length + ', locked=' + lockedSlots.join(','));
+
+      const lines = doc.querySelectorAll('#vgb .vgb-lines polyline').length;
+      const tabs = [...doc.querySelectorAll('#vgb [data-b="btab"]')].map(e => e.textContent.trim());
+      const hasPetSw = !!doc.querySelector('#vgb [data-b="petbag"]');
+      log('A4. SVG connector lines (10 Mecha slots) + 5 bag tabs + Pet Bag switch rendered',
+        lines === 10 && tabs.length === 5 && hasPetSw,
+        'lines=' + lines + ', tabs=' + tabs.join('/'));
+
+      const BG = win.VG.bag;
+      const findChecks = {
+        utopia: !!BG.findItem('utopia_head'),
+        solomon: !!BG.findItem('solomon-bael-head'),
+        dao2tay: !!BG.findItem('skkqkbg'),
+        cell: !!BG.findItem('cell'),
+        noDupPrefix: BG.findItem('cty_nonexistent_test') === null
+      };
+      log('A5. VG.bag.findItem resolves database, root solomon, Dao 2 tay, legacy IT',
+        findChecks.utopia && findChecks.solomon && findChecks.dao2tay && findChecks.cell && findChecks.noDupPrefix,
+        JSON.stringify(findChecks));
+
+      // Slot filter chip + clear
+      doc.querySelector('#vgb [data-b="slot"][data-v="weapon"]').click();
+      const chipText = doc.querySelector('#vgb [data-b="clrslot"]')?.textContent || '';
+      const weaponIds = [...doc.querySelectorAll('#vgb .grid [data-b="sel"]')].map(e => e.dataset.id);
+      const allWeapon = weaponIds.length > 0 && weaponIds.every(id => BG.findItem(id)?.d?.slot === 'weapon');
+      doc.querySelector('#vgb [data-b="clrslot"]').click();
+      const chipCleared = !doc.querySelector('#vgb [data-b="clrslot"]');
+      log('A6. Clicking Weapon slot filters grid & chip clears filter',
+        chipText.includes('Đang lọc: Vũ khí') && allWeapon && chipCleared,
+        'count=' + weaponIds.length);
+
+      // Search preserving focus
+      const inp = doc.querySelector('#vgb input[data-b="search"]');
+      inp.focus();
+      inp.value = 'SOL-01';
+      inp.dispatchEvent(new win.Event('input', { bubbles: true }));
+      const sameFocus = doc.activeElement === doc.querySelector('#vgb input[data-b="search"]');
+      const searchIds = [...doc.querySelectorAll('#vgb .grid [data-b="sel"]')].map(e => e.dataset.id);
+      const hasBael = searchIds.some(id => id.includes('solomon-bael'));
+      inp.value = '';
+      inp.dispatchEvent(new win.Event('input', { bubbles: true }));
+      log('A7. Live search preserves input focus & matches SOL-01',
+        sameFocus && hasBael && searchIds.length > 0,
+        'sameFocus=' + sameFocus + ', matched=' + searchIds.length);
+
+      // Equip full Modular kit + inspect
+      doc.querySelector('#vgb [data-b="btab"][data-v="all"]').click();
+      const lib = await win.VG.game.loadLib();
+      const eqList = lib.equips || [];
+      const pick = fn => eqList.find(fn)?.id;
+      const kitIds = [
+        pick(e => e.id === 'solomon-bael-head'),
+        pick(e => e.id === 'solomon-bael-body'),
+        pick(e => e.id === 'solomon-bael-shoulder'),
+        pick(e => e.id === 'solomon-bael-arm'),
+        pick(e => e.id === 'solomon-bael-glove'),
+        pick(e => e.id === 'solomon-bael-leg'),
+        pick(e => e.id === 'solomon-bael-boot'),
+        pick(e => e.id === 'skkqkbg'),
+        pick(e => e.id === 'utopia_backpack'),
+        pick(e => e.id === 'utopia_wing'),
+        pick(e => e.slot === 'pet'),
+        pick(e => e.slot === 'drone')
+      ].filter(Boolean);
+      for (const id of kitIds) {
+        const tile = doc.querySelector('#vgb .grid [data-b="sel"][data-id="' + id + '"]');
+        if (tile) {
+          tile.click();
+          const btn = doc.querySelector('#vgb [data-b="equip"]');
+          if (btn && !btn.disabled) btn.click();
+        }
+      }
+      doc.querySelector('#vgb .grid [data-b="sel"][data-id="skkqkbg"]')?.click();
+      await sleep(350);
+
+      const stageImgs = [...doc.querySelectorAll('#vgb-stage img')];
+      const brokenImgs = stageImgs.filter(im => !im.complete || im.naturalWidth === 0).map(im => im.alt);
+      const lockedAfter = ['wing', 'pet', 'drone'].filter(k => doc.querySelector('#vgb [data-b="slot"][data-v="' + k + '"]')?.classList.contains('lk'));
+      const eqSlotsCount = doc.querySelectorAll('#vgb [data-b="slot"]:not(.em):not(.lk):not(.orph)').length;
+      const auraBadges = doc.querySelectorAll('#vgb-stage .mm-aura').length;
+      const ribbons = doc.querySelectorAll('#vgb .grid [data-b="sel"] .eq-tag').length;
+      const inspText = doc.querySelector('#vgb-insp')?.textContent || '';
+      log('A8. Full 12-slot Modular kit equipped, wing/pet/drone unlocked',
+        eqSlotsCount === 12 && lockedAfter.length === 0,
+        'eqSlots=' + eqSlotsCount + ', lockedAfter=' + lockedAfter.length);
+      log('A9. Modular Mecha Tier-1 sprites loaded (0 broken) & Tier-2 aura badges rendered',
+        stageImgs.length >= 8 && brokenImgs.length === 0 && auraBadges >= 1,
+        'imgs=' + stageImgs.length + ', broken=' + brokenImgs.length + ', aura=' + auraBadges);
+      log('A10. Multiple copies show ĐANG MẶC ribbon & Inspector shows stat diff',
+        ribbons >= 8 && inspText.includes('Tấn công') && inspText.includes('('),
+        'ribbons=' + ribbons);
+
+      // Consumables & Materials
+      doc.querySelector('#vgb [data-b="btab"][data-v="consumable"]').click();
+      doc.querySelector('#vgb .grid [data-b="sel"][data-id="shcell"]')?.click();
+      const shDisabled = !!doc.querySelector('#vgb [data-b="use"]')?.disabled;
+      const shText = doc.querySelector('#vgb-insp')?.textContent || '';
+      doc.querySelector('#vgb .grid [data-b="sel"][data-id="cell"]')?.click();
+      const cellEnabled = !doc.querySelector('#vgb [data-b="use"]')?.disabled;
+      doc.querySelector('#vgb [data-b="btab"][data-v="material"]').click();
+      const firstMat = doc.querySelector('#vgb .grid [data-b="sel"]');
+      if (firstMat) firstMat.click();
+      const matText = doc.querySelector('#vgb-insp')?.textContent || '';
+      log('A11. Consumables (shcell disabled, cell enabled) & Materials inspector',
+        shDisabled && shText.includes('Chỉ dùng khi chiến đấu') && cellEnabled && (!firstMat || matText.includes('Nhánh')),
+        'shDisabled=' + shDisabled + ', cellEnabled=' + cellEnabled);
+
+      // All 5 Edge Cases + calc() backpack exclusion
+      BG.close();
+      const GM = win.VG.game;
+      const IT = {cell:['Pin năng lượng','+60 năng lượng'],tonic:['Tinh dịch hồn lực','+40 hồn lực'],nano:['Gói nano','+30% HP'],shcell:['Pin lá chắn','+80 lá chắn (chỉ dùng khi chiến đấu)']};
+      BG.setLegacy(IT);
+      const ST = GM.defaults({id:'edge', spawn:{x:1,y:1}});
+      BG.init(ST);
+      ST.starter = 1;
+      const ctx = { get: () => ST, persist: () => {}, toast: () => {}, IT, loadLib: () => Promise.resolve(lib), useLegacy: () => {}, after: () => {}, onClose: () => {} };
+
+      const wingWithStat = eqList.find(e => e.slot === 'wing' && (+e.atk || +e.hp || +e.spd || +e.shield || (e.skills && e.skills.length))) || { id: 'utopia_wing' };
+      ST.eq.wing = wingWithStat.id;
+      delete ST.eq.backpack;
+      const calcNoBp = BG.calc(ST);
+      const skNoBp = win.VG.skill.collect(ST, lib).filter(s => s.slot === 'wing' || s.slot === 'pet' || s.slot === 'drone');
+      log('A12. calc() & skill.collect() ignore wing/pet/drone when backpack unequipped',
+        calcNoBp.max === 0 && calcNoBp.atk === 0 && calcNoBp.spd === 0 && calcNoBp.sh === 0 && skNoBp.length === 0,
+        JSON.stringify(calcNoBp));
+
+      ST.eq = { head: 'solomon-bael-head', weapon: 'solomon-bael-weapon' };
+      ST.inv = { 'utopia_weapon': 1, 'solomon-bael-head': 1 };
+      let pad = 0;
+      while (BG.used(ST) < BG.CAP) ST.inv['dummy_pad_' + (pad++)] = 1;
+      BG.open(ctx, 'equip');
+      await sleep(60);
+
+      // Edge Case 1: Full bag blocks unequip
+      doc.querySelector('#vgb [data-b="slot"][data-v="head"]').click();
+      doc.querySelector('#vgb [data-b="unequip"][data-v="head"]').click();
+      const ec1Say = doc.querySelector('#vgb .tt')?.textContent || '';
+      log('A13. Edge Case 1: Full bag (200/200) blocks unequip',
+        ST.eq.head === 'solomon-bael-head' && ec1Say.includes('Túi đã đầy'),
+        ec1Say);
+
+      // Edge Case 2: 1-1 swap at 200/200
+      doc.querySelector('#vgb [data-b="btab"][data-v="all"]').click();
+      doc.querySelector('#vgb .grid [data-b="sel"][data-id="utopia_weapon"]').click();
+      doc.querySelector('#vgb [data-b="equip"]').click();
+      log('A14. Edge Case 2: 1-1 swap succeeds at 200/200 capacity',
+        ST.eq.weapon === 'utopia_weapon' && ST.inv['solomon-bael-weapon'] === 1 && !ST.inv['utopia_weapon'] && BG.used(ST) === 200,
+        'used=' + BG.used(ST));
+
+      // Edge Case 5: multiple copies -> single card ×1 + ĐANG MẶC
+      const headCards = [...doc.querySelectorAll('#vgb .grid [data-b="sel"][data-id="solomon-bael-head"]')];
+      log('A15. Edge Case 5: Multiple copies (1 eq + 1 inv) show single ×1 + ĐANG MẶC card',
+        headCards.length === 1 && headCards[0].textContent.includes('×1') && !!headCards[0].querySelector('.eq-tag'),
+        'cards=' + headCards.length);
+
+      // Edge Case 3: Backpack cascade unequip
+      delete ST.inv['dummy_pad_0'];
+      delete ST.inv['dummy_pad_1'];
+      const petEq = eqList.find(e => e.slot === 'pet');
+      const droneEq = eqList.find(e => e.slot === 'drone');
+      ST.eq.backpack = 'utopia_backpack';
+      ST.eq.wing = 'utopia_wing';
+      if (petEq) ST.eq.pet = petEq.id;
+      if (droneEq) ST.eq.drone = droneEq.id;
+      ST.petBag['dummy_pet'] = 1;
+      BG.open(ctx, 'equip');
+      doc.querySelector('#vgb [data-b="slot"][data-v="backpack"]').click();
+      doc.querySelector('#vgb [data-b="unequip"][data-v="backpack"]').click();
+      const ec3aSay = doc.querySelector('#vgb .tt')?.textContent || '';
+      const ec3a = !!ST.eq.backpack && ec3aSay.includes('Túi Pet');
+      delete ST.petBag['dummy_pet'];
+      doc.querySelector('#vgb [data-b="unequip"][data-v="backpack"]').click();
+      const ec3bSay = doc.querySelector('#vgb .tt')?.textContent || '';
+      const ec3b = !!ST.eq.backpack && ec3bSay.includes('ô trống');
+      delete ST.inv['dummy_pad_2'];
+      delete ST.inv['dummy_pad_3'];
+      delete ST.inv['dummy_pad_4'];
+      doc.querySelector('#vgb [data-b="unequip"][data-v="backpack"]').click();
+      const ec3c = !ST.eq.backpack && !ST.eq.wing && !ST.eq.pet && !ST.eq.drone && ST.inv['utopia_backpack'] === 1;
+      log('A16. Edge Case 3: Backpack cascade blocks petBag/insufficient space & unequips all together',
+        ec3a && ec3b && ec3c,
+        JSON.stringify({ ec3a, ec3b, ec3c }));
+
+      // Edge Case 4: Orphan ID
+      ST.eq.shoulder = 'orphan_missing_999';
+      BG.open(ctx, 'equip');
+      doc.querySelector('#vgb [data-b="slot"][data-v="shoulder"]').click();
+      const ec4Insp = doc.querySelector('#vgb-insp')?.textContent || '';
+      doc.querySelector('#vgb [data-b="purge"][data-v="shoulder"]').click();
+      log('A17. Edge Case 4: Orphan ID renders fallback & Gỡ bỏ removes cleanly',
+        ec4Insp.includes('Dữ liệu không tồn tại') && !ST.eq.shoulder && errs.length === 0,
+        'errs=' + errs.length);
+    }
+
+    // =========================================================================
+    // SUITE B: bag-test.html Mobile 375x812
+    // =========================================================================
+    {
+      const { doc, win, errs } = await loadFrame('bag-test.html', 375, 812);
+      await waitFor(() => doc.querySelector('#vgb .grid [data-b="sel"]'));
+      await sleep(200);
+      const toggle = doc.querySelector('#vgb [data-b="toggleeq"]');
+      const b1 = doc.querySelector('#vgb .col-eq')?.classList.contains('collapsed');
+      toggle.click();
+      const b2 = doc.querySelector('#vgb .col-eq')?.classList.contains('collapsed');
+      doc.querySelector('#vgb [data-b="toggleeq"]').click();
+      const bx = doc.querySelector('#vgb .bx');
+      const cr = doc.querySelector('#vgb [data-b="close"]').getBoundingClientRect();
+      const overflow = doc.documentElement.scrollWidth > doc.documentElement.clientWidth;
+      log('B1. Mobile 375x812: zero horizontal overflow, collapse toggle & visible close button',
+        errs.length === 0 && !overflow && bx.getBoundingClientRect().width <= 376 && b1 !== b2 && cr.width > 20 && cr.right <= 377,
+        'overflow=' + overflow + ', bxW=' + Math.round(bx.getBoundingClientRect().width));
+    }
+
+    // =========================================================================
+    // SUITE C: index.html Character Panel + Split-View CTA + Persistence
+    // =========================================================================
+    {
+      // Seed clean vg_save_v1 first via bag-test context
+      const seed = await loadFrame('bag-test.html', 600, 400);
+      await waitFor(() => seed.win.VG && seed.win.VG.game);
+      const lib = await seed.win.VG.game.loadLib();
+      const w = await seed.win.VG.game.loadWorld();
+      const st = seed.win.VG.game.defaults(w.zones[0]);
+      st.char = { name: 'Lâm Phong', gender: 'Nam', origin: 'pilot', race: 'human', country: 1, title: 'Tinh Anh Pilot', humanId: '', mechaId: 'solomon-bael' };
+      st.stones = { thuong: 1200, trung: 35, cao: 4, sieu: 1 };
+      st.eq = { head: 'solomon-bael-head', body: 'solomon-bael-body', weapon: 'skkqkbg', backpack: 'utopia_backpack', wing: 'utopia_wing' };
+      const pet = (lib.equips || []).find(e => e.slot === 'pet');
+      const drone = (lib.equips || []).find(e => e.slot === 'drone');
+      if (pet) st.eq.pet = pet.id;
+      if (drone) st.eq.drone = drone.id;
+      st.inv = { 'solomon-bael-weapon': 1, 'utopia_head': 1 };
+      st.starter = 1;
+      seed.win.VG.bag.setLib(lib);
+      st.eqB = seed.win.VG.bag.calc(st);
+      localStorage.setItem('vg_save_v1', JSON.stringify(st));
+
+      const { win, doc, errs } = await loadFrame('index.html', 1280, 720);
+      await waitFor(() => doc.querySelector('#tb [data-f="char"]') && doc.getElementById('sName')?.textContent === 'Lâm Phong');
+      await sleep(250);
+
+      doc.querySelector('#tb [data-f="char"]').click();
+      await sleep(150);
+      const oB = doc.getElementById('oB');
+      const oBHtml = oB ? oB.innerHTML : '';
+      const oBText = oB ? oB.textContent : '';
+      const hasIdentity = oBText.includes('Lâm Phong');
+      const hasStats = oBText.includes('HP') && oBText.includes('Công kích') && oBText.includes('Tốc độ') && oBText.includes('Lá chắn');
+      const noOldSlots = !oBHtml.includes('Giáp đầu') && !oBHtml.includes('Giáp chân') && !oBHtml.includes('Ba lô');
+      const hasCta = !!doc.querySelector('#oB [data-a="equip"]');
+      log('C1. index.html panel("char") renders Identity, Stats, Passive skills, CTA & omits 12-slot list',
+        errs.length === 0 && hasIdentity && hasStats && noOldSlots && hasCta,
+        JSON.stringify({ hasIdentity, hasStats, noOldSlots, hasCta }));
+
+      doc.querySelector('#oB [data-a="equip"]').click();
+      await waitFor(() => doc.querySelector('#vgb .grid [data-b="sel"][data-id="solomon-bael-weapon"]'));
+      doc.querySelector('#vgb .grid [data-b="sel"][data-id="solomon-bael-weapon"]').click();
+      doc.querySelector('#vgb [data-b="equip"]').click();
+      doc.querySelector('#vgb [data-b="close"]').click();
+      await sleep(150);
+      const saved = JSON.parse(localStorage.getItem('vg_save_v1') || '{}');
+      log('C2. index.html CTA opens VG.bag, swaps weapon & persists eq/eqB to vg_save_v1',
+        errs.length === 0 && !doc.querySelector('#vgb') && saved.eq?.weapon === 'solomon-bael-weapon' && !!saved.eqB,
+        'weapon=' + saved.eq?.weapon);
+    }
+
+    // =========================================================================
+    // SUITE D: battle.html eqB + skills + backpack guard
+    // =========================================================================
+    {
+      const { doc, errs } = await loadFrame('battle.html', 1280, 720);
+      await waitFor(() => doc.querySelector('#pp')?.textContent.includes('Vân Giáp') && doc.querySelectorAll('#skills button.sk').length >= 5);
+      await sleep(250);
+      const skCount = doc.querySelectorAll('#skills button.sk').length;
+      const dpVisible = doc.getElementById('dp')?.style.display !== 'none';
+      log('D1. battle.html loads SV.eqB, skills & active companions when backpack equipped',
+        errs.length === 0 && skCount >= 5 && dpVisible,
+        'skills=' + skCount + ', dpVisible=' + dpVisible);
+
+      // Remove backpack from vg_save_v1 while keeping pet/drone in SV.eq
+      const sv = JSON.parse(localStorage.getItem('vg_save_v1') || '{}');
+      delete sv.eq.backpack;
+      localStorage.setItem('vg_save_v1', JSON.stringify(sv));
+
+      const b2 = await loadFrame('battle.html', 1280, 720);
+      await waitFor(() => b2.doc.querySelector('#pp')?.textContent.includes('Vân Giáp'));
+      await sleep(250);
+      const dpHidden = b2.doc.getElementById('dp')?.style.display === 'none';
+      const lib2 = await b2.win.VG.game.loadLib();
+      const sv2 = JSON.parse(localStorage.getItem('vg_save_v1') || '{}');
+      const bpSk = b2.win.VG.skill.collect(sv2, lib2).filter(s => s.slot === 'wing' || s.slot === 'pet' || s.slot === 'drone');
+      log('D2. battle.html disables companions & excludes wing/pet/drone skills when backpack missing',
+        b2.errs.length === 0 && dpHidden && bpSk.length === 0,
+        'dpHidden=' + dpHidden + ', bpSk=' + bpSk.length);
+    }
+  } catch (err) {
+    log('RUNNER_EXCEPTION', false, err && (err.stack || err.message || String(err)));
+  }
+
+  const passed = results.filter(r => r.pass).length;
+  const total = results.length;
+  const payload = { passed, total, allPassed: passed === total, results };
+  statusEl.textContent = `Hoàn tất: ${passed}/${total} kiểm tra đạt (${payload.allPassed ? 'PASS' : 'FAIL'})`;
+  statusEl.className = payload.allPassed ? 'ok' : 'bad';
+  window.__TEST_RESULTS__ = payload;
+  await fetch('/__inv_test_result__', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).catch(() => {});
+})();
+</script>
+</body>
+</html>

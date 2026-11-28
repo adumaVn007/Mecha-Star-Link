@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#0a1117">
 <title>Mecha Star Link · Vân Giáp</title>
+<link rel="stylesheet" href="vg-char.css?v=202611285">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
 <style>
 :root{--bg:#0a1117;--p1:#263e47;--p2:#14242d;--gold:#e4c27b;--bronze:#98794b;--txt:#f3e7c9;--mut:#aab8b7;--jade:#77c5a6;
 --sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);--sal:env(safe-area-inset-left,0px);--sar:env(safe-area-inset-right,0px)}
@@ -113,10 +115,11 @@ html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none;backgrou
 <div id="ov"><div class="box"><header><h2 id="oT"></h2><button class="x" id="oX" aria-label="Đóng">✕</button></header><div class="bd" id="oB"></div></div></div>
 
 <script src="vg-github.js?v=202611262"></script>
-<script src="vg-core.js?v=202611281"></script>
-<script src="vg-skill.js?v=202611271"></script>
-<script src="vg-char.js?v=202611254"></script>
-<script src="vg-bag.js?v=202611271"></script>
+<script src="vg-core.js?v=202611282"></script>
+<script src="vg-skill.js?v=202611282"></script>
+<script src="vg-char-presets.js?v=202611281"></script>
+<script src="vg-char.js?v=202611284"></script>
+<script src="vg-bag.js?v=202611282"></script>
 <script src="vg-mapart.js?v=202611254"></script>
 <script src="vg-quest.js?v=202611271"></script>
 <script src="city-ui.js?v=3"></script>
@@ -149,7 +152,7 @@ function saveCfg(){try{localStorage.setItem(CFGK,JSON.stringify(CFG))}catch(e){}
 function applyCfg(){const r=document.documentElement.style;r.setProperty('--fs',CFG.fs);r.setProperty('--ic',CFG.ic)}
 applyCfg();
 let cw=0,ch=0,dpr=1,zoom=1,cam={x:0,y:0},follow=true;
-let sel=null,route=[],mv=null,pv={x:0,y:0},modal=false,lastT=0,lastDraw=0;
+let sel=null,route=[],mv=null,pv={x:0,y:0},modal=false,creatingCharacter=false,lastT=0,lastDraw=0;
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 let tt=0;
@@ -479,7 +482,7 @@ function closeModal(){if(ambushing&&!window.__vgGoed){ambushing=false;if(ST){ST.
 const row=(a,b)=>`<div class="row"><span>${a}</span><span>${b}</span></div>`;
 const soon=d=>`<p>${d}</p><div class="note">⚠ Chưa kết nối hệ thống thật: mục này chưa có dữ liệu trong database nên chưa hoạt động. Không dùng số liệu giả.</div>`;
 function idRows(){const c=ST.char;if(!c)return'';const G=VG.char.GENDERS[c.gender];
- return row('Tên',esc(c.name))+row('Giới tính',G?G.n:'—')+row('Xuất thân',esc(c.originName||c.origin||'—'))+row('Quốc gia',esc((wmap&&wmap.names[c.country])||zone.name))}
+ return row('Tên',esc(c.name))+row('Giới tính',G?G.n:'—')+row('Ngoại hình',esc(VG.char.modelName(c)))+row('Xuất thân',esc(c.originName||c.origin||'—'))+row('Quốc gia',esc((wmap&&wmap.names[c.country])||zone.name))}
 let JOBS=null,BPS=null,JOBOPEN='';
 function loadBps(){return fetch('database/blueprints.json?t='+Date.now()).then(r=>{if(!r.ok)throw 0;return r.json()}).catch(()=>VG.fetchJSON?VG.fetchJSON('database/blueprints.json'):null).then(j=>{BPS=j&&Array.isArray(j.blueprints)?j:null}).catch(()=>{BPS=null})}
 function loadJobs(){return fetch('database/jobs.json?t='+Date.now()).then(r=>{if(!r.ok)throw 0;return r.json()}).catch(()=>VG.fetchJSON?VG.fetchJSON('database/jobs.json'):null).then(j=>{JOBS=j&&Array.isArray(j.jobs)?j:null}).catch(()=>{JOBS=null})}
@@ -530,12 +533,49 @@ function craftBp(id){
  persist();renderHUD();JOBOPEN=job.id;
  toast('Chế tạo thành công: '+bpName(bp.target)+' · +'+(+bp.exp||0)+' EXP '+job.name+(pr.lv>lv?' · Lên cấp nghề '+pr.lv+'!':'')+(r.msg?' '+r.msg:''));
  openPanel('craft')}
-function ensureLib(){if(libSet)return;libSet=true;libMerged().then(l=>{if(l){VG.bag.setLib(l);if($('#ov').classList.contains('show')&&$('#oT').textContent==='Nghề')openPanel('craft')}}).catch(()=>{libSet=false})}
+function ensureLib(){if(libSet)return;libSet=true;libMerged().then(l=>{if(l){LIB_CACHE=l;VG.bag.setLib(l);if($('#ov').classList.contains('show')){const t=$('#oT').textContent;if(t==='Nghề')openPanel('craft');else if(t==='Nhân vật')openPanel('char')}}}).catch(()=>{libSet=false})}
+function charIdentityHtml(){
+ const c=ST.char,p=ST.p,G=c&&VG.char.GENDERS[c.gender];
+ const avImg=$('#av img');const av=avImg?`<img src="${esc(avImg.src)}" alt="">`:esc(c?VG.char.avatar(c):'⚔');
+ const nd=GM.need(p.lv),pct=p.lv>=GM.MAXR?100:Math.min(100,Math.round(p.xp/Math.max(1,nd)*100));
+ return`<div class="tile" style="margin-bottom:8px;display:flex;gap:10px;align-items:center">`+
+  `<div class="av" style="width:48px;height:48px;font-size:22px">${av}</div>`+
+  `<div style="flex:1;min-width:0"><b style="font-size:15px;margin-bottom:1px">${esc((c&&c.name)||'Vân Giáp')}</b>`+
+  `<div style="font-size:12px;color:var(--mut)">${esc(GM.rankName(p.lv))} · ${c?(G?G.n:'—')+' · '+esc(VG.char.modelName(c)):''}</div>`+
+  (c?`<div style="font-size:11px;color:var(--mut)">Xuất thân: ${esc(c.originName||c.origin||'—')} · Quốc gia: ${esc((wmap&&wmap.names[c.country])||zone.name)}</div>`:'')+
+  `<div style="margin-top:6px"><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--mut);margin-bottom:2px"><span>Kinh nghiệm (EXP)</span><span>${p.lv>=GM.MAXR?'Tối cao':p.xp+' / '+nd}</span></div><div class="bar xp" style="height:7px"><i style="width:${pct}%"></i></div></div>`+
+  `</div></div>`;
+}
+function charStatsHtml(){
+ const p=ST.p,E=VG.bag.eff(ST),b=E.b||{};
+ const sRow=(lbl,tot,base,add,na)=>{
+  const addTxt=add?`<span style="color:#77c5a6;font-weight:bold"> (+${GM.fmt(add)})</span>`:'';
+  return`<div class="row"><span>${lbl}</span><span>${na?'Không mang':`<b>${GM.fmt(tot)}</b> <small style="color:var(--mut)">(${GM.fmt(base)}${addTxt})</small>`}</span></div>`;
+ };
+ return`<h2 style="font-size:13px;margin:8px 0 4px">Chỉ số thực tế (Tổng = Gốc + Trang bị)</h2>`+
+  sRow('HP tối đa',E.max,p.max,+b.max||0)+
+  sRow('Công kích',E.atk,p.atk,+b.atk||0)+
+  sRow('Tốc độ',E.spd,p.spd,+b.spd||0)+
+  sRow('Lá chắn tối đa',E.sh,p.shMax,+b.sh||0,!p.gear)+
+  row('HP hiện tại',Math.round(p.hp)+' / '+GM.fmt(E.max))+
+  row('Năng lượng (Linh lực)',Math.round(p.en)+' / '+p.enMax+' · +'+p.reg+'/lượt')+
+  row('Hồn lực',Math.round(p.soul)+' / '+p.soulMax)+
+  row('Dị thú đã hạ',ST.kills)+
+  row('Sự kiện hoàn thành',ST.cleared);
+}
+function charPassivesHtml(){
+ if(!LIB_CACHE)return`<div class="note">Đang tải danh sách nội tại &amp; bị động từ database…</div>`;
+ const pas=VG.skill?VG.skill.collect(ST,LIB_CACHE).filter(s=>!VG.skill.act(s)):[];
+ const list=pas.length?pas.map(s=>`<div class="row"><span>${esc(s.ic)} <b>${esc(s.name)}</b> <small style="color:var(--mut)">(${esc(s.src)})</small></span><span style="color:#77c5a6;text-align:right">${esc(VG.skill.effText(s))}</span></div>`).join(''):`<div class="note">Chưa có nội tại hoặc bị động nào từ trang bị đang mặc.</div>`;
+ return`<h2 style="font-size:13px;margin:10px 0 4px">Nội tại &amp; Bị động đang kích hoạt</h2>`+list;
+}
 function panel(k){
  const p=ST.p;
- if(k==='char')return['Nhân vật',idRows()+`<div class="grid"><div class="tile"><b>Cảnh giới</b>${esc(GM.rankName(p.lv))}</div><div class="tile"><b>Kinh nghiệm</b>${p.lv>=GM.MAXR?'Tối cao':p.xp+' / '+GM.need(p.lv)}</div></div>`+
-  row('HP hiện tại',Math.round(p.hp)+' / '+EM())+row('HP gốc (Mecha)',p.max)+row('Năng lượng (Linh lực)',Math.round(p.en)+' / '+p.enMax+' · +'+p.reg+'/lượt')+row('Hồn lực',Math.round(p.soul)+' / '+p.soulMax)+row('Giáp gốc (lá chắn)',p.gear?p.shMax:'Không mang')+row('Công kích gốc',p.atk)+row('Tốc độ gốc',p.spd)+mechaRow()+row('Dị thú đã hạ',ST.kills)+row('Sự kiện hoàn thành',ST.cleared)+
-  `<div class="note">Điều kiện đột phá theo nghề / đan dược chưa được nối: hiện cảnh giới tăng khi đủ kinh nghiệm (hệ thống chiến đấu gốc).</div>`+`<button class="btn" data-a="equip">🛡 Trang bị<small>Mặc / tháo trang bị, xem chỉ số.</small></button><button class="btn" data-a="savefile">💾 Xuất file save<small>Tải bản sao tiến trình về máy để dự phòng.</small></button><button class="btn" data-a="loadfile">📂 Nạp file save<small>Khôi phục từ file đã xuất (ghi đè bản hiện tại).</small></button>`];
+ if(k==='char'){ensureLib();return['Nhân vật',charIdentityHtml()+charStatsHtml()+charPassivesHtml()+
+  `<div class="note">Điều kiện đột phá theo nghề / đan dược chưa được nối: hiện cảnh giới tăng khi đủ kinh nghiệm (hệ thống chiến đấu gốc).</div>`+
+  `<button class="btn pri" data-a="equip">🛡 Trang bị &amp; Túi đồ<small>Lắp ráp Mecha modular, so sánh chỉ số &amp; quản lý kho đồ.</small></button>`+
+  `<button class="btn" data-a="savefile">💾 Xuất file save<small>Tải bản sao tiến trình về máy để dự phòng.</small></button>`+
+  `<button class="btn" data-a="loadfile">📂 Nạp file save<small>Khôi phục từ file đã xuất (ghi đè bản hiện tại).</small></button>`];}
  if(k==='tinhchu')return['Hệ thống Tinh Chủ',soon('Star General System: chỉ điểm yếu, dẫn đường, auto battle. Dành cho người ủng hộ (donate / nạp).')];
  if(k==='sect')return['Tông môn',soon('Gia nhập tông môn, nhiệm vụ tông môn, cống hiến.')];
  if(k==='craft'){ensureLib();return['Nghề',jobPanel()]}
@@ -556,8 +596,8 @@ const CTY=()=>{const c=ST.city=ST.city||{};return c};
 const STV=[['thuong',1],['trung',100],['cao',1e4],['sieu',1e6]];
 const CTY_WEALTH=()=>STV.reduce((t,x)=>t+(ST.stones[x[0]]||0)*x[1],0);
 const CITYDB=fetch('database/city-items.json?t='+Date.now()).then(r=>r.ok?r.json():null).catch(()=>null).then(j=>{if(j)CityUI.setItems(j);return j});
-const libMerged=()=>Promise.resolve(GM.loadLib()).catch(()=>null).then(l=>CITYDB.then(j=>{if(!j)return l;l=l||{};const have={};['materials','items'].forEach(k=>(l[k]||[]).forEach(e=>{have[e.id]=1}));const add=k=>(j[k]||[]).filter(e=>!have[e.id]);return Object.assign({},l,{materials:(l.materials||[]).concat(add('materials')),items:(l.items||[]).concat(add('items'))})}));
-let libSet=false;
+const libMerged=()=>Promise.resolve(GM.loadLib()).catch(()=>null).then(l=>CITYDB.then(j=>{if(!j)return l;l=l||{};const have={};['materials','items'].forEach(k=>(l[k]||[]).forEach(e=>{have[e.id]=1}));const add=k=>(j[k]||[]).filter(e=>!have[e.id]);return Object.assign({},l,{materials:(l.materials||[]).concat(add('materials')),items:(l.items||[]).concat(add('items')),recipes:(l.recipes||[]).concat(j.recipes||[])})}));
+let libSet=false,LIB_CACHE=null;
 const cityDef=q=>{let d=VG.quest.def(q.id);if(!d){d={id:q.id,name:q.name,desc:q.line+' (Giao: '+q.giver[0]+', '+q.giver[1]+')',scope:'country',objectives:q.objectives,rewards:q.rewards,repeat:q.repeat};VG.quest.D.quests.push(d)}return d};
 CityUI.configure({
  getStones:()=>ST.stones,
@@ -719,7 +759,7 @@ cv.addEventListener('contextmenu',e=>e.preventDefault());
 
 function loop(now){
  requestAnimationFrame(loop);
- if(document.hidden||!zone||!ST)return;
+ if(document.hidden||!zone||!ST||creatingCharacter)return;
  const dt=Math.min(.1,(now-(lastT||now))/1000);lastT=now;
  stepUpdate(now);roamStep(now);
  if(follow){const k=1-Math.pow(.0008,dt);cam.x+=(wx(pv.x,pv.y)-cam.x)*k;cam.y+=(wy(pv.x,pv.y)+TH/2-cam.y)*k}
@@ -736,6 +776,8 @@ function init(w){
  if(!ST.char)return startCreate();
  boot()}
 function startCreate(){
+ if(creatingCharacter)return;
+ creatingCharacter=true;modal=true;
  $('#pZone').textContent='Tạo nhân vật';
  const W=zone.w,cs=[];
  if(wmap&&wmap.names.length>1){for(let id=1;id<wmap.names.length;id++){
@@ -753,10 +795,11 @@ function startCreate(){
    if(wmap.owner[y*W+x]!==id)continue;
    const d=Math.abs(dx)+Math.abs(dy);if(d<bd){bd=d;best={x,y}}}
   return best}
- VG.char.open({countries:cs,spawnFor,done:(c,org,sp)=>{
+ VG.char.open({countries:cs,spawnFor,previewState:ST,loadLib:()=>GM.loadLib(),done:(c,org,sp)=>{
   VG.char.apply(ST,c,org,sp,zone.id);
   const cn=(cs.find(v=>v.id===c.country)||{}).name||'';
-  ST.log=[];say('Khởi đầu tại '+cn+'.');persist();boot()}})}
+  ST.log=[];say('Khởi đầu tại '+cn+'.');persist();creatingCharacter=false;modal=false;boot()
+ }}).catch(e=>{creatingCharacter=false;modal=false;fail('Không mở được màn tạo nhân vật: '+(e.message||e))})}
 function boot(){
  const r=ST.result;
  if(r){
