@@ -139,5 +139,10 @@
       return w;
     });
   };
+  /* Hệ nguyên tố (MỚI): nạp database/elements.json + database/equip-elements.json vào VG.element (cần nạp vg-element.js trước). Trả VG.element hoặc null. */
+  GM.loadElements = function () {
+    if (!VG.element || !VG.element.load) return Promise.resolve(null);
+    return VG.element.load().then(function () { return VG.element; }).catch(function () { return null; });
+  };
   GM.nav = function (page) { if (g.__VG_EMBED) g.parent.postMessage({ vggo: page }, '*'); else g.location.href = page; };
 })(typeof window != 'undefined' ? window : globalThis);

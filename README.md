@@ -21,6 +21,7 @@ Trang chính (GitHub Pages): https://adumavn007.github.io/Mecha-Star-Link/
 - https://adumavn007.github.io/Mecha-Star-Link/player.html — hồ sơ người chơi
 - https://adumavn007.github.io/Mecha-Star-Link/EditPlayoutCombat.html — nền giao diện chiến đấu theo địa hình (database/combat-ui.json)
 - https://adumavn007.github.io/Mecha-Star-Link/EditSkill.html — skill trang bị & skill cơ bản (database/skills.json, ghi đè skill trong mecha-studio.json)
+- https://adumavn007.github.io/Mecha-Star-Link/EditTypeGame.html — hệ nguyên tố: 12 hệ, 24 hiệu ứng, sơ đồ khắc chế, gắn hệ lên trang bị (database/elements.json + database/equip-elements.json)
 
 ## 🤖 Mecha 3D / thư viện
 - https://adumavn007.github.io/Mecha-Star-Link/mecha-studio.html
@@ -56,3 +57,9 @@ vg-skill.js · vg-combat-scene.js · vg-core.js · vg-github.js · vg-char.js ·
 ## Triển khai
 Settings → Pages → Deploy from a branch → `main` / `(root)`. Có `.nojekyll` để Pages không chạy Jekyll.
 
+
+## 🔮 Hệ nguyên tố (EditTypeGame)
+- Trang chỉnh sửa: https://adumavn007.github.io/Mecha-Star-Link/EditTypeGame.html
+- Dữ liệu: `database/elements.json` (12 hệ, 24 hiệu ứng, ma trận khắc chế) · `database/equip-elements.json` (gắn hệ lên trang bị) · module dùng chung `vg-element.js`
+- Hệ số: khắc chế ×1.5 · bình thường ×1.0 · bị khắc ×0.75. Ma trận khắc chế ĐÃ DUYỆT ngày 2026-11-28 (3 thay đổi so với bảng gốc, xem `matrixProposed.changes`).
+- Chưa nối vào `battle.html` (xem `database-schema.md`, mục “Hệ nguyên tố”).
